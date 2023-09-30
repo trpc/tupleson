@@ -4,20 +4,8 @@ import { test } from "vitest";
 
 import {
 	createTupleson,
-	// Serialize BigInt
-	tsonBigint,
-	// Serialize Map
-	tsonMap,
-	// **throws** when encountering Infinity or NaN
-	// tsonNumberGuard,
-	// Serialize regular expression
-	tsonRegExp,
 	// Serialize sets
 	tsonSet,
-	// Serialize URLs
-	// tsonURL,
-	// Serialize undefined
-	tsonUndefined,
 } from "./index.js";
 
 test("readme", () => {

@@ -29,12 +29,9 @@ A hackable JSON serializer/deserializer that allows you to serialize/deserialize
 
 ### Example
 
-<!-- /** eslint-disable n/no-missing-import */ -->
-
 ```ts
-/* eslint-disable eslint-comments/disable-enable-pair */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable n/no-missing-import */
+/* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import */
+
 import {
 	createTupleson,
 	// Serialize BigInt
