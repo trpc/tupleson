@@ -1,50 +1,17 @@
 import { assert, expect, expectTypeOf, test } from "vitest";
 
+import { tsonRegExp } from "./handlers/index.js";
+import { tsonBigint } from "./handlers/tsonBigint.js";
+import { tsonDate } from "./handlers/tsonDate.js";
+import { tsonMap } from "./handlers/tsonMap.js";
+import { tsonNumber } from "./handlers/tsonNumber.js";
+import { tsonSet } from "./handlers/tsonSet.js";
+import { tsonUndefined } from "./handlers/tsonUndefined.js";
 import {
 	UnknownObjectGuardError,
-	tsonBigint,
-	tsonDate,
-	tsonMap,
-	tsonNumber,
-	tsonRegExp,
-	tsonSet,
-	tsonUndefined,
 	tsonUnknown,
-} from "./handlers/index.js";
-import {
-	tsonDeserializer,
-	tsonParser,
-	tsonSerializer,
-	tsonStringifier,
-} from "./tson.js";
-import { TsonOptions } from "./types.js";
-
-const expectError = (fn: () => unknown) => {
-	let err: unknown;
-	try {
-		fn();
-	} catch (_err) {
-		err = _err;
-	}
-
-	expect(err).toBeDefined();
-	expect(err).toBeInstanceOf(Error);
-	return err as Error;
-};
-
-function setup(opts: TsonOptions) {
-	const nonce: TsonOptions["nonce"] = () => "__tson";
-	const withDefaults: TsonOptions = {
-		nonce,
-		...opts,
-	};
-	return {
-		deserialize: tsonDeserializer(withDefaults),
-		parse: tsonParser(withDefaults),
-		serializer: tsonSerializer(withDefaults),
-		stringify: tsonStringifier(withDefaults),
-	};
-}
+} from "./handlers/tsonUnknown.js";
+import { expectError, setup } from "./setup.js";
 
 test("Date", () => {
 	const ctx = setup({
