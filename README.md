@@ -1,6 +1,8 @@
-<h1 align="center">TSON</h1>
+<h1 align="center">tupleSON</h1>
 
+<!-- spellchecker: disable -->
 <p align="center">A hackable JSON (se|de)rializer</p>
+<!-- spellchecker: enable -->
 
 <p align="center">
 	<a href="#contributors" target="_blank">
