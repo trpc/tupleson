@@ -1,3 +1,12 @@
+
+
+# [0.4.0](https://github.com/KATT/tupleson/compare/0.3.1...0.4.0) (2023-09-30)
+
+
+### Features
+
+* allow `number` in `nonce` callback ([#5](https://github.com/KATT/tupleson/issues/5)) ([d2fcb7f](https://github.com/KATT/tupleson/commit/d2fcb7f5175705bf1ec01fc67b8ed2feacdcac7d))
+
 ## [0.3.1](https://github.com/KATT/tupleson/compare/0.3.0...0.3.1) (2023-09-30)
 
 ### Bug Fixes
