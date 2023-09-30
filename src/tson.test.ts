@@ -231,7 +231,7 @@ test("regex", () => {
 		},
 	});
 
-	const expected = new RegExp("foo", "g");
+	const expected = /foo/g;
 
 	const stringified = t.stringify(expected, 2);
 

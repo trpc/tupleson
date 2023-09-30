@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const brand = Symbol("branded");
 
 export type TsonBranded<TType, TBrand> = TType & { [brand]: TBrand };
@@ -119,3 +120,5 @@ export type TsonStringifyFn = <TValue>(
 ) => TsonStringified<TValue>;
 
 export type TsonParseFn = <TValue>(string: TsonStringified<TValue>) => TValue;
+
+/* eslint-enable @typescript-eslint/no-explicit-any */

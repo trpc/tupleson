@@ -118,21 +118,22 @@ module.exports = {
 	root: true,
 	rules: {
 		// These off/less-strict-by-default rules work well for this repo and we like them on.
+
 		"@typescript-eslint/no-unused-vars": ["error", { caughtErrors: "all" }],
 		"no-only-tests/no-only-tests": "error",
 
 		// These on-by-default rules don't work well for this repo and we like them off.
-		"no-case-declarations": "off",
-		"no-constant-condition": "off",
-		"no-inner-declarations": "off",
-		"no-mixed-spaces-and-tabs": "off",
-
-		// Stylistic concerns that don't interfere with Prettier
-		"@typescript-eslint/no-explicit-any": "off",
 		"@typescript-eslint/padding-line-between-statements": [
 			"error",
 			{ blankLine: "always", next: "*", prev: "block-like" },
 		],
+		"no-case-declarations": "off",
+		"no-constant-condition": "off",
+		"no-inner-declarations": "off",
+
+		// Stylistic concerns that don't interfere with Prettier
+
+		"no-mixed-spaces-and-tabs": "off",
 		"perfectionist/sort-objects": [
 			"error",
 			{
