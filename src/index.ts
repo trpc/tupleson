@@ -1,4 +1,5 @@
 export {
+	createTupleson,
 	tsonDeserializer,
 	tsonParser,
 	tsonSerializer,

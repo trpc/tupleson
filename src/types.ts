@@ -31,11 +31,11 @@ type SerializedType =
 export interface TsonTransformerNone {
 	deserialize?: never;
 
-	serialize?: never;
 	/**
-	 * Won't be deserialized nor serialized
+	 * The key to use when serialized
 	 */
-	transform: false;
+	key?: never;
+	serialize?: never;
 }
 export interface TsonTransformerSerializeDeserialize<
 	TValue,
@@ -47,13 +47,13 @@ export interface TsonTransformerSerializeDeserialize<
 	deserialize: (v: TSerializedType) => TValue;
 
 	/**
+	 * The key to use when serialized
+	 */
+	key: string;
+	/**
 	 * JSON-serializable value
 	 */
 	serialize: (v: TValue) => TSerializedType;
-	/**
-	 * Use a transformer to serialize and deserialize the value?
-	 */
-	transform?: true;
 }
 
 export type TsonTransformer<TValue, TSerializedType extends SerializedType> =
@@ -96,7 +96,7 @@ export type TsonType<
 
 export interface TsonOptions {
 	nonce?: () => string;
-	types: Record<string, TsonType<any, any> | TsonType<any, never>>;
+	types: (TsonType<any, any> | TsonType<any, never>)[];
 }
 
 const serialized = Symbol("serialized");

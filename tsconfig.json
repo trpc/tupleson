@@ -7,10 +7,9 @@
 		"moduleResolution": "NodeNext",
 		"outDir": "lib",
 		"resolveJsonModule": true,
-		"skipLibCheck": true,
 		"sourceMap": true,
-		"strict": true,
 		"target": "ES2022"
 	},
+	"extends": "@tsconfig/strictest/tsconfig.json",
 	"include": ["src"]
 }
