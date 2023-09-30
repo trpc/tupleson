@@ -63,6 +63,11 @@ const tson = createTson({
 	],
 });
 
+const myObj = {
+	foo: "bar",
+	set: new Set([1, 2, 3]),
+} as const;
+
 const str = tson.stringify(
 	{
 		foo: "bar",
