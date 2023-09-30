@@ -1,11 +1,8 @@
-
-
 # [0.6.0](https://github.com/KATT/tupleson/compare/0.5.0...0.6.0) (2023-09-30)
-
 
 ### Features
 
-* add custom serializer example ([#8](https://github.com/KATT/tupleson/issues/8)) ([58eab05](https://github.com/KATT/tupleson/commit/58eab05baff0dd07803b5aa01c402fcd02df5b09))
+- add custom serializer example ([#8](https://github.com/KATT/tupleson/issues/8)) ([58eab05](https://github.com/KATT/tupleson/commit/58eab05baff0dd07803b5aa01c402fcd02df5b09))
 
 # [0.5.0](https://github.com/KATT/tupleson/compare/0.4.0...0.5.0) (2023-09-30)
 
