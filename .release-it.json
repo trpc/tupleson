@@ -8,7 +8,7 @@
 		"release": true,
 		"releaseName": "v${version}"
 	},
-	"npm": { "publishArgs": ["--provenance"] },
+	"npm": { "publishArgs": ["--provenance --access public"] },
 	"plugins": {
 		"@release-it/conventional-changelog": {
 			"infile": "CHANGELOG.md",
