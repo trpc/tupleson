@@ -34,19 +34,19 @@ A hackable JSON serializer/deserializer that allows you to serialize/deserialize
 
 import {
 	createTupleson,
-	// Serialize BigInt
+	// Serialize `bigint`
 	tsonBigint,
-	// Serialize Map
+	// Serialize `Map`s
 	tsonMap,
 	// **throws** when encountering Infinity or NaN
 	tsonNumberGuard,
 	// Serialize regular expression
 	tsonRegExp,
-	// Serialize sets
+	// Serialize `Set`s
 	tsonSet,
-	// Serialize URLs
+	// Serialize `URL`s
 	tsonURL,
-	// Serialize undefined
+	// Serialize `undefined`
 	tsonUndefined,
 	// **throws** when encountering non-registered complex objects (like class instances)
 	tsonUnknownObjectGuard,
