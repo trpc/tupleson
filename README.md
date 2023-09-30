@@ -104,6 +104,34 @@ type Obj = typeof obj;
 // }
 ```
 
+### Adding a custom serializer
+
+#### `Temporal`
+
+```ts
+/* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import, n/no-unpublished-import */
+import { Temporal } from "@js-temporal/polyfill";
+import { TsonType, createTson } from "tupleson";
+
+const plainDate: TsonType<Temporal.PlainDate, string> = {
+	deserialize: (v) => Temporal.PlainDate.from(v),
+	key: "PlainDate",
+	serialize: (v) => v.toString(),
+	test: (v) => v instanceof Temporal.PlainDate,
+};
+
+const instant: TsonType<Temporal.Instant, string> = {
+	deserialize: (v) => Temporal.Instant.from(v),
+	key: "Instant",
+	serialize: (v) => v.toString(),
+	test: (v) => v instanceof Temporal.Instant,
+};
+
+const tson = createTson({
+	types: [plainDate, instant],
+});
+```
+
 **Footnotes**:
 
 [^1]: We don't support circular references as we don't think it's very desireable, but if you wanna contribute with adding opt-in support for that, you are very welcome!
