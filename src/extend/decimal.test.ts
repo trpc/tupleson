@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 
 import { TsonType, createTson } from "../index.js";
 
-const decimaljs: TsonType<Decimal, string> = {
+const decimalJs: TsonType<Decimal, string> = {
 	deserialize: (v) => new Decimal(v),
 	key: "Decimal",
 	serialize: (v) => v.toJSON(),
@@ -11,7 +11,7 @@ const decimaljs: TsonType<Decimal, string> = {
 };
 
 const tson = createTson({
-	types: [decimaljs],
+	types: [decimalJs],
 });
 
 test("Decimal.js", () => {
