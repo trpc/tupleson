@@ -1,5 +1,6 @@
-// eslint-disable-next-line eslint-comments/disable-enable-pair
+/* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { isPlainObject } from "./isPlainObject.js";
 import {
 	TsonAllTypes,
 	TsonDeserializeFn,
@@ -16,7 +17,6 @@ import {
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
 } from "./types.js";
-import { isPlainObject } from "./utils.js";
 
 function isTsonTuple(v: unknown, nonce: string): v is TsonTuple {
 	return Array.isArray(v) && v.length === 3 && v[2] === nonce;

@@ -1,5 +1,5 @@
+import { isPlainObject } from "../isPlainObject.js";
 import { TsonType } from "../types.js";
-import { isPlainObject } from "../utils.js";
 
 export class UnknownObjectGuardError extends Error {
 	/**

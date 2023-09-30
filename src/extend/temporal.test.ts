@@ -18,6 +18,7 @@ const instant: TsonType<Temporal.Instant, string> = {
 };
 
 const tson = createTson({
+	nonce: () => "__tson",
 	types: [plainDate, instant],
 });
 test("PlainDate", () => {
