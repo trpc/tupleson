@@ -104,7 +104,7 @@ type Obj = typeof obj;
 // }
 ```
 
-### Adding a custom serializer
+### Extend with a custom serializer
 
 #### `Temporal`
 
