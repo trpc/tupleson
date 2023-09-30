@@ -23,6 +23,10 @@
 	<img alt="TypeScript: Strict" src="https://img.shields.io/badge/typescript-strict-21bb42.svg" />
 </p>
 
+## Introduction
+
+Not much to see yet, but you can spy on the tests.
+
 ## Contributors
 
 <!-- spellchecker: disable -->

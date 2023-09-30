@@ -7,9 +7,7 @@
 		"url": "https://github.com/KATT/tson"
 	},
 	"license": "MIT",
-	"author": {
-		"email": "alexander@n1s.se"
-	},
+	"author": "KATT",
 	"type": "module",
 	"main": "./lib/index.js",
 	"files": [
@@ -28,7 +26,6 @@
 		"lint:package-json": "npmPkgJsonLint .",
 		"lint:packages": "pnpm dedupe --check",
 		"lint:spelling": "cspell \"**\" \".github/**/*\"",
-		"prepare": "husky install",
 		"should-semantic-release": "should-semantic-release --verbose",
 		"test": "vitest",
 		"tsc": "tsc"
@@ -56,7 +53,6 @@
 		"eslint-plugin-regexp": "^1.15.0",
 		"eslint-plugin-vitest": "^0.3.1",
 		"eslint-plugin-yml": "^1.9.0",
-		"husky": "^8.0.3",
 		"jsonc-eslint-parser": "^2.3.0",
 		"knip": "^2.30.0",
 		"lint-staged": "^14.0.1",
