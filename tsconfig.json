@@ -6,7 +6,10 @@
 		"esModuleInterop": true,
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
-		"target": "ES2022"
+		"target": "ES2022",
+		"outDir": "lib",
+		"sourceMap": true,
+		"resolveJsonModule": true
 	},
 	"include": ["src"]
 }
