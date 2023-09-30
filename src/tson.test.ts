@@ -11,10 +11,10 @@ import {
 	UnknownObjectGuardError,
 	tsonUnknown,
 } from "./handlers/tsonUnknown.js";
-import { expectError, setup } from "./setup.js";
+import { createTupleson } from "./tson.js";
 
 test("Date", () => {
-	const ctx = setup({
+	const ctx = createTupleson({
 		types: {
 			Date: tsonDate,
 		},
@@ -28,7 +28,7 @@ test("Date", () => {
 });
 
 test("number", () => {
-	const t = setup({
+	const t = createTupleson({
 		types: {
 			number: tsonNumber,
 		},
@@ -64,7 +64,7 @@ test("number", () => {
 });
 
 test("undefined", () => {
-	const ctx = setup({
+	const ctx = createTupleson({
 		types: {
 			undefined: tsonUndefined,
 		},
@@ -80,7 +80,7 @@ test("undefined", () => {
 });
 
 test("Map", () => {
-	const t = setup({
+	const t = createTupleson({
 		types: {
 			Map: tsonMap,
 		},
@@ -94,7 +94,7 @@ test("Map", () => {
 });
 
 test("Set", () => {
-	const t = setup({
+	const t = createTupleson({
 		types: {
 			Set: tsonSet,
 		},
@@ -108,7 +108,7 @@ test("Set", () => {
 });
 
 test("bigint", () => {
-	const t = setup({
+	const t = createTupleson({
 		types: {
 			Map: tsonMap,
 			Set: tsonSet,
@@ -149,7 +149,7 @@ test("bigint", () => {
 
 test("guard unwanted objects", () => {
 	// Sets are okay, but not Maps
-	const t = setup({
+	const t = createTupleson({
 		types: {
 			Set: tsonSet,
 			// defined last so it runs last
@@ -192,7 +192,7 @@ test("guard unwanted objects", () => {
 });
 
 test("regex", () => {
-	const t = setup({
+	const t = createTupleson({
 		types: {
 			RegExp: tsonRegExp,
 		},
@@ -223,7 +223,7 @@ test("regex", () => {
 });
 
 test("lets have a look at the stringified output", () => {
-	const t = setup({
+	const t = createTupleson({
 		types: {
 			Map: tsonMap,
 			Set: tsonSet,
@@ -289,7 +289,7 @@ test("lets have a look at the stringified output", () => {
 });
 
 test("types", () => {
-	const t = setup({
+	const t = createTupleson({
 		types: {
 			bigint: tsonBigint,
 		},

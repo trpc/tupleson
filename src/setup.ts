@@ -20,17 +20,3 @@ export const expectError = (fn: () => unknown) => {
 	expect(err).toBeInstanceOf(Error);
 	return err as Error;
 };
-
-export function setup(opts: TsonOptions) {
-	const nonce: TsonOptions["nonce"] = () => "__tson";
-	const withDefaults: TsonOptions = {
-		nonce,
-		...opts,
-	};
-	return {
-		deserialize: tsonDeserializer(withDefaults),
-		parse: tsonParser(withDefaults),
-		serializer: tsonSerializer(withDefaults),
-		stringify: tsonStringifier(withDefaults),
-	};
-}
