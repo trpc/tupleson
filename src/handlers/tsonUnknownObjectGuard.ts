@@ -2,6 +2,9 @@ import { TsonType } from "../types.js";
 import { isPlainObject } from "../utils.js";
 
 export class UnknownObjectGuardError extends Error {
+	/**
+	 * The unknown object that was found
+	 */
 	public readonly value;
 
 	constructor(value: unknown) {
@@ -12,8 +15,10 @@ export class UnknownObjectGuardError extends Error {
 }
 
 /**
- * Guard against unknown complex objects
- * @remark Make sure to define this last in the list of types
+ *
+ * @description
+ * Guard against unknown complex objects.
+ * Make sure to define this last in the list of types.
  * @throws {UnknownObjectGuardError} if an unknown object is found
  */
 export const tsonUnknownObjectGuard: TsonType<unknown, never> = {
