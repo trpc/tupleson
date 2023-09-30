@@ -77,22 +77,17 @@ export function tsonStringifier(opts: TsonOptions): TsonStringifyFn {
 
 export function tsonSerializer(opts: TsonOptions): TsonSerializeFn {
 	const handlers = (() => {
-		// warmup the type handlers
 		const types = opts.types.map((handler) => {
-			const key = handler.key as TsonTypeHandlerKey | undefined;
-			const serialize = handler.serialize;
-
 			type Serializer = (
 				value: unknown,
 				nonce: TsonNonce,
 				walk: WalkFn,
 			) => TsonSerializedValue;
 
-			const $serialize: Serializer = serialize
+			const $serialize: Serializer = handler.serialize
 				? (value, nonce, walk): TsonTuple => [
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						key!,
-						walk(serialize(value)),
+						handler.key as TsonTypeHandlerKey,
+						walk(handler.serialize(value)),
 						nonce,
 				  ]
 				: (value, _nonce, walk) => walk(value);

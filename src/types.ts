@@ -36,11 +36,6 @@ export interface TsonTransformerNone {
 	 */
 	key?: never;
 	serialize?: never;
-
-	/**
-	 * Won't be deserialized nor serialized
-	 */
-	transform: false;
 }
 export interface TsonTransformerSerializeDeserialize<
 	TValue,
@@ -59,10 +54,6 @@ export interface TsonTransformerSerializeDeserialize<
 	 * JSON-serializable value
 	 */
 	serialize: (v: TValue) => TSerializedType;
-	/**
-	 * Use a transformer to serialize and deserialize the value?
-	 */
-	transform?: true;
 }
 
 export type TsonTransformer<TValue, TSerializedType extends SerializedType> =
