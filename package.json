@@ -18,6 +18,7 @@
 	],
 	"scripts": {
 		"build": "tsup",
+		"fix": "pnpm lint --fix && pnpm format:write",
 		"format": "prettier \"**/*\" --ignore-unknown",
 		"format:write": "pnpm format --write",
 		"lint": "eslint . .*js --max-warnings 0 --report-unused-disable-directives",
