@@ -1,11 +1,8 @@
-
-
 # [0.5.0](https://github.com/KATT/tupleson/compare/0.4.0...0.5.0) (2023-09-30)
-
 
 ### Features
 
-* `createTypeson` -> `createTson` ([#6](https://github.com/KATT/tupleson/issues/6)) ([3613716](https://github.com/KATT/tupleson/commit/3613716eedb541c2592d14f76130a7295d340d5c))
+- `createTypeson` -> `createTson` ([#6](https://github.com/KATT/tupleson/issues/6)) ([3613716](https://github.com/KATT/tupleson/commit/3613716eedb541c2592d14f76130a7295d340d5c))
 
 # [0.4.0](https://github.com/KATT/tupleson/compare/0.3.1...0.4.0) (2023-09-30)
 

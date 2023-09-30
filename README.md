@@ -63,14 +63,19 @@ const tson = createTson({
 	],
 });
 
-const result = tson.stringify(
+const myObj = {
+	foo: "bar",
+	set: new Set([1, 2, 3]),
+} as const;
+
+const str = tson.stringify(
 	{
 		foo: "bar",
 		set: new Set([1, 2, 3]),
 	},
 	2,
 );
-console.log(result);
+console.log(str);
 // ->
 // {
 //   "json": {
@@ -87,6 +92,8 @@ console.log(result);
 //   },
 //   "nonce": "__tson"
 // }
+
+const obj = tson.parse(str);
 
 // ✨ Retains type integrity
 type Obj = typeof obj;
