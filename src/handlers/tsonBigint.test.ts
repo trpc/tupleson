@@ -1,9 +1,8 @@
 import { expect, test } from "vitest";
 
 import { createTson } from "../tson.js";
+import { tsonMap, tsonSet } from "./index.js";
 import { tsonBigint } from "./tsonBigint.js";
-import { tsonMap } from "./tsonMap.js";
-import { tsonSet } from "./tsonSet.js";
 
 test("bigint", () => {
 	const t = createTson({

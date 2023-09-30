@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 
 import { expectError } from "../testUtils.js";
 import { createTson } from "../tson.js";
-import { tsonNumberGuard } from "./tsonNumberGuard.js";
+import { tsonNumberGuard } from "./index.js";
 
 test("number", () => {
 	const t = createTson({

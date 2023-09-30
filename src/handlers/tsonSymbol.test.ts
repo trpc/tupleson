@@ -1,15 +1,17 @@
 import { expect, test } from "vitest";
 
 import { createTson } from "../tson.js";
-import { tsonUndefined } from "./index.js";
+import { tsonSymbol } from "./index.js";
 
-test("undefined", () => {
+test("symbol", () => {
+	const symbol1 = Symbol("foo");
+	const symbol2 = Symbol("bar");
 	const ctx = createTson({
-		types: [tsonUndefined],
+		types: [tsonSymbol(symbol1), tsonSymbol(symbol2)],
 	});
 
 	const expected = {
-		foo: [1, undefined, 2],
+		foo: [symbol1, symbol2],
 	} as const;
 	const stringified = ctx.stringify(expected);
 	const deserialized = ctx.parse(stringified);

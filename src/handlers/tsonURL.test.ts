@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 
 import { createTson } from "../tson.js";
-import { tsonURL } from "./tsonURL.js";
+import { tsonURL } from "./index.js";
 
 test("URL", () => {
 	const ctx = createTson({

@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 
 import { createTson } from "../tson.js";
-import { tsonMap } from "./tsonMap.js";
+import { tsonMap } from "./index.js";
 
 test("Map", () => {
 	const t = createTson({
