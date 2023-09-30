@@ -142,7 +142,7 @@ const tson = createTson({
 /* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import, n/no-unpublished-import */
 import { Decimal } from "decimal.js";
 
-const decimaljs: TsonType<Decimal, string> = {
+const decimalJs: TsonType<Decimal, string> = {
 	deserialize: (v) => new Decimal(v),
 	key: "Decimal",
 	serialize: (v) => v.toJSON(),
@@ -150,7 +150,7 @@ const decimaljs: TsonType<Decimal, string> = {
 };
 
 const tson = createTson({
-	types: [decimaljs],
+	types: [decimalJs],
 });
 ```
 
