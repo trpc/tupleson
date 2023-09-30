@@ -136,6 +136,8 @@ const tson = createTson({
 
 #### [Decimal.js](https://github.com/MikeMcl/decimal.js)
 
+> See test reference in [`./src/extend/decimal.test.ts`](./src/extend/decimal.test.ts)
+
 ```ts
 /* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import, n/no-unpublished-import */
 import { Decimal } from "decimal.js";
