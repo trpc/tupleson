@@ -7,3 +7,4 @@ export * from "./tsonUndefined.js";
 export * from "./tsonUnknownObjectGuard.js";
 export * from "./tsonNumberGuard.js";
 export * from "./tsonURL.js";
+export * from "./tsonSymbol.js";

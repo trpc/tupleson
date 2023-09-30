@@ -2,7 +2,7 @@ import { assert, expect, test } from "vitest";
 
 import { expectError } from "../testUtils.js";
 import { createTson } from "../tson.js";
-import { tsonSet } from "./tsonSet.js";
+import { tsonSet } from "./index.js";
 import {
 	UnknownObjectGuardError,
 	tsonUnknownObjectGuard,

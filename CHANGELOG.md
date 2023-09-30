@@ -1,11 +1,8 @@
-
-
 ## [0.6.1](https://github.com/KATT/tupleson/compare/0.6.0...0.6.1) (2023-09-30)
-
 
 ### Bug Fixes
 
-* update readme ([#12](https://github.com/KATT/tupleson/issues/12)) ([d47b05d](https://github.com/KATT/tupleson/commit/d47b05de2348d05b62db236bae66cdf6b25896f9))
+- update readme ([#12](https://github.com/KATT/tupleson/issues/12)) ([d47b05d](https://github.com/KATT/tupleson/commit/d47b05de2348d05b62db236bae66cdf6b25896f9))
 
 # [0.6.0](https://github.com/KATT/tupleson/compare/0.5.0...0.6.0) (2023-09-30)
 
