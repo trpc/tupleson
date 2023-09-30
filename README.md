@@ -29,6 +29,8 @@ A hackable JSON serializer/deserializer that allows you to serialize/deserialize
 
 Serialize exactly what you want; no more, no less.
 
+[^1]: We don't support circular references as we don't think it's very desireable, but if you wanna contribute with adding opt-in support for that, you are very welcome!
+
 ### Example
 
 ```ts
@@ -153,15 +155,13 @@ const tson = createTson({
 });
 ```
 
-[^1]: We don't support circular references as we don't think it's very desireable, but if you wanna contribute with adding opt-in support for that, you are very welcome!
-
-## All contributors ✨
+<!-- ## All contributors ✨
 
 <a href="https://github.com/KATT/tupleson/graphs/contributors">
   <p align="center">
     <img width="720" src="https://contrib.rocks/image?repo=KATT/tupleson" alt="A table of avatars from the project's contributors" />
   </p>
-</a>
+</a> -->
 
 <!-- spellchecker: enable -->
 
