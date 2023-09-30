@@ -30,6 +30,7 @@ A hackable JSON serializer/deserializer that allows you to serialize/deserialize
 ### Example
 
 ```ts
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
 	createTupleson,
 	// Serialize BigInt
@@ -93,6 +94,8 @@ type Obj = typeof obj;
 //     readonly foo: "bar";
 //     readonly set: Set<number>;
 // }
+
+/* eslint-enable @typescript-eslint/no-unused-vars */
 ```
 
 **Footnotes**:
