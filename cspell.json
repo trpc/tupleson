@@ -25,6 +25,7 @@
 		"wontfix",
 		"tson",
 		"stringifier",
-		"KATT"
+		"KATT",
+		"tupleson"
 	]
 }
