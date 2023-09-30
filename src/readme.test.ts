@@ -48,7 +48,7 @@ test("readme", () => {
 	// console.log(obj);
 	// -> { foo: 'bar', set: Set(3) { 1, 2, 3 } }
 
-	type Obj = typeof obj;
+	type _Obj = typeof obj;
 	//   ^?
 	// type Obj = {
 	//     readonly foo: "bar";
