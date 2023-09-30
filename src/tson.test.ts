@@ -1,4 +1,7 @@
+import { assert, expect, expectTypeOf, test } from "vitest";
+
 import {
+	UnknownObjectGuardError,
 	tsonBigint,
 	tsonDate,
 	tsonMap,
@@ -7,15 +10,14 @@ import {
 	tsonSet,
 	tsonUndefined,
 	tsonUnknown,
-	UnknownObjectGuardError,
-} from "./handlers";
+} from "./handlers.js";
 import {
 	tsonDeserializer,
 	tsonParser,
 	tsonSerializer,
 	tsonStringifier,
-} from "./tson";
-import { TsonOptions } from "./types";
+} from "./tson.js";
+import { TsonOptions } from "./types.js";
 
 const expectError = (fn: () => unknown) => {
 	let err: unknown;
@@ -24,16 +26,10 @@ const expectError = (fn: () => unknown) => {
 	} catch (_err) {
 		err = _err;
 	}
+
 	expect(err).toBeDefined();
 	expect(err).toBeInstanceOf(Error);
 	return err as Error;
-};
-const ignoreErrrors = (fn: () => unknown) => {
-	try {
-		fn();
-	} catch (_err) {
-		// ignore
-	}
 };
 
 function setup(opts: TsonOptions) {
@@ -43,10 +39,10 @@ function setup(opts: TsonOptions) {
 		...opts,
 	};
 	return {
-		stringify: tsonStringifier(withDefaults),
+		deserialize: tsonDeserializer(withDefaults),
 		parse: tsonParser(withDefaults),
 		serializer: tsonSerializer(withDefaults),
-		deserialize: tsonDeserializer(withDefaults),
+		stringify: tsonStringifier(withDefaults),
 	};
 }
 
@@ -147,9 +143,9 @@ test("Set", () => {
 test("bigint", () => {
 	const t = setup({
 		types: {
-			bigint: tsonBigint,
-			Set: tsonSet,
 			Map: tsonMap,
+			Set: tsonSet,
+			bigint: tsonBigint,
 		},
 	});
 
@@ -171,6 +167,7 @@ test("bigint", () => {
 
 			expect(deserialized).toEqual(expected);
 		}
+
 		{
 			// set of a map of bigint
 			const expected = new Set([new Map([["a", 1n]])]);
@@ -203,6 +200,7 @@ test("guard unwanted objects", () => {
 
 		expect(deserialized).toEqual(expected);
 	}
+
 	{
 		// plain objects are okay
 		const expected = { a: 1 };
@@ -210,6 +208,7 @@ test("guard unwanted objects", () => {
 		const deserialized = t.parse(stringified);
 		expect(deserialized).toEqual(expected);
 	}
+
 	{
 		// maps are not okay
 
@@ -259,10 +258,10 @@ test("regex", () => {
 test("lets have a look at the stringified output", () => {
 	const t = setup({
 		types: {
-			Set: tsonSet,
 			Map: tsonMap,
-			undefined: tsonUndefined,
+			Set: tsonSet,
 			bigint: tsonBigint,
+			undefined: tsonUndefined,
 		},
 	});
 
@@ -338,6 +337,7 @@ test("types", () => {
 
 		expectTypeOf(parsed).toEqualTypeOf(expected);
 	}
+
 	{
 		const serialized = t.serializer(expected);
 		//    ^?

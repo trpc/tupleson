@@ -4,17 +4,17 @@ import {
 	TsonNonce,
 	TsonOptions,
 	TsonParseFn,
+	TsonSerializeFn,
 	TsonSerialized,
 	TsonSerializedValue,
-	TsonSerializeFn,
 	TsonStringifyFn,
 	TsonTransformerSerializeDeserialize,
 	TsonTuple,
 	TsonTypeHandlerKey,
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
-} from "./types";
-import { isPlainObject } from "./utils";
+} from "./types.js";
+import { isPlainObject } from "./utils.js";
 
 function isTsonTuple(v: unknown, nonce: string): v is TsonTuple {
 	return Array.isArray(v) && v.length === 3 && v[2] === nonce;
@@ -36,6 +36,7 @@ export function tsonDeserializer(opts: TsonOptions): TsonDeserializeFn {
 
 			return mapOrReturn(value, walk);
 		};
+
 		return walk;
 	};
 
@@ -53,7 +54,7 @@ export function tsonParser(opts: TsonOptions): TsonParseFn {
 export function tsonStringifier(opts: TsonOptions): TsonStringifyFn {
 	const serializer = tsonSerializer(opts);
 
-	return ((obj: unknown, space?: string | number) =>
+	return ((obj: unknown, space?: number | string) =>
 		JSON.stringify(serializer(obj), null, space)) as TsonStringifyFn;
 }
 
@@ -96,14 +97,16 @@ export function tsonSerializer(opts: TsonOptions): TsonSerializeFn {
 						`Multiple handlers for primitive ${handler.primitive} found`,
 					);
 				}
+
 				handlerPerPrimitive[handler.primitive] = handler;
 			} else {
 				customTypeHandlers.push(handler);
 			}
 		}
+
 		return {
-			primitive: handlerPerPrimitive,
 			custom: customTypeHandlers,
+			primitive: handlerPerPrimitive,
 		};
 	})();
 	const maybeNonce = opts.nonce;
@@ -119,6 +122,7 @@ export function tsonSerializer(opts: TsonOptions): TsonSerializeFn {
 			) {
 				return primitiveHandler.$serialize(value, nonce, walk);
 			}
+
 			for (const handler of handlers.custom) {
 				if (handler.test(value)) {
 					return handler.$serialize(value, nonce, walk);
@@ -130,6 +134,7 @@ export function tsonSerializer(opts: TsonOptions): TsonSerializeFn {
 
 		return walk;
 	};
+
 	return ((obj): TsonSerialized => {
 		const nonce: TsonNonce =
 			typeof maybeNonce === "function"
@@ -139,8 +144,8 @@ export function tsonSerializer(opts: TsonOptions): TsonSerializeFn {
 		const json = walker(nonce)(obj);
 
 		return {
-			nonce,
 			json,
+			nonce,
 		} as TsonSerialized<any>;
 	}) as TsonSerializeFn;
 }
@@ -156,12 +161,15 @@ export function mapOrReturn(
 	if (Array.isArray(input)) {
 		return input.map(fn);
 	}
+
 	if (isPlainObject(input)) {
 		const output: typeof input = {};
 		for (const [key, value] of Object.entries(input)) {
 			output[key] = fn(value, key);
 		}
+
 		return output;
 	}
+
 	return input;
 }
