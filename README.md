@@ -25,7 +25,31 @@
 
 ## Introduction
 
-Not much to see yet, but you can spy on the tests.
+A hackable JSON serializer/deserializer that allows you to serialize/deserialize almost[^1] anything.
+
+### Example
+
+```ts
+const json = createTupleson({
+	// This nonce function is used to generate a nonce for the serialized value
+	// This is used to identify the value as a serialized value
+	nonce: () => "__tson",
+	types: [tsonSet],
+});
+
+const result = json.stringify(
+	{
+		foo: "bar",
+		set: new Set([1, 2, 3]),
+	},
+	2,
+);
+console.log(result);
+```
+
+**Footnotes**:
+
+[^1]: We don't support circular references as we don't think it's very desireable, but if you wanna contribute with adding opt-in support for that, you are very welcome!
 
 ## Contributors
 
