@@ -25,14 +25,24 @@ function isTsonTuple(v: unknown, nonce: string): v is TsonTuple {
 type WalkFn = (value: unknown) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 
+type AnyTsonTransformerSerializeDeserialize =
+	TsonTransformerSerializeDeserialize<any, any>;
+
 export function tsonDeserializer(opts: TsonOptions): TsonDeserializeFn {
+	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
+
+	for (const handler of opts.types) {
+		if (handler.key) {
+			typeByKey[handler.key] =
+				handler as AnyTsonTransformerSerializeDeserialize;
+		}
+	}
+
 	const walker: WalkerFactory = (nonce) => {
 		const walk: WalkFn = (value) => {
 			if (isTsonTuple(value, nonce)) {
 				const [type, serializedValue] = value;
-				const transformer = opts.types[
-					type
-				] as TsonTransformerSerializeDeserialize<any, any>;
+				const transformer = typeByKey[type];
 				return transformer.deserialize(walk(serializedValue));
 			}
 
@@ -63,8 +73,8 @@ export function tsonStringifier(opts: TsonOptions): TsonStringifyFn {
 export function tsonSerializer(opts: TsonOptions): TsonSerializeFn {
 	const handlers = (() => {
 		// warmup the type handlers
-		const types = Object.entries(opts.types).map(([_key, handler]) => {
-			const key = _key as TsonTypeHandlerKey;
+		const types = opts.types.map((handler) => {
+			const key = handler.key as TsonTypeHandlerKey | undefined;
 			const serialize = handler.serialize;
 
 			type Serializer = (
@@ -75,7 +85,8 @@ export function tsonSerializer(opts: TsonOptions): TsonSerializeFn {
 
 			const $serialize: Serializer = serialize
 				? (value, nonce, walk): TsonTuple => [
-						key,
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+						key!,
 						walk(serialize(value)),
 						nonce,
 				  ]

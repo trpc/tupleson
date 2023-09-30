@@ -5,9 +5,7 @@ import { tsonSet } from "./tsonSet.js";
 
 test("Set", () => {
 	const t = createTupleson({
-		types: {
-			Set: tsonSet,
-		},
+		types: [tsonSet],
 	});
 
 	const expected = new Set(["a", "b"]);

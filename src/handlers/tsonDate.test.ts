@@ -1,12 +1,11 @@
 import { expect, test } from "vitest";
+
 import { createTupleson } from "../tson.js";
 import { tsonDate } from "./tsonDate.js";
 
 test("Date", () => {
 	const ctx = createTupleson({
-		types: {
-			Date: tsonDate,
-		},
+		types: [tsonDate],
 	});
 
 	const date = new Date();

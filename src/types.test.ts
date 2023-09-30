@@ -5,9 +5,7 @@ import { createTupleson } from "./tson.js";
 
 test("types", () => {
 	const t = createTupleson({
-		types: {
-			bigint: tsonBigint,
-		},
+		types: [tsonBigint],
 	});
 
 	const expected = 1n;

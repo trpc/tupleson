@@ -1,12 +1,11 @@
 import { expect, test } from "vitest";
+
 import { createTupleson } from "../tson.js";
 import { tsonRegExp } from "./index.js";
 
 test("regex", () => {
 	const t = createTupleson({
-		types: {
-			RegExp: tsonRegExp,
-		},
+		types: [tsonRegExp],
 	});
 
 	const expected = /foo/g;

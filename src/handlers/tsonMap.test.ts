@@ -5,9 +5,7 @@ import { tsonMap } from "./tsonMap.js";
 
 test("Map", () => {
 	const t = createTupleson({
-		types: {
-			Map: tsonMap,
-		},
+		types: [tsonMap],
 	});
 
 	const expected = new Map([["a", "b"]]);

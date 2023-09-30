@@ -1,4 +1,5 @@
 import { assert, expect, test } from "vitest";
+
 import { expectError } from "../testUtils.js";
 import { createTupleson } from "../tson.js";
 import { tsonSet } from "./tsonSet.js";
@@ -7,11 +8,11 @@ import { UnknownObjectGuardError, tsonUnknown } from "./tsonUnknown.js";
 test("guard unwanted objects", () => {
 	// Sets are okay, but not Maps
 	const t = createTupleson({
-		types: {
-			Set: tsonSet,
+		types: [
+			tsonSet,
 			// defined last so it runs last
-			unknownObjectGuard: tsonUnknown,
-		},
+			tsonUnknown,
+		],
 	});
 
 	{

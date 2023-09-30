@@ -6,9 +6,7 @@ import { tsonNumber } from "./tsonNumber.js";
 
 test("number", () => {
 	const t = createTupleson({
-		types: {
-			number: tsonNumber,
-		},
+		types: [tsonNumber],
 	});
 
 	const bad = [

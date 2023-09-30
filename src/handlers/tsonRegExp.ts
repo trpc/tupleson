@@ -6,6 +6,7 @@ export const tsonRegExp: TsonType<RegExp, string> = {
 		const flags = str.slice(str.lastIndexOf("/") + 1);
 		return new RegExp(body, flags);
 	},
+	key: "RegExp",
 	serialize: (value) => "" + value,
 	test: (value) => value instanceof RegExp,
 };

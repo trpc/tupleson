@@ -8,12 +8,7 @@ import { createTupleson } from "./tson.js";
 
 test("lets have a look at the stringified output", () => {
 	const t = createTupleson({
-		types: {
-			Map: tsonMap,
-			Set: tsonSet,
-			bigint: tsonBigint,
-			undefined: tsonUndefined,
-		},
+		types: [tsonMap, tsonSet, tsonBigint, tsonUndefined],
 	});
 
 	const expected = new Set([

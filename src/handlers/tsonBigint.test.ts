@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+
 import { createTupleson } from "../tson.js";
 import { tsonBigint } from "./tsonBigint.js";
 import { tsonMap } from "./tsonMap.js";
@@ -6,11 +7,7 @@ import { tsonSet } from "./tsonSet.js";
 
 test("bigint", () => {
 	const t = createTupleson({
-		types: {
-			Map: tsonMap,
-			Set: tsonSet,
-			bigint: tsonBigint,
-		},
+		types: [tsonMap, tsonSet, tsonBigint],
 	});
 
 	{

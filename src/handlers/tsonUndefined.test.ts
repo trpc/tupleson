@@ -5,9 +5,7 @@ import { tsonUndefined } from "./tsonUndefined.js";
 
 test("undefined", () => {
 	const ctx = createTupleson({
-		types: {
-			undefined: tsonUndefined,
-		},
+		types: [tsonUndefined],
 	});
 
 	const expected = {
