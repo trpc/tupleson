@@ -45,6 +45,8 @@ import {
 	tsonRegExp,
 	// Serialize `Set`s
 	tsonSet,
+	// serialize a Symbol
+	tsonSymbol,
 	// Serialize `URL`s
 	tsonURL,
 	// Serialize `undefined`
