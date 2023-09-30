@@ -98,10 +98,7 @@ const obj = tson.parse(str);
 // ✨ Retains type integrity
 type Obj = typeof obj;
 //   ^?
-// type Obj = {
-//     readonly foo: "bar";
-//     readonly set: Set<number>;
-// }
+// type Obj = { foo: string; set: Set<number>; }
 ```
 
 ### Extend with a custom serializer
