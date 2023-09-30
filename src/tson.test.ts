@@ -10,7 +10,7 @@ import {
 	tsonSet,
 	tsonUndefined,
 	tsonUnknown,
-} from "./handlers.js";
+} from "./handlers/index.js";
 import {
 	tsonDeserializer,
 	tsonParser,
