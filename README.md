@@ -53,7 +53,7 @@ import {
 	tsonUnknownObjectGuard,
 } from "tupleson";
 
-const json = createTson({
+const tson = createTson({
 	// This nonce function is used to generate a nonce for the serialized value
 	// This is used to identify the value as a serialized value
 	nonce: () => "__tson",
@@ -63,7 +63,7 @@ const json = createTson({
 	],
 });
 
-const result = json.stringify(
+const result = tson.stringify(
 	{
 		foo: "bar",
 		set: new Set([1, 2, 3]),
