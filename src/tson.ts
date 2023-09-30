@@ -1,5 +1,6 @@
-import { isPlainObject } from "./isPlainObject.js";
+/* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { isPlainObject } from "./isPlainObject.js";
 import {
 	TsonAllTypes,
 	TsonDeserializeFn,
@@ -83,13 +84,13 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 				walk: WalkFn,
 			) => TsonSerializedValue;
 
-			const $serialize: Serializer = (value, nonce, walk): TsonTuple => [
-				handler.key as TsonTypeHandlerKey,
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				walk(handler.serialize!(value)),
-				nonce,
-			];
-
+			const $serialize: Serializer = handler.serialize
+				? (value, nonce, walk): TsonTuple => [
+						handler.key as TsonTypeHandlerKey,
+						walk(handler.serialize(value)),
+						nonce,
+				  ]
+				: (value, _nonce, walk) => walk(value);
 			return {
 				...handler,
 				$serialize,
