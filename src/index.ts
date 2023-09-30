@@ -1,6 +1,6 @@
 export {
 	createTson,
-	createTsonDeserializer,
+	createTsonDeserialize,
 	createTsonParser,
 	createTsonSerialize,
 	createTsonStringify,

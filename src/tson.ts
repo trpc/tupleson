@@ -28,7 +28,7 @@ type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 type AnyTsonTransformerSerializeDeserialize =
 	TsonTransformerSerializeDeserialize<any, any>;
 
-export function createTsonDeserializer(opts: TsonOptions): TsonDeserializeFn {
+export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
 	for (const handler of opts.types) {
@@ -62,7 +62,7 @@ export function createTsonDeserializer(opts: TsonOptions): TsonDeserializeFn {
 }
 
 export function createTsonParser(opts: TsonOptions): TsonParseFn {
-	const deserializer = createTsonDeserializer(opts);
+	const deserializer = createTsonDeserialize(opts);
 
 	return ((str: string) =>
 		deserializer(JSON.parse(str) as TsonSerialized)) as TsonParseFn;
@@ -187,7 +187,7 @@ function mapOrReturn(
 }
 
 export const createTson = (opts: TsonOptions) => ({
-	deserialize: createTsonDeserializer(opts),
+	deserialize: createTsonDeserialize(opts),
 	parse: createTsonParser(opts),
 	serialize: createTsonSerialize(opts),
 	stringify: createTsonStringify(opts),
