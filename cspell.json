@@ -25,7 +25,6 @@
 		"wontfix",
 		"tson",
 		"stringifier",
-		"KATT",
-		"(se|de)rializer"
+		"KATT"
 	]
 }
