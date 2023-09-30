@@ -1,11 +1,8 @@
-
-
 ## [0.3.1](https://github.com/KATT/tupleson/compare/0.3.0...0.3.1) (2023-09-30)
-
 
 ### Bug Fixes
 
-* `serializer` -> `serialize` ([#4](https://github.com/KATT/tupleson/issues/4)) ([93a45a5](https://github.com/KATT/tupleson/commit/93a45a5e32ad1ebddba6283627551830c1e621ec))
+- `serializer` -> `serialize` ([#4](https://github.com/KATT/tupleson/issues/4)) ([93a45a5](https://github.com/KATT/tupleson/commit/93a45a5e32ad1ebddba6283627551830c1e621ec))
 
 # [0.3.0](https://github.com/KATT/tupleson/compare/0.2.0...0.3.0) (2023-09-30)
 

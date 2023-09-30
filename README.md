@@ -29,8 +29,12 @@ A hackable JSON serializer/deserializer that allows you to serialize/deserialize
 
 ### Example
 
+<!-- /** eslint-disable n/no-missing-import */ -->
+
 ```ts
+/* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable n/no-missing-import */
 import {
 	createTupleson,
 	// Serialize BigInt
@@ -87,15 +91,12 @@ console.log(result);
 // }
 
 // ✨ Retains type integrity
-
 type Obj = typeof obj;
 //   ^?
 // type Obj = {
 //     readonly foo: "bar";
 //     readonly set: Set<number>;
 // }
-
-/* eslint-enable @typescript-eslint/no-unused-vars */
 ```
 
 **Footnotes**:
