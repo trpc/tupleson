@@ -28,7 +28,7 @@ type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 type AnyTsonTransformerSerializeDeserialize =
 	TsonTransformerSerializeDeserialize<any, any>;
 
-export function tsonDeserializer(opts: TsonOptions): TsonDeserializeFn {
+export function createTsonDeserializer(opts: TsonOptions): TsonDeserializeFn {
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
 	for (const handler of opts.types) {
@@ -61,21 +61,21 @@ export function tsonDeserializer(opts: TsonOptions): TsonDeserializeFn {
 		walker(obj.nonce)(obj.json)) as TsonDeserializeFn;
 }
 
-export function tsonParser(opts: TsonOptions): TsonParseFn {
-	const deserializer = tsonDeserializer(opts);
+export function createTsonParser(opts: TsonOptions): TsonParseFn {
+	const deserializer = createTsonDeserializer(opts);
 
 	return ((str: string) =>
 		deserializer(JSON.parse(str) as TsonSerialized)) as TsonParseFn;
 }
 
-export function tsonStringifier(opts: TsonOptions): TsonStringifyFn {
-	const serializer = tsonSerializer(opts);
+export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
+	const serializer = createTsonSerialize(opts);
 
 	return ((obj: unknown, space?: number | string) =>
 		JSON.stringify(serializer(obj), null, space)) as TsonStringifyFn;
 }
 
-export function tsonSerializer(opts: TsonOptions): TsonSerializeFn {
+export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 	const handlers = (() => {
 		const types = opts.types.map((handler) => {
 			type Serializer = (
@@ -186,9 +186,9 @@ function mapOrReturn(
 	return input;
 }
 
-export const createTupleson = (opts: TsonOptions) => ({
-	deserialize: tsonDeserializer(opts),
-	parse: tsonParser(opts),
-	serialize: tsonSerializer(opts),
-	stringify: tsonStringifier(opts),
+export const createTson = (opts: TsonOptions) => ({
+	deserialize: createTsonDeserializer(opts),
+	parse: createTsonParser(opts),
+	serialize: createTsonSerialize(opts),
+	stringify: createTsonStringify(opts),
 });

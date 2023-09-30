@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
 
-import { createTupleson } from "../tson.js";
+import { createTson } from "../tson.js";
 import { tsonURL } from "./tsonURL.js";
 
 test("URL", () => {
-	const ctx = createTupleson({
+	const ctx = createTson({
 		types: [tsonURL],
 	});
 
