@@ -104,9 +104,6 @@ devDependencies:
   tsup:
     specifier: ^7.2.0
     version: 7.2.0(typescript@5.2.2)
-  tupleson:
-    specifier: ^0.3.1
-    version: 0.3.1
   typescript:
     specifier: ^5.2.2
     version: 5.2.2
@@ -6177,11 +6174,6 @@ packages:
     dependencies:
       tslib: 1.14.1
       typescript: 5.2.2
-    dev: true
-
-  /tupleson@0.3.1:
-    resolution: {integrity: sha512-g00y62tNbRgmtvHPN/FlmDcxcwzm7Ybtt736Lpt6KQ1AXVELdAf6Jr9eHgPiPe2H6eaYHO7/dQXjD8FdmfQInA==}
-    engines: {node: '>=18'}
     dev: true
 
   /type-check@0.4.0:
