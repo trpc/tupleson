@@ -95,7 +95,7 @@ export type TsonType<
 > = TsonTypeTester & TsonTransformer<TValue, TSerializedType>;
 
 export interface TsonOptions {
-	nonce?: () => string;
+	nonce?: () => number | string;
 	types: (TsonType<any, any> | TsonType<any, never>)[];
 }
 
