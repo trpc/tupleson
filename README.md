@@ -88,6 +88,8 @@ console.log(result);
 //   "nonce": "__tson"
 // }
 
+const obj = tson.parse(result);
+
 // ✨ Retains type integrity
 type Obj = typeof obj;
 //   ^?
