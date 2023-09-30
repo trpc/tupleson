@@ -1,4 +1,4 @@
-// eslint-disable-next-line eslint-comments/disable-enable-pair
+import { isPlainObject } from "./isPlainObject.js";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
 	TsonAllTypes,
@@ -16,7 +16,6 @@ import {
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
 } from "./types.js";
-import { isPlainObject } from "./utils.js";
 
 function isTsonTuple(v: unknown, nonce: string): v is TsonTuple {
 	return Array.isArray(v) && v.length === 3 && v[2] === nonce;
@@ -84,13 +83,13 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 				walk: WalkFn,
 			) => TsonSerializedValue;
 
-			const $serialize: Serializer = handler.serialize
-				? (value, nonce, walk): TsonTuple => [
-						handler.key as TsonTypeHandlerKey,
-						walk(handler.serialize(value)),
-						nonce,
-				  ]
-				: (value, _nonce, walk) => walk(value);
+			const $serialize: Serializer = (value, nonce, walk): TsonTuple => [
+				handler.key as TsonTypeHandlerKey,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				walk(handler.serialize!(value)),
+				nonce,
+			];
+
 			return {
 				...handler,
 				$serialize,
