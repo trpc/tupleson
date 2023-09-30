@@ -189,6 +189,6 @@ function mapOrReturn(
 export const createTupleson = (opts: TsonOptions) => ({
 	deserialize: tsonDeserializer(opts),
 	parse: tsonParser(opts),
-	serializer: tsonSerializer(opts),
+	serialize: tsonSerializer(opts),
 	stringify: tsonStringifier(opts),
 });
