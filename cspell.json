@@ -24,6 +24,8 @@
 		"tsup",
 		"wontfix",
 		"tson",
-		"stringifier"
+		"stringifier",
+		"rializer",
+		"KATT"
 	]
 }
