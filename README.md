@@ -25,7 +25,10 @@
 
 ## Introduction
 
-Not much to see yet, but you can spy on the tests.
+```ts
+import { createTupleson } from 'tupleson'
+const json =
+```
 
 ## Contributors
 
