@@ -108,6 +108,8 @@ type Obj = typeof obj;
 
 #### `Temporal`
 
+> See test reference in [./src/extend/temporal.test.ts](./src/extend/temporal.test.ts)
+
 ```ts
 /* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import, n/no-unpublished-import */
 import { Temporal } from "@js-temporal/polyfill";
