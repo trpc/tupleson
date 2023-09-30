@@ -30,8 +30,21 @@ A hackable JSON serializer/deserializer that allows you to serialize/deserialize
 ### Example
 
 ```ts
-import { createTupleson } from 'tupleson'
-const json =
+const json = createTupleson({
+	// This nonce function is used to generate a nonce for the serialized value
+	// This is used to identify the value as a serialized value
+	nonce: () => "__tson",
+	types: [tsonSet],
+});
+
+const result = json.stringify(
+	{
+		foo: "bar",
+		set: new Set([1, 2, 3]),
+	},
+	2,
+);
+console.log(result);
 ```
 
 **Footnotes**:
