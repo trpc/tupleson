@@ -1,13 +1,5 @@
 import { expect } from "vitest";
 
-import {
-	tsonDeserializer,
-	tsonParser,
-	tsonSerializer,
-	tsonStringifier,
-} from "./tson.js";
-import { TsonOptions } from "./types.js";
-
 export const expectError = (fn: () => unknown) => {
 	let err: unknown;
 	try {
