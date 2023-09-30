@@ -18,7 +18,7 @@ test("types", () => {
 	}
 
 	{
-		const serialized = t.serializer(expected);
+		const serialized = t.serialize(expected);
 		//    ^?
 		const deserialized = t.deserialize(serialized);
 		//    ^?
