@@ -33,6 +33,10 @@ export function tsonDeserializer(opts: TsonOptions): TsonDeserializeFn {
 
 	for (const handler of opts.types) {
 		if (handler.key) {
+			if (typeByKey[handler.key]) {
+				throw new Error(`Multiple handlers for key ${handler.key} found`);
+			}
+
 			typeByKey[handler.key] =
 				handler as AnyTsonTransformerSerializeDeserialize;
 		}
@@ -42,7 +46,8 @@ export function tsonDeserializer(opts: TsonOptions): TsonDeserializeFn {
 		const walk: WalkFn = (value) => {
 			if (isTsonTuple(value, nonce)) {
 				const [type, serializedValue] = value;
-				const transformer = typeByKey[type];
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				const transformer = typeByKey[type]!;
 				return transformer.deserialize(walk(serializedValue));
 			}
 

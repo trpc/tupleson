@@ -1,16 +1,4 @@
 {
-	"compilerOptions": {
-		"declaration": true,
-		"declarationMap": true,
-		"esModuleInterop": true,
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
-		"outDir": "lib",
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"sourceMap": true,
-		"strict": true,
-		"target": "ES2022"
-	},
+	"extends": "@tsconfig/strictest/tsconfig.json",
 	"include": ["src"]
 }
