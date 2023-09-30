@@ -69,6 +69,7 @@ jobs:
                     { context: "lint_spelling" },
                     { context: "prettier" },
                     { context: "test" },
+                    { context: "type_check" }
                   ],
                   strict: false,
                 },
