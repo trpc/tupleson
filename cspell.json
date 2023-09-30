@@ -22,6 +22,8 @@
 		"packagejson",
 		"quickstart",
 		"tsup",
-		"wontfix"
+		"wontfix",
+		"tson",
+		"stringifier"
 	]
 }
