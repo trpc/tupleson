@@ -33,7 +33,8 @@ A hackable JSON serializer/deserializer that allows you to serialize/deserialize
 /* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import */
 
 import {
-	createTupleson,
+	// Create serializer / deserializer
+	createTson,
 	// Serialize `bigint`
 	tsonBigint,
 	// Serialize `Map`s
@@ -52,7 +53,7 @@ import {
 	tsonUnknownObjectGuard,
 } from "tupleson";
 
-const json = createTupleson({
+const tson = createTson({
 	// This nonce function is used to generate a nonce for the serialized value
 	// This is used to identify the value as a serialized value
 	nonce: () => "__tson",
@@ -62,7 +63,7 @@ const json = createTupleson({
 	],
 });
 
-const result = json.stringify(
+const result = tson.stringify(
 	{
 		foo: "bar",
 		set: new Set([1, 2, 3]),

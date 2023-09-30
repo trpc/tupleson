@@ -1,11 +1,11 @@
 import { expect, test } from "vitest";
 
 import { expectError } from "../testUtils.js";
-import { createTupleson } from "../tson.js";
+import { createTson } from "../tson.js";
 import { tsonNumberGuard } from "./tsonNumberGuard.js";
 
 test("number", () => {
-	const t = createTupleson({
+	const t = createTson({
 		types: [tsonNumberGuard],
 	});
 

@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
 
-import { createTupleson } from "../tson.js";
+import { createTson } from "../tson.js";
 import { tsonDate } from "./tsonDate.js";
 
 test("Date", () => {
-	const ctx = createTupleson({
+	const ctx = createTson({
 		types: [tsonDate],
 	});
 

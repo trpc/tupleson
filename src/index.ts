@@ -1,9 +1,9 @@
 export {
-	createTupleson,
-	tsonDeserializer,
-	tsonParser,
-	tsonSerializer,
-	tsonStringifier,
+	createTson,
+	createTsonDeserialize,
+	createTsonParser,
+	createTsonSerialize,
+	createTsonStringify,
 } from "./tson.js";
 
 export * from "./handlers/index.js";

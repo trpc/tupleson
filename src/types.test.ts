@@ -1,10 +1,10 @@
 import { expectTypeOf, test } from "vitest";
 
 import { tsonBigint } from "./handlers/tsonBigint.js";
-import { createTupleson } from "./tson.js";
+import { createTson } from "./tson.js";
 
 test("types", () => {
-	const t = createTupleson({
+	const t = createTson({
 		types: [tsonBigint],
 	});
 

@@ -4,10 +4,10 @@ import { tsonBigint } from "./handlers/tsonBigint.js";
 import { tsonMap } from "./handlers/tsonMap.js";
 import { tsonSet } from "./handlers/tsonSet.js";
 import { tsonUndefined } from "./handlers/tsonUndefined.js";
-import { createTupleson } from "./tson.js";
+import { createTson } from "./tson.js";
 
 test("lets have a look at the stringified output", () => {
-	const t = createTupleson({
+	const t = createTson({
 		types: [tsonMap, tsonSet, tsonBigint, tsonUndefined],
 	});
 
