@@ -27,6 +27,8 @@
 
 A hackable JSON serializer/deserializer that allows you to serialize/deserialize almost[^1] anything.
 
+Serialize exactly what you want; no more, no less.
+
 ### Example
 
 ```ts
