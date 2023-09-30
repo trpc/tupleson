@@ -24,5 +24,4 @@ export const tsonUnknownObjectGuard: TsonType<unknown, never> = {
 
 		return false;
 	},
-	transform: false,
 };

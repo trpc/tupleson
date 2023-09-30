@@ -18,5 +18,4 @@ export const tsonNumber: TsonType<number, number> = {
 
 		return false;
 	},
-	transform: false,
 };
