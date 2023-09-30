@@ -1,6 +1,6 @@
 {
 	"name": "tupleson",
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"description": "A hackable JSON serializer/deserializer",
 	"repository": {
 		"type": "git",
@@ -32,6 +32,7 @@
 		"tsc": "tsc"
 	},
 	"devDependencies": {
+		"@js-temporal/polyfill": "^0.4.4",
 		"@release-it/conventional-changelog": "^7.0.2",
 		"@tsconfig/strictest": "^2.0.2",
 		"@types/eslint": "^8.44.3",
