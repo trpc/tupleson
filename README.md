@@ -25,10 +25,18 @@
 
 ## Introduction
 
+A hackable JSON serializer/deserializer that allows you to serialize/deserialize almost[^1] anything.
+
+### Example
+
 ```ts
 import { createTupleson } from 'tupleson'
 const json =
 ```
+
+**Footnotes**:
+
+[^1]: We don't support circular references as we don't think it's very desireable, but if you wanna contribute with adding opt-in support for that, you are very welcome!
 
 ## Contributors
 
