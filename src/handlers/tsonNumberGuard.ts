@@ -4,7 +4,7 @@ import { TsonType } from "../types.js";
  * Prevents `NaN` and `Infinity` from being serialized
  */
 
-export const tsonNumber: TsonType<number, number> = {
+export const tsonNumberGuard: TsonType<number, number> = {
 	primitive: "number",
 	test: (v) => {
 		const value = v as number;

@@ -30,11 +30,31 @@ A hackable JSON serializer/deserializer that allows you to serialize/deserialize
 ### Example
 
 ```ts
+import {
+	createTupleson,
+	// Serialize BigInt
+	tsonBigint,
+	// Serialize Map
+	tsonMap,
+	// **throws** when encountering Infinity or NaN
+	tsonNumberGuard,
+	// Serialize regular expression
+	tsonRegExp,
+	// Serialize sets
+	tsonSet,
+	// Serialize URLs
+	tsonURL,
+	// Serialize undefined
+	tsonUndefined,
+} from "tupleson";
 const json = createTupleson({
 	// This nonce function is used to generate a nonce for the serialized value
 	// This is used to identify the value as a serialized value
 	nonce: () => "__tson",
-	types: [tsonSet],
+	types: [
+		// Pick which types you want to support
+		tsonSet,
+	],
 });
 
 const result = json.stringify(
