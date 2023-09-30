@@ -83,12 +83,12 @@ test("number", () => {
 	}
 
 	expect(errors).toMatchInlineSnapshot(`
-    Array [
-      [Error: Encountered NaN],
-      [Error: Encountered Infinity],
-      [Error: Encountered Infinity],
-    ]
-  `);
+		[
+		  [Error: Encountered NaN],
+		  [Error: Encountered Infinity],
+		  [Error: Encountered Infinity],
+		]
+	`);
 
 	for (const n of good) {
 		const deserialized = t.parse(t.stringify(n));
@@ -237,15 +237,15 @@ test("regex", () => {
 
 	expect(stringified).toMatchInlineSnapshot(
 		`
-    "{
-      \\"nonce\\": \\"__tson\\",
-      \\"json\\": [
-        \\"RegExp\\",
-        \\"/foo/g\\",
-        \\"__tson\\"
-      ]
-    }"
-  `,
+		"{
+		  \\"json\\": [
+		    \\"RegExp\\",
+		    \\"/foo/g\\",
+		    \\"__tson\\"
+		  ],
+		  \\"nonce\\": \\"__tson\\"
+		}"
+	`,
 	);
 
 	const deserialized = t.parse(stringified);
@@ -280,41 +280,41 @@ test("lets have a look at the stringified output", () => {
 	const stringified = t.stringify(expected, 2);
 
 	expect(stringified).toMatchInlineSnapshot(`
-    "{
-      \\"nonce\\": \\"__tson\\",
-      \\"json\\": [
-        \\"Set\\",
-        [
-          1,
-          \\"string\\",
-          [
-            \\"undefined\\",
-            0,
-            \\"__tson\\"
-          ],
-          null,
-          true,
-          false,
-          [
-            \\"bigint\\",
-            \\"1\\",
-            \\"__tson\\"
-          ],
-          [
-            \\"Map\\",
-            [
-              [
-                \\"foo\\",
-                \\"bar\\"
-              ]
-            ],
-            \\"__tson\\"
-          ]
-        ],
-        \\"__tson\\"
-      ]
-    }"
-  `);
+		"{
+		  \\"json\\": [
+		    \\"Set\\",
+		    [
+		      1,
+		      \\"string\\",
+		      [
+		        \\"undefined\\",
+		        0,
+		        \\"__tson\\"
+		      ],
+		      null,
+		      true,
+		      false,
+		      [
+		        \\"bigint\\",
+		        \\"1\\",
+		        \\"__tson\\"
+		      ],
+		      [
+		        \\"Map\\",
+		        [
+		          [
+		            \\"foo\\",
+		            \\"bar\\"
+		          ]
+		        ],
+		        \\"__tson\\"
+		      ]
+		    ],
+		    \\"__tson\\"
+		  ],
+		  \\"nonce\\": \\"__tson\\"
+		}"
+	`);
 
 	const deserialized = t.parse(stringified);
 
