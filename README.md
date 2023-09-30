@@ -30,11 +30,36 @@ A hackable JSON serializer/deserializer that allows you to serialize/deserialize
 ### Example
 
 ```ts
+/* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import */
+
+import {
+	createTupleson,
+	// Serialize `bigint`
+	tsonBigint,
+	// Serialize `Map`s
+	tsonMap,
+	// **throws** when encountering Infinity or NaN
+	tsonNumberGuard,
+	// Serialize regular expression
+	tsonRegExp,
+	// Serialize `Set`s
+	tsonSet,
+	// Serialize `URL`s
+	tsonURL,
+	// Serialize `undefined`
+	tsonUndefined,
+	// **throws** when encountering non-registered complex objects (like class instances)
+	tsonUnknownObjectGuard,
+} from "tupleson";
+
 const json = createTupleson({
 	// This nonce function is used to generate a nonce for the serialized value
 	// This is used to identify the value as a serialized value
 	nonce: () => "__tson",
-	types: [tsonSet],
+	types: [
+		// Pick which types you want to support
+		tsonSet,
+	],
 });
 
 const result = json.stringify(
@@ -45,6 +70,30 @@ const result = json.stringify(
 	2,
 );
 console.log(result);
+// ->
+// {
+//   "json": {
+//     "foo": "bar",
+//     "set": [
+//       "Set",
+//       [
+//         1,
+//         2,
+//         3
+//       ],
+//       "__tson"
+//     ]
+//   },
+//   "nonce": "__tson"
+// }
+
+// ✨ Retains type integrity
+type Obj = typeof obj;
+//   ^?
+// type Obj = {
+//     readonly foo: "bar";
+//     readonly set: Set<number>;
+// }
 ```
 
 **Footnotes**:
