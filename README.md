@@ -68,6 +68,31 @@ const result = json.stringify(
 	2,
 );
 console.log(result);
+// ->
+// {
+//   "json": {
+//     "foo": "bar",
+//     "set": [
+//       "Set",
+//       [
+//         1,
+//         2,
+//         3
+//       ],
+//       "__tson"
+//     ]
+//   },
+//   "nonce": "__tson"
+// }
+
+// ✨ Retains type integrity
+
+type Obj = typeof obj;
+//   ^?
+// type Obj = {
+//     readonly foo: "bar";
+//     readonly set: Set<number>;
+// }
 ```
 
 **Footnotes**:
