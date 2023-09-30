@@ -46,7 +46,10 @@ import {
 	tsonURL,
 	// Serialize undefined
 	tsonUndefined,
+	// **throws** when encountering non-registered complex objects (like class instances)
+	tsonUnknownObjectGuard,
 } from "tupleson";
+
 const json = createTupleson({
 	// This nonce function is used to generate a nonce for the serialized value
 	// This is used to identify the value as a serialized value
