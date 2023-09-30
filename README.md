@@ -103,7 +103,7 @@ type Obj = typeof obj;
 
 ### Extend with a custom serializer
 
-#### `Temporal`
+#### [Temporal](https://www.npmjs.com/package/@js-temporal/polyfill)
 
 > See test reference in [`./src/extend/temporal.test.ts`](./src/extend/temporal.test.ts)
 
@@ -115,14 +115,14 @@ import { TsonType, createTson } from "tupleson";
 const plainDate: TsonType<Temporal.PlainDate, string> = {
 	deserialize: (v) => Temporal.PlainDate.from(v),
 	key: "PlainDate",
-	serialize: (v) => v.toString(),
+	serialize: (v) => v.toJSON(),
 	test: (v) => v instanceof Temporal.PlainDate,
 };
 
 const instant: TsonType<Temporal.Instant, string> = {
 	deserialize: (v) => Temporal.Instant.from(v),
 	key: "Instant",
-	serialize: (v) => v.toString(),
+	serialize: (v) => v.toJSON(),
 	test: (v) => v instanceof Temporal.Instant,
 };
 
@@ -131,7 +131,25 @@ const tson = createTson({
 });
 ```
 
-**Footnotes**:
+#### [Decimal.js](https://github.com/MikeMcl/decimal.js)
+
+> See test reference in [`./src/extend/decimal.test.ts`](./src/extend/decimal.test.ts)
+
+```ts
+/* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import, n/no-unpublished-import */
+import { Decimal } from "decimal.js";
+
+const decimalJs: TsonType<Decimal, string> = {
+	deserialize: (v) => new Decimal(v),
+	key: "Decimal",
+	serialize: (v) => v.toJSON(),
+	test: (v) => v instanceof Decimal,
+};
+
+const tson = createTson({
+	types: [decimalJs],
+});
+```
 
 [^1]: We don't support circular references as we don't think it's very desireable, but if you wanna contribute with adding opt-in support for that, you are very welcome!
 
