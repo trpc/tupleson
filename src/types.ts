@@ -1,3 +1,4 @@
+// eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const brand = Symbol("branded");
 
@@ -120,5 +121,3 @@ export type TsonStringifyFn = <TValue>(
 ) => TsonStringified<TValue>;
 
 export type TsonParseFn = <TValue>(string: TsonStringified<TValue>) => TValue;
-
-/* eslint-enable @typescript-eslint/no-explicit-any */
