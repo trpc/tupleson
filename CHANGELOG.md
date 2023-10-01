@@ -1,3 +1,12 @@
+
+
+# [0.8.0](https://github.com/KATT/tupleson/compare/0.7.0...0.8.0) (2023-10-01)
+
+
+### Features
+
+* prevent maximum call stack in favor of a custom error ([#15](https://github.com/KATT/tupleson/issues/15)) ([18cdf03](https://github.com/KATT/tupleson/commit/18cdf03aee46dbb0a58cb781d1a464f1dba992f1))
+
 # [0.7.0](https://github.com/KATT/tupleson/compare/0.6.1...0.7.0) (2023-09-30)
 
 ### Features
