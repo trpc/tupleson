@@ -1,11 +1,8 @@
-
-
 # [0.7.0](https://github.com/KATT/tupleson/compare/0.6.1...0.7.0) (2023-09-30)
-
 
 ### Features
 
-* add built-in support for `Symbol`s ([#13](https://github.com/KATT/tupleson/issues/13)) ([dab884a](https://github.com/KATT/tupleson/commit/dab884a6a08b9e6b356c53a4cd2ac21a74421296))
+- add built-in support for `Symbol`s ([#13](https://github.com/KATT/tupleson/issues/13)) ([dab884a](https://github.com/KATT/tupleson/commit/dab884a6a08b9e6b356c53a4cd2ac21a74421296))
 
 ## [0.6.1](https://github.com/KATT/tupleson/compare/0.6.0...0.6.1) (2023-09-30)
 
