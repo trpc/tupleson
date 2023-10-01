@@ -1,5 +1,6 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { CircularReferenceError } from "./errors.js";
 import { isPlainObject } from "./isPlainObject.js";
 import {
 	TsonAllTypes,
@@ -73,19 +74,6 @@ export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
 
 	return ((obj: unknown, space?: number | string) =>
 		JSON.stringify(serializer(obj), null, space)) as TsonStringifyFn;
-}
-
-export class CircularReferenceError extends Error {
-	/**
-	 * The circular reference that was found
-	 */
-	public readonly value;
-
-	constructor(value: unknown) {
-		super(`Circular reference detected`);
-		this.name = this.constructor.name;
-		this.value = value;
-	}
 }
 
 export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {

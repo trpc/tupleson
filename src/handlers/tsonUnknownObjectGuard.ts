@@ -1,7 +1,8 @@
+import { TsonError } from "../errors.js";
 import { isPlainObject } from "../isPlainObject.js";
 import { TsonType } from "../types.js";
 
-export class UnknownObjectGuardError extends Error {
+export class UnknownObjectGuardError extends TsonError {
 	/**
 	 * The unknown object that was found
 	 */
