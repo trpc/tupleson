@@ -3,10 +3,11 @@ import { TsonType } from "../types.js";
 export const tsonSymbol = <T extends symbol>(
 	symbol: T,
 ): TsonType<T, string> => {
+	const key = symbol.toString();
 	return {
 		deserialize: () => symbol,
-		key: symbol.toString(),
-		serialize: () => symbol.toString(),
+		key,
+		serialize: () => key,
 		test: (v) => v === symbol,
 	};
 };
