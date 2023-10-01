@@ -75,6 +75,19 @@ export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
 		JSON.stringify(serializer(obj), null, space)) as TsonStringifyFn;
 }
 
+export class CircularReferenceError extends Error {
+	/**
+	 * The circular reference that was found
+	 */
+	public readonly value;
+
+	constructor(value: unknown) {
+		super(`Circular reference detected`);
+		this.name = this.constructor.name;
+		this.value = value;
+	}
+}
+
 export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 	const handlers = (() => {
 		const types = opts.types.map((handler) => {
@@ -124,24 +137,49 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 	const [nonPrimitive, byPrimitive] = handlers;
 
 	const walker: WalkerFactory = (nonce) => {
+		const seen = new WeakSet();
+		const cache = new WeakMap<object, unknown>();
+
 		const walk: WalkFn = (value) => {
 			const type = typeof value;
+			const isComplex = !!value && type === "object";
+
+			if (isComplex) {
+				if (seen.has(value)) {
+					const cached = cache.get(value);
+					if (!cached) {
+						throw new CircularReferenceError(value);
+					}
+
+					return cached;
+				}
+
+				seen.add(value);
+			}
+
+			const cacheAndReturn = (result: unknown) => {
+				if (isComplex) {
+					cache.set(value, result);
+				}
+
+				return result;
+			};
 
 			const primitiveHandler = byPrimitive[type];
 			if (
 				primitiveHandler &&
 				(!primitiveHandler.test || primitiveHandler.test(value))
 			) {
-				return primitiveHandler.$serialize(value, nonce, walk);
+				return cacheAndReturn(primitiveHandler.$serialize(value, nonce, walk));
 			}
 
 			for (const handler of nonPrimitive) {
 				if (handler.test(value)) {
-					return handler.$serialize(value, nonce, walk);
+					return cacheAndReturn(handler.$serialize(value, nonce, walk));
 				}
 			}
 
-			return mapOrReturn(value, walk);
+			return cacheAndReturn(mapOrReturn(value, walk));
 		};
 
 		return walk;
