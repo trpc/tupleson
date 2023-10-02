@@ -45,15 +45,13 @@ for await (const chunk of stringifyAsync(data)) {
 
 ```js
 async function* stringifyEmitter() {
-	// <first line>
-	yield "[";
-	yield "\n";
-	// </first line>
-	// <second line> - the shape
-	yield JSON.stringify(jsonAndNonce);
-	yield "\n";
-	// </second line>
-	// comma before values
+	// <first line: init the array, ignored when parsing>
+	yield "[\n";
+
+	// second line: the shape of the json - used when parsing>
+	yield JSON.stringify(jsonAndNonce) + "\n";
+
+	// third line: comma before values, ignored when parsing
 	yield ",";
 	yield "["; // values start
 	yield "\n";
