@@ -32,14 +32,18 @@ const out = [
 #### Emitting
 
 ```js
-async function* stringifyAsync() {}
+async function* asyncStringify() {
+	// see further down for idea of implementation
+}
 
 const response = null;
 const data = {
 	promise: Promise.resolve(42),
 };
 
-for await (const chunk of stringifyAsync(data)) {
+const [head, iterator] = asyncStringify(data);
+response.write(head);
+for await (const chunk of asyncStringify(iterator)) {
 	response.write(chunk);
 }
 ```
