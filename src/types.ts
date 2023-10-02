@@ -96,9 +96,9 @@ export type TsonType<
 
 export interface TsonOptions {
 	/**
-	 *
-	 * @returns A nonce to use for this serialization
-	 * @default () => uuid
+	 * The nonce function every time we start serializing a new object
+	 * Should return a unique value every time it's called
+	 * @default crypto.randomUUID
 	 */
 	nonce?: () => number | string;
 	types: (TsonType<any, any> | TsonType<any, never>)[];
