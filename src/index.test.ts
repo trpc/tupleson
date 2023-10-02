@@ -1,17 +1,17 @@
 import { expect, test } from "vitest";
 
-import { createTson } from "./createTson.js";
+import { TsonOptions, TsonType, createTson } from "./index.js";
 import { expectError } from "./internals/testUtils.js";
-import { TsonType } from "./types.js";
 
 test("multiple handlers for primitive string found", () => {
 	const stringHandler: TsonType<string, never> = {
 		primitive: "string",
 	};
+	const opts: TsonOptions = {
+		types: [stringHandler, stringHandler],
+	};
 	expect(() => {
-		createTson({
-			types: [stringHandler, stringHandler],
-		});
+		createTson(opts);
 	}).toThrowErrorMatchingInlineSnapshot(
 		'"Multiple handlers for primitive string found"',
 	);
