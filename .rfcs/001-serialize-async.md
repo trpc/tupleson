@@ -41,9 +41,9 @@ const data = {
 	promise: Promise.resolve(42),
 };
 
-const [head, iterator] = asyncStringify(data);
-response.write(head);
-for await (const chunk of asyncStringify(iterator)) {
+const iterator = asyncStringify(data);
+
+for await (const chunk of iterator) {
 	response.write(chunk);
 }
 ```
@@ -102,7 +102,7 @@ function asyncSerializer(value) {
 	return [head, iterator];
 }
 
-export function asyncStringify(value) {
+export async function* asyncStringify(value) {
 	// head looks like
 
 	// [
@@ -119,25 +119,23 @@ export function asyncStringify(value) {
 	// third line: comma before values, ignored when parsing
 	headAsString += ",[" + "\n";
 
-	async function* serializedAsString() {
-		let isFirstStreamedValue = true;
-		for await (const [index, serializedValue] of iterator) {
-			if (!isFirstStreamedValue) {
-				// add a comma between each value to ensure it's valid JSON
-				// needs to be ignored when parsing
-				yield ",";
-			}
+	yield headAsString;
 
-			isFirstStreamedValue = false;
-			yield JSON.stringify([index, serializedValue]) + "\n";
-
-			continue;
+	let isFirstStreamedValue = true;
+	for await (const [index, serializedValue] of iterator) {
+		if (!isFirstStreamedValue) {
+			// add a comma between each value to ensure it's valid JSON
+			// needs to be ignored when parsing
+			yield ",";
 		}
 
-		yield "]"; // end value array
-		yield "]"; // end response
+		isFirstStreamedValue = false;
+		yield JSON.stringify([index, serializedValue]) + "\n";
+
+		continue;
 	}
 
-	return [headAsString, serializedAsString()];
+	yield "]"; // end value array
+	yield "]"; // end response
 }
 ```
