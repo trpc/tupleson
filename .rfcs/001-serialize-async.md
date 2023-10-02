@@ -46,12 +46,40 @@ for await (const chunk of stringifyAsync(data)) {
 
 ##### Internals
 
-**First chunk**:
-
 ```js
-function walk() {}
+function walker(nonce, value) {
+	// key: index
+	// value: [index, Promise]
+	const promises = new Map();
+	const iterator = {
+		async *[Symbol.asyncIterator]() {
+			while (promises.size) {
+				const [index, status, value] = await Promise.race(promises.values());
+
+				yield [index, status, walk(value)];
+			}
+		},
+	};
+
+	function addPromise(index, promise) {
+		promises.set(
+			index,
+			promise
+				.then((result) => [index, "resolved", result])
+				.catch((err) => [index, "rejected", err]),
+		);
+	}
+
+	function walk(value) {
+		// adds promises if it encounters a promise
+		addPromise(index, promise);
+	}
+
+	return [walk(value), iterator];
+}
 
 function asyncSerializer(value) {
+	const nonce = "...";
 	const [
 		/**
 		 * TsonSerialized
@@ -61,7 +89,7 @@ function asyncSerializer(value) {
 		 * yields [index, data]
 		 */
 		iterator,
-	] = walk(value);
+	] = walker(nonce, value);
 
 	return [head, iterator];
 }
