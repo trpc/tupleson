@@ -27,9 +27,9 @@ const out = [
 ];
 ```
 
-### Server-side-events
+### Serializing
 
-#### Emitting
+#### Emitting SSE
 
 ```js
 async function* asyncStringify() {
