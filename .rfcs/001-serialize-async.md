@@ -85,17 +85,16 @@ export function asyncStringify(value) {
 
 	async function* serializedAsString() {
 		let isFirstStreamedValue = true;
-		for await (const chunk of iterator) {
+		for await (const [index, serializedValue] of iterator) {
 			if (!isFirstStreamedValue) {
 				// add a comma between each value to ensure it's valid JSON
-				// will be ignored when parsing ignored
+				// needs to be ignored when parsing
 				yield ",";
 			}
 
 			isFirstStreamedValue = false;
-			yield JSON.stringify(chunk.value) + "\n";
+			yield JSON.stringify([index, serializedValue]) + "\n";
 
-			yield "\n";
 			continue;
 		}
 
