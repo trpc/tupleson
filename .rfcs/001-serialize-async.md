@@ -4,7 +4,8 @@
 
 ```js
 const out = [
-	// <first line of JSON>
+	// <first line> is just a `[` that initializes the array pf the response
+	// <second line>
 	{
 		json: {
 			foo: "bar",
@@ -13,7 +14,7 @@ const out = [
 		},
 		nonce: "__tson",
 	},
-	// <first line of JSON>
+	// <second line>
 	// <second line of json>
 	[
 		// ------ this could be streamed ------
@@ -30,6 +31,9 @@ const out = [
 #### Emitting
 
 ```js
+async function* stringifyAsync() {}
+
+const response = null;
 const data = {
 	promise: Promise.resolve(42),
 };
@@ -44,31 +48,46 @@ for await (const chunk of stringifyAsync(data)) {
 **First chunk**:
 
 ```js
-async function* stringifyEmitter() {
-	// <first line: init the array, ignored when parsing>
+async function* deserializeAsync() {}
+
+export async function* stringifyEmitter() {
+	// first line of the json: init the array, ignored when parsing>
 	yield "[\n";
 
-	// second line: the shape of the json - used when parsing>
-	yield JSON.stringify(jsonAndNonce) + "\n";
+	const valuesIterator = deserializeAsync();
 
-	// third line: comma before values, ignored when parsing
-	yield ",";
-	yield "["; // values start
-	yield "\n";
+	let isFirstStreamedValue = true;
 
-	// each value
-	let isFirstValue = false;
-	for await (const [refIndex, serializedValue] of valuesIterator) {
-		if (!isFirstValue) {
-			yield ",";
-			yield "\n";
+	for await (const chunk of valuesIterator) {
+		switch (chunk.type) {
+			case "HEAD": {
+				// (head is only called once)
+
+				// second line: the shape of the json - used when parsing>
+				yield JSON.stringify(chunk.head) + "\n";
+
+				// third line: comma before values, ignored when parsing
+				yield ",";
+				yield "["; // values start
+				yield "\n";
+				continue;
+			}
+
+			case "VALUE": {
+				if (!isFirstStreamedValue) {
+					yield ",";
+				}
+
+				isFirstStreamedValue = false;
+				yield JSON.stringify(chunk.value) + "\n";
+
+				yield "\n";
+				continue;
+			}
 		}
-
-		yield JSON.stringify([refIndex, serializedValue]);
 	}
 
 	yield "]"; // end value array
-
 	yield "]"; // end response
 }
 ```
