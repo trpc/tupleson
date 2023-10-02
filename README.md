@@ -34,6 +34,7 @@ Serialize exactly what you want; no more, no less.
 ### Example
 
 ```ts
+
 /* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import */
 
 import {
@@ -72,15 +73,9 @@ const tson = createTson({
 const myObj = {
 	foo: "bar",
 	set: new Set([1, 2, 3]),
-} as const;
+};
 
-const str = tson.stringify(
-	{
-		foo: "bar",
-		set: new Set([1, 2, 3]),
-	},
-	2,
-);
+const str = tson.stringify(myObj, 2)
 console.log(str);
 // ->
 // {
@@ -104,7 +99,7 @@ const obj = tson.parse(str);
 // ✨ Retains type integrity
 type Obj = typeof obj;
 //   ^?
-// type Obj = { foo: string; set: Set<number>; }
+// -> type Obj = { foo: string; set: Set<number>; }
 ```
 
 ### Extend with a custom serializer
