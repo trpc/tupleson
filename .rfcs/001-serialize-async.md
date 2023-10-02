@@ -44,30 +44,33 @@ for await (const chunk of stringifyAsync(data)) {
 **First chunk**:
 
 ```js
-async function stringifyEmitter*() {
-    yield "[";
-    yield "\n"
-    yield JSON.stringify(jsonAndNonce)
-    yield "\n"
-    // comma before values
-    yield ","
-    yield "[" // values start
-    yield "\n";
+async function* stringifyEmitter() {
+	// <first line>
+	yield "[";
+	yield "\n";
+	// </first line>
+	// <second line> - the shape
+	yield JSON.stringify(jsonAndNonce);
+	yield "\n";
+	// </second line>
+	// comma before values
+	yield ",";
+	yield "["; // values start
+	yield "\n";
 
-    // each value
-    let isFirstValue = false;
-    for await (const [refIndex, serializedValue] of valuesIterator) {
-        if (!isFirstValue) {
-            yield ","
-            yield "\n";
-        }
+	// each value
+	let isFirstValue = false;
+	for await (const [refIndex, serializedValue] of valuesIterator) {
+		if (!isFirstValue) {
+			yield ",";
+			yield "\n";
+		}
 
-        yield JSON.stringify([refIndex, serializedValue])
-    }
+		yield JSON.stringify([refIndex, serializedValue]);
+	}
 
+	yield "]"; // end value array
 
-    yield "]" // end value array
-
-    yield "]" // end response
+	yield "]"; // end response
 }
 ```
