@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, eslint-comments/disable-enable-pair */
 import { CircularReferenceError } from "./errors.js";
-import { getNonce } from "./internals/getNonce.js";
+import { GetNonce, getNonce } from "./internals/getNonce.js";
 import { mapOrReturn } from "./internals/mapOrReturn.js";
 import {
 	TsonAllTypes,
@@ -123,10 +123,10 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 		return walk;
 	};
 
+	const nonceFn: GetNonce = opts.nonce ? (opts.nonce as GetNonce) : getNonce;
+
 	return ((obj): TsonSerialized => {
-		const nonce: TsonNonce = maybeNonce
-			? (maybeNonce() as TsonNonce)
-			: getNonce();
+		const nonce = nonceFn();
 
 		const json = walker(nonce)(obj);
 

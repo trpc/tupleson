@@ -2,7 +2,7 @@ import { TsonNonce } from "../types.js";
 
 const randomString = () => Math.random().toString(36).slice(2);
 
-type GetNonce = () => TsonNonce;
+export type GetNonce = () => TsonNonce;
 
 // istanbul ignore next
 export const getNonce: GetNonce =
