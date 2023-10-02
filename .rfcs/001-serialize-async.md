@@ -70,7 +70,7 @@ export function asyncStringify(value) {
 	// head looks like
 
 	// [
-	// 		{}
+	// 		{ json: {}, nonce: "..." }
 	//  	,[
 
 	const [head, iterator] = asyncSerializer(value);
