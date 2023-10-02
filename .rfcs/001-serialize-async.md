@@ -57,6 +57,7 @@ function walker(nonce, value) {
 				const [index, status, value] = await Promise.race(promises.values());
 
 				yield [index, status, walk(value)];
+				promises.delete(index);
 			}
 		},
 	};
