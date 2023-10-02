@@ -52,9 +52,11 @@ for await (const chunk of asyncStringify(iterator)) {
 
 ```js
 function walker(nonce, value) {
+	let idx = 0;
 	// key: index
 	// value: [index, Promise]
 	const promises = new Map();
+	// ... once we start looking at async iterators we can look at https://github.com/fraxken/combine-async-iterators/blob/master/index.js
 	const iterator = {
 		async *[Symbol.asyncIterator]() {
 			while (promises.size) {
@@ -66,7 +68,8 @@ function walker(nonce, value) {
 		},
 	};
 
-	function addPromise(index, promise) {
+	function registerPromise(promise) {
+		const index = idx++;
 		promises.set(
 			index,
 			promise
@@ -77,7 +80,7 @@ function walker(nonce, value) {
 
 	function walk(value) {
 		// adds promises if it encounters a promise
-		addPromise(index, promise);
+		registerPromise(promise);
 	}
 
 	return [walk(value), iterator];
