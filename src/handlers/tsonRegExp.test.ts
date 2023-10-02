@@ -5,6 +5,7 @@ import { tsonRegExp } from "./index.js";
 
 test("regex", () => {
 	const t = createTson({
+		nonce: () => "__tson",
 		types: [tsonRegExp],
 	});
 

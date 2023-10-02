@@ -95,6 +95,11 @@ export type TsonType<
 > = TsonTypeTester & TsonTransformer<TValue, TSerializedType>;
 
 export interface TsonOptions {
+	/**
+	 *
+	 * @returns A nonce to use for this serialization
+	 * @default () => uuid
+	 */
 	nonce?: () => number | string;
 	types: (TsonType<any, any> | TsonType<any, never>)[];
 }

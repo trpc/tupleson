@@ -5,6 +5,7 @@ import { tsonURL } from "./index.js";
 
 test("URL", () => {
 	const ctx = createTson({
+		nonce: () => "__tson",
 		types: [tsonURL],
 	});
 
