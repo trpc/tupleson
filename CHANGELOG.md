@@ -1,11 +1,8 @@
-
-
 # [0.9.0](https://github.com/KATT/tupleson/compare/0.8.0...0.9.0) (2023-10-01)
-
 
 ### Features
 
-* simplify symbols ([#16](https://github.com/KATT/tupleson/issues/16)) ([32720a4](https://github.com/KATT/tupleson/commit/32720a445acfcf31d51caa38dc9d7c7a165771d3))
+- simplify symbols ([#16](https://github.com/KATT/tupleson/issues/16)) ([32720a4](https://github.com/KATT/tupleson/commit/32720a445acfcf31d51caa38dc9d7c7a165771d3))
 
 # [0.8.0](https://github.com/KATT/tupleson/compare/0.7.0...0.8.0) (2023-10-01)
 
