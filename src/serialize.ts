@@ -70,7 +70,6 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 
 		return [nonPrimitive, byPrimitive] as const;
 	})();
-	const maybeNonce = opts.nonce;
 
 	const [nonPrimitive, byPrimitive] = handlers;
 
