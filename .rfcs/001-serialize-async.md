@@ -66,38 +66,43 @@ function asyncSerializer(value) {
 	return [head, iterator];
 }
 
-export async function* asyncStringify(value) {
-	// first line of the json: init the array, ignored when parsing>
-	yield "[\n";
+export function asyncStringify(value) {
+	// head looks like
+
+	// [
+	// 		{}
+	//  	,[
 
 	const [head, iterator] = asyncSerializer(value);
 
-	// (head is only called once)
-
+	// first line of the json: init the array, ignored when parsing>
+	let headAsString = "[" + "\n";
 	// second line: the shape of the json - used when parsing>
-	yield JSON.stringify(head) + "\n";
+	headAsString += JSON.stringify(head) + "\n";
 
 	// third line: comma before values, ignored when parsing
-	yield ",";
-	yield "["; // values start
-	yield "\n";
-	let isFirstStreamedValue = true;
+	headAsString += ",[" + "\n";
 
-	for await (const chunk of iterator) {
-		if (!isFirstStreamedValue) {
-			// add a comma between each value to ensure it's valid JSON
-			// needs to be ignored
-			yield ",";
+	async function* serializedAsString() {
+		let isFirstStreamedValue = true;
+		for await (const chunk of iterator) {
+			if (!isFirstStreamedValue) {
+				// add a comma between each value to ensure it's valid JSON
+				// will be ignored when parsing ignored
+				yield ",";
+			}
+
+			isFirstStreamedValue = false;
+			yield JSON.stringify(chunk.value) + "\n";
+
+			yield "\n";
+			continue;
 		}
 
-		isFirstStreamedValue = false;
-		yield JSON.stringify(chunk.value) + "\n";
-
-		yield "\n";
-		continue;
+		yield "]"; // end value array
+		yield "]"; // end response
 	}
 
-	yield "]"; // end value array
-	yield "]"; // end response
+	return [headAsString, serializedAsString()];
 }
 ```
