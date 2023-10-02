@@ -3,6 +3,7 @@
 ### Finished JSON output
 
 ```js
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const out = [
 	// <first line> is just a `[` that initializes the array pf the response
 	// <second line>
