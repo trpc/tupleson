@@ -1,73 +1,22 @@
-/* eslint-disable eslint-comments/disable-enable-pair */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, eslint-comments/disable-enable-pair */
 import { CircularReferenceError } from "./errors.js";
-import { isPlainObject } from "./isPlainObject.js";
+import { mapOrReturn } from "./internals/mapOrReturn.js";
 import {
 	TsonAllTypes,
-	TsonDeserializeFn,
 	TsonNonce,
 	TsonOptions,
-	TsonParseFn,
 	TsonSerializeFn,
 	TsonSerialized,
 	TsonSerializedValue,
 	TsonStringifyFn,
-	TsonTransformerSerializeDeserialize,
 	TsonTuple,
 	TsonTypeHandlerKey,
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
 } from "./types.js";
 
-function isTsonTuple(v: unknown, nonce: string): v is TsonTuple {
-	return Array.isArray(v) && v.length === 3 && v[2] === nonce;
-}
-
 type WalkFn = (value: unknown) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;
-
-type AnyTsonTransformerSerializeDeserialize =
-	TsonTransformerSerializeDeserialize<any, any>;
-
-export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
-	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
-
-	for (const handler of opts.types) {
-		if (handler.key) {
-			if (typeByKey[handler.key]) {
-				throw new Error(`Multiple handlers for key ${handler.key} found`);
-			}
-
-			typeByKey[handler.key] =
-				handler as AnyTsonTransformerSerializeDeserialize;
-		}
-	}
-
-	const walker: WalkerFactory = (nonce) => {
-		const walk: WalkFn = (value) => {
-			if (isTsonTuple(value, nonce)) {
-				const [type, serializedValue] = value;
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const transformer = typeByKey[type]!;
-				return transformer.deserialize(walk(serializedValue));
-			}
-
-			return mapOrReturn(value, walk);
-		};
-
-		return walk;
-	};
-
-	return ((obj: TsonSerialized) =>
-		walker(obj.nonce)(obj.json)) as TsonDeserializeFn;
-}
-
-export function createTsonParser(opts: TsonOptions): TsonParseFn {
-	const deserializer = createTsonDeserialize(opts);
-
-	return ((str: string) =>
-		deserializer(JSON.parse(str) as TsonSerialized)) as TsonParseFn;
-}
 
 export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
 	const serializer = createTsonSerialize(opts);
@@ -187,34 +136,3 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 		} as TsonSerialized<any>;
 	}) as TsonSerializeFn;
 }
-
-/**
- * Maps over an object or array, returning a new object or array with the same keys.
- * If the input is not an object or array, the input is returned.
- */
-function mapOrReturn(
-	input: unknown,
-	fn: (val: unknown, key: number | string) => unknown,
-): unknown {
-	if (Array.isArray(input)) {
-		return input.map(fn);
-	}
-
-	if (isPlainObject(input)) {
-		const output: typeof input = {};
-		for (const [key, value] of Object.entries(input)) {
-			output[key] = fn(value, key);
-		}
-
-		return output;
-	}
-
-	return input;
-}
-
-export const createTson = (opts: TsonOptions) => ({
-	deserialize: createTsonDeserialize(opts),
-	parse: createTsonParser(opts),
-	serialize: createTsonSerialize(opts),
-	stringify: createTsonStringify(opts),
-});

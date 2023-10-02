@@ -1,11 +1,8 @@
-export {
-	createTson,
-	createTsonDeserialize,
-	createTsonParser,
-	createTsonSerialize,
-	createTsonStringify,
-} from "./tson.js";
+export { createTson } from "./createTson.js";
+export { createTsonDeserialize, createTsonParser } from "./deserialize.js";
+export { createTsonSerialize, createTsonStringify } from "./serialize.js";
 
 export * from "./handlers/index.js";
 
 export type { TsonType } from "./types.js";
+export type { TsonOptions } from "./types.js";

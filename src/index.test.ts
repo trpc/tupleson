@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 
-import { expectError } from "./testUtils.js";
-import { createTson } from "./tson.js";
+import { createTson } from "./createTson.js";
+import { expectError } from "./internals/testUtils.js";
 import { TsonType } from "./types.js";
 
 test("multiple handlers for primitive string found", () => {
