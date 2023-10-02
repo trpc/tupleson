@@ -1,3 +1,12 @@
+
+
+# [0.10.0](https://github.com/KATT/tupleson/compare/0.9.0...0.10.0) (2023-10-02)
+
+
+### Features
+
+* use UUIDs for nonce ([#19](https://github.com/KATT/tupleson/issues/19)) ([e347640](https://github.com/KATT/tupleson/commit/e347640dd10bf6ecc6b93f99e3118f572da671b3))
+
 # [0.9.0](https://github.com/KATT/tupleson/compare/0.8.0...0.9.0) (2023-10-01)
 
 ### Features
