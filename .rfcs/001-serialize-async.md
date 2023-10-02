@@ -76,6 +76,8 @@ export async function* stringifyEmitter() {
 
 			case "VALUE": {
 				if (!isFirstStreamedValue) {
+					// add a comma between each value to ensure it's valid JSON
+					// needs to be ignored
 					yield ",";
 				}
 
