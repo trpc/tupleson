@@ -8,6 +8,7 @@ import { tsonUndefined } from "./handlers/tsonUndefined.js";
 
 test("lets have a look at the stringified output", () => {
 	const t = createTson({
+		nonce: () => "__tson",
 		types: [tsonMap, tsonSet, tsonBigint, tsonUndefined],
 	});
 
