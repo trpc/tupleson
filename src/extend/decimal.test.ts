@@ -11,6 +11,7 @@ const decimalJs: TsonType<Decimal, string> = {
 };
 
 const tson = createTson({
+	nonce: () => "__tson",
 	types: [decimalJs],
 });
 
