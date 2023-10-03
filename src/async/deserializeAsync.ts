@@ -144,6 +144,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 			}
 
 			void getStreamedValues(walk).catch((cause) => {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				throw new TsonError("Failed to parse TSON stream", { cause });
 			});
 
