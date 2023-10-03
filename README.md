@@ -25,6 +25,8 @@
 
 ## Introduction
 
+> This package is still experimental (although it's pretty well tested) & is subject to big changes
+
 A hackable JSON serializer/deserializer that allows you to serialize/deserialize almost[^1] anything.
 
 Serialize exactly what you want; no more, no less.
