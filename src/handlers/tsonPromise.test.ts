@@ -1,6 +1,9 @@
 import { expect, test } from "vitest";
 
-import { TsonAsyncValueTuple } from "../async/serializeAsync.js";
+import {
+	TsonAsyncValueTuple,
+	createAsyncTsonSerialize,
+} from "../async/serializeAsync.js";
 import { createTsonAsync, tsonPromise } from "../index.js";
 import { TsonSerialized } from "../types.js";
 
@@ -13,14 +16,14 @@ const createPromise = <T>(result: () => T) => {
 };
 
 test("serialize promise", async () => {
-	const tson = createTsonAsync({
+	const serialize = createAsyncTsonSerialize({
 		nonce: () => "__tson",
 		types: [tsonPromise],
 	});
 
 	const promise = Promise.resolve(42);
 
-	const [head, iterator] = tson.serialize(promise);
+	const [head, iterator] = serialize(promise);
 
 	expect(head).toMatchInlineSnapshot(`
 		{
@@ -50,7 +53,7 @@ test("serialize promise", async () => {
 });
 
 test("serialize promise that returns a promise", async () => {
-	const tson = createTsonAsync({
+	const serialize = createAsyncTsonSerialize({
 		nonce: () => "__tson",
 		types: [tsonPromise],
 	});
@@ -65,7 +68,7 @@ test("serialize promise that returns a promise", async () => {
 		}),
 	};
 
-	const [head, iterator] = tson.serialize(obj);
+	const [head, iterator] = serialize(obj);
 
 	expect(head).toMatchInlineSnapshot(`
 		{
@@ -110,14 +113,14 @@ test("serialize promise that returns a promise", async () => {
 });
 
 test("promise that rejects", async () => {
-	const tson = createTsonAsync({
+	const serialize = createAsyncTsonSerialize({
 		nonce: () => "__tson",
 		types: [tsonPromise],
 	});
 
 	const promise = Promise.reject(new Error("foo"));
 
-	const [head, iterator] = tson.serialize(promise);
+	const [head, iterator] = serialize(promise);
 
 	expect(head).toMatchInlineSnapshot(`
 		{
