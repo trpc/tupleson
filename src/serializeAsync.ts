@@ -1,4 +1,7 @@
-import { CircularReferenceError, PromiseRejectionError } from "./errors.js";
+import {
+	TsonCircularReferenceError,
+	TsonPromiseRejectionError,
+} from "./errors.js";
 import { getNonce } from "./internals/getNonce.js";
 import { mapOrReturn } from "./internals/mapOrReturn.js";
 import {
@@ -6,6 +9,7 @@ import {
 	TsonAsyncIndex,
 	TsonAsyncOptions,
 	TsonNonce,
+	TsonSerialized,
 	TsonSerializedValue,
 	TsonTuple,
 	TsonTypeHandlerKey,
@@ -14,7 +18,6 @@ import {
 } from "./types.js";
 
 type WalkFn = (value: unknown) => unknown;
-type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 
 const PROMISE_RESOLVED = 0 as const;
 const PROMISE_REJECTED = 1 as const;
@@ -25,23 +28,27 @@ type TsonAsyncValueTuple = [
 	unknown,
 ];
 
-function walkerFactory(opts: TsonAsyncOptions) {
+function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 	// instance variables
 	let promiseIndex = 0 as TsonAsyncIndex;
-	const promises = new Map<
-		TsonAsyncIndex,
-		[TsonAsyncIndex, Promise<TsonAsyncValueTuple>]
-	>();
+	const promises = new Map<TsonAsyncIndex, Promise<TsonAsyncValueTuple>>();
 	const seen = new WeakSet();
 	const cache = new WeakMap<object, unknown>();
-	const nonce: TsonNonce = opts.nonce
-		? (opts.nonce() as TsonNonce)
-		: getNonce();
 
+	const iterator = {
+		async *[Symbol.asyncIterator]() {
+			while (promises.size > 0) {
+				const tuple = await Promise.race(promises.values());
+
+				promises.delete(tuple[0]);
+				yield walk(tuple) as typeof tuple;
+			}
+		},
+	};
 	// helper fns
 	function registerPromise(promise: Promise<unknown>): TsonAsyncIndex {
 		const index = promiseIndex++ as TsonAsyncIndex;
-		promises.set(index, [
+		promises.set(
 			index,
 			promise
 				.then((result) => {
@@ -50,17 +57,21 @@ function walkerFactory(opts: TsonAsyncOptions) {
 				})
 				//        ^?
 				.catch((err) => {
-					const tuple: TsonAsyncValueTuple = [index, PROMISE_REJECTED, err];
+					const tuple: TsonAsyncValueTuple = [
+						index,
+						PROMISE_REJECTED,
+						new TsonPromiseRejectionError(err),
+					];
 
 					return tuple;
 				}),
-		]);
+		);
 
 		return index;
 	}
 
 	const handlers = (() => {
-		const types = opts.types.map((handler) => {
+		const all = types.map((handler) => {
 			type Serializer = (
 				value: unknown,
 				nonce: TsonNonce,
@@ -79,14 +90,14 @@ function walkerFactory(opts: TsonAsyncOptions) {
 				$serialize,
 			};
 		});
-		type Handler = (typeof types)[number];
+		type Handler = (typeof all)[number];
 
 		const byPrimitive: Partial<
 			Record<TsonAllTypes, Extract<Handler, TsonTypeTesterPrimitive>>
 		> = {};
 		const nonPrimitive: Extract<Handler, TsonTypeTesterCustom>[] = [];
 
-		for (const handler of types) {
+		for (const handler of all) {
 			if (handler.primitive) {
 				if (byPrimitive[handler.primitive]) {
 					throw new Error(
@@ -113,7 +124,7 @@ function walkerFactory(opts: TsonAsyncOptions) {
 			if (seen.has(value)) {
 				const cached = cache.get(value);
 				if (!cached) {
-					throw new CircularReferenceError(value);
+					throw new TsonCircularReferenceError(value);
 				}
 
 				return cached;
@@ -147,7 +158,28 @@ function walkerFactory(opts: TsonAsyncOptions) {
 		return cacheAndReturn(mapOrReturn(value, walk));
 	};
 
-	return walk;
+	return [walk, iterator] as const;
 }
 
-export function createAsyncTsonSerializer(opts: TsonAsyncOptions) {}
+type TsonAsyncSerializer = <T>(
+	value: T,
+) => [TsonSerialized<T>, AsyncIterable<TsonAsyncValueTuple>];
+
+export function createAsyncTsonSerializer(
+	opts: TsonAsyncOptions,
+): TsonAsyncSerializer {
+	return (value) => {
+		const nonce: TsonNonce = opts.nonce
+			? (opts.nonce() as TsonNonce)
+			: getNonce();
+		const [walk, iterator] = walkerFactory(nonce, opts.types);
+
+		return [
+			{
+				json: walk(value),
+				nonce,
+			} as TsonSerialized<typeof value>,
+			iterator,
+		];
+	};
+}

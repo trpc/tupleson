@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, eslint-comments/disable-enable-pair */
-import { CircularReferenceError } from "./errors.js";
+import { TsonCircularReferenceError } from "./errors.js";
 import { GetNonce, getNonce } from "./internals/getNonce.js";
 import { mapOrReturn } from "./internals/mapOrReturn.js";
 import {
@@ -85,7 +85,7 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 				if (seen.has(value)) {
 					const cached = cache.get(value);
 					if (!cached) {
-						throw new CircularReferenceError(value);
+						throw new TsonCircularReferenceError(value);
 					}
 
 					return cached;
