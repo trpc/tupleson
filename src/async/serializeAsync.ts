@@ -200,26 +200,26 @@ export function createAsyncTsonStringify(
 			const [head, iterator] = createAsyncTsonSerialize(opts)(value);
 
 			// first line of the json: init the array, ignored when parsing>
-			yield "[";
+			yield "[" + "\n";
 			// second line: the shape of the json - used when parsing>
-			yield indent(space * 1) + JSON.stringify(head);
+			yield indent(space * 1) + JSON.stringify(head) + "\n";
 
 			// third line: comma before values, ignored when parsing
-			yield indent(space * 1) + ",";
+			yield indent(space * 1) + "," + "\n";
 			// fourth line: the values array, ignored when parsing
-			yield indent(space * 1) + "[";
+			yield indent(space * 1) + "[" + "\n";
 
 			let isFirstStreamedValue = true;
 			for await (const value of iterator) {
 				const prefix = indent(space * 2) + (isFirstStreamedValue ? "" : ",");
 
-				yield prefix + JSON.stringify(value);
+				yield prefix + JSON.stringify(value) + "\n";
 
 				isFirstStreamedValue = false;
 			}
 
-			yield indent(space * 1) + "]"; // end value array
-			yield "]"; // end response
+			yield indent(space * 1) + "]" + "\n"; // end value array
+			yield "]" + "\n"; // end response
 		};
 
 	return stringifier as TsonAsyncStringifier;

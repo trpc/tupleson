@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, eslint-comments/disable-enable-pair */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { TsonError } from "../errors.js";
 import { isTsonTuple } from "../internals/isTsonTuple.js";
@@ -24,7 +25,7 @@ type AnyTsonTransformerSerializeDeserialize =
 	| TsonTransformerSerializeDeserialize<any, any>;
 
 type TsonParseAsync = <TValue>(
-	string: TsonAsyncStringifierIterator<TValue>,
+	string: AsyncIterable<string> | TsonAsyncStringifierIterator<TValue>,
 ) => Promise<TValue>;
 
 function createDeferred<T>() {
@@ -86,73 +87,115 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 			return walk;
 		};
 
-		async function getStreamedValues(walk: WalkFn) {
-			let nextValue = await instance.next();
-
-			while (!nextValue.done) {
-				let str = nextValue.value;
-
+		async function getStreamedValues(
+			buffer: string[],
+			done: boolean,
+			walk: WalkFn,
+		) {
+			function readString(str: string) {
 				str = str.trimStart();
+				if (!str) {
+					return;
+				}
+
 				if (str.startsWith(",")) {
 					// ignore leading comma
 					str = str.slice(1);
 				}
 
-				// console.log("got value", str);
-
-				if (str.startsWith("[")) {
-					// console.log("got something that looks like a value", str);
-					const [index, status, result] = JSON.parse(
-						str,
-					) as TsonAsyncValueTuple;
-
-					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					const deferred = deferreds.get(index)!;
-					status === PROMISE_RESOLVED
-						? deferred.resolve(walk(result))
-						: deferred.reject(walk(result));
+				if (!str.startsWith("[")) {
+					return;
 				}
+
+				// console.log("got something that looks like a value", str);
+
+				const [index, status, result] = JSON.parse(str) as TsonAsyncValueTuple;
+
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				const deferred = deferreds.get(index)!;
+				status === PROMISE_RESOLVED
+					? deferred.resolve(walk(result))
+					: deferred.reject(walk(result));
+			}
+
+			buffer.forEach(readString);
+
+			if (done) {
+				return;
+			}
+
+			let nextValue = await instance.next();
+
+			while (!nextValue.done) {
+				nextValue.value.split("\n").forEach(readString);
 
 				nextValue = await instance.next();
 			}
 		}
 
 		async function init() {
-			// get first two lines of iterator
+			const lines: string[] = [];
 
-			// ignore first line as it's just a `[`
-			const firstLine = await instance.next();
-			if (firstLine.value !== "[") {
-				throw new TsonError("Expected first line to be `[`");
+			// get the head of the JSON
+
+			// console.log("getting head of JSON");
+			let lastResult: IteratorResult<string>;
+			while (lines.length < 4) {
+				lastResult = await instance.next();
+
+				lines.push(...(lastResult.value as string).split("\n").filter(Boolean));
+
+				// console.log("got line", lines);
 			}
 
-			// second line is the serialized payload
-			const second = await instance.next();
+			const [
+				/**
+				 * First line is just a `[`
+				 */
+				_firstLine,
+				/**
+				 * Second line is the shape of the JSON
+				 */
+				secondLine,
+				/**
+				 * Third line is a `,`
+				 */
+				_thirdLine,
+				/**
+				 * Fourth line is the start of the values array
+				 */
+				_fourthLine,
+				/**
+				 * Buffer is the rest of the iterator that came in the chunks while we were waiting for the first 4 lines
+				 */
+				...buffer
+			] = lines;
 
-			const secondValueParsed = JSON.parse(second.value) as TsonSerialized<any>;
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const secondValueParsed = JSON.parse(secondLine!) as TsonSerialized<any>;
 
 			const walk = walker(secondValueParsed.nonce);
 
-			const third = await instance.next();
-			if ((third.value as string).trimStart() !== ",") {
-				throw new TsonError("Expected third line to be `,`");
-			}
+			void getStreamedValues(buffer, lastResult.done, walk).catch((cause) => {
+				// Something went wrong while getting the streamed values
 
-			const fourth = await instance.next();
-			if ((fourth.value as string).trimStart() !== "[") {
-				throw new TsonError("Expected fourth line to be `[`");
-			}
+				const err = new TsonError(
+					"Stream interrupted: failed to get streamed values",
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					{ cause },
+				);
 
-			void getStreamedValues(walk).catch((cause) => {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				throw new TsonError("Failed to parse TSON stream", { cause });
+				// cancel all pending promises
+				for (const deferred of deferreds.values()) {
+					deferred.reject(err);
+				}
 			});
 
 			return walk(secondValueParsed.json);
 		}
 
 		const result = await init().catch((cause: unknown) => {
-			throw new TsonError("Failed to parse TSON stream", { cause });
+			throw new TsonError("Failed to initialize TSON stream", { cause });
 		});
 		return result;
 	}) as TsonParseAsync;

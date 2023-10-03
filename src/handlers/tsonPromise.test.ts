@@ -1,4 +1,5 @@
-import { expect, test } from "vitest";
+import http from "node:http";
+import { assert, expect, test } from "vitest";
 
 import {
 	TsonAsyncValueTuple,
@@ -7,13 +8,46 @@ import {
 import { createTsonAsync, tsonPromise } from "../index.js";
 import { TsonSerialized } from "../types.js";
 
-const createPromise = <T>(result: () => T) => {
+const createPromise = <T>(result: () => T, wait = 1) => {
 	return new Promise<T>((resolve) => {
 		setTimeout(() => {
 			resolve(result());
-		}, 1);
+		}, wait);
 	});
 };
+
+async function* readableStreamToAsyncIterable<T>(
+	stream: ReadableStream<T>,
+): AsyncIterable<T> {
+	// Get a lock on the stream
+	const reader = stream.getReader();
+
+	try {
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		while (true) {
+			// Read from the stream
+			const result = await reader.read();
+			// Exit if we're done
+			if (result.done) {
+				return;
+			}
+
+			// Else yield the chunk
+			yield result.value;
+		}
+	} finally {
+		reader.releaseLock();
+	}
+}
+
+async function* mapIterator<T, TValue>(
+	iterable: AsyncIterable<T>,
+	fn: (v: T) => TValue,
+): AsyncIterable<TValue> {
+	for await (const value of iterable) {
+		yield fn(value);
+	}
+}
 
 test("serialize promise", async () => {
 	const serialize = createAsyncTsonSerialize({
@@ -163,7 +197,7 @@ test("stringifier - no promises", async () => {
 	const buffer: string[] = [];
 
 	for await (const value of tson.stringify(obj, 4)) {
-		buffer.push(value);
+		buffer.push(value.trimEnd());
 	}
 
 	// expect(buffer).toHaveLength(5);
@@ -202,7 +236,7 @@ test("stringifier - with promise", async () => {
 	const buffer: string[] = [];
 
 	for await (const value of tson.stringify(obj, 4)) {
-		buffer.push(value);
+		buffer.push(value.trimEnd());
 	}
 
 	expect(buffer).toMatchInlineSnapshot(`
@@ -237,7 +271,7 @@ test("stringifier - promise in promise", async () => {
 	const buffer: string[] = [];
 
 	for await (const value of tson.stringify(obj, 2)) {
-		buffer.push(value);
+		buffer.push(value.trimEnd());
 	}
 
 	const full = JSON.parse(buffer.join("")) as [
@@ -338,4 +372,78 @@ test("stringify and parse promise with a promise", async () => {
 	const secondPromise = await firstPromise.anotherPromise;
 
 	expect(secondPromise).toBe(42);
+});
+
+// let's do it over an actual network connection
+test("stringify and parse promise with a promise over a network connection", async () => {
+	const obj = {
+		promise: createPromise(() => {
+			return {
+				aThirdPromise: createPromise(() => {
+					return 43;
+				}, 101),
+				anotherPromise: createPromise(() => {
+					return 42;
+				}, 100),
+			};
+		}, 100),
+	};
+	// create a node server
+	const server = await new Promise<http.Server>((resolve) => {
+		const server = http.createServer((_req, res) => {
+			async function handle() {
+				const tson = createTsonAsync({
+					nonce: () => "__tson",
+					types: [tsonPromise],
+				});
+
+				const strIterarable = tson.stringify(obj, 4);
+
+				for await (const value of strIterarable) {
+					res.write(value);
+				}
+
+				res.end();
+			}
+
+			void handle();
+		});
+
+		server.listen(0, () => {
+			resolve(server);
+		});
+	});
+
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+	const port = (server.address() as any).port as number;
+
+	// do a streamed fetch request
+	const response = await fetch(`http://localhost:${port}`);
+
+	assert(response.body);
+
+	// make response.body to an async iterator
+
+	const textDecoder = new TextDecoder();
+	const stringIterator = mapIterator(
+		readableStreamToAsyncIterable(response.body),
+		(v) => textDecoder.decode(v),
+	);
+	const tson = createTsonAsync({
+		nonce: () => "__tson",
+		types: [tsonPromise],
+	});
+
+	const value = await tson.parse(stringIterator);
+	const asObj = value as typeof obj;
+
+	const firstPromise = await asObj.promise;
+
+	expect(firstPromise).toHaveProperty("anotherPromise");
+
+	const secondPromise = await firstPromise.anotherPromise;
+
+	expect(secondPromise).toBe(42);
+
+	server.close();
 });
