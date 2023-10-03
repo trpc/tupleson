@@ -1,6 +1,10 @@
-import { createAsyncTsonSerializer } from "./serializeAsync.js";
+import {
+	createAsyncTsonSerializer,
+	createAsyncTsonStringifier,
+} from "./serializeAsync.js";
 import { TsonAsyncOptions } from "./types.js";
 
 export const createTsonAsync = (opts: TsonAsyncOptions) => ({
-	serializeAsync: createAsyncTsonSerializer(opts),
+	serialize: createAsyncTsonSerializer(opts),
+	stringify: createAsyncTsonStringifier(opts),
 });

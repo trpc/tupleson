@@ -8,6 +8,8 @@ import {
 	TsonAllTypes,
 	TsonAsyncIndex,
 	TsonAsyncOptions,
+	TsonAsyncStringifier,
+	TsonAsyncStringifierIterator,
 	TsonNonce,
 	TsonSerialized,
 	TsonSerializedValue,
@@ -22,7 +24,7 @@ type WalkFn = (value: unknown) => unknown;
 const PROMISE_RESOLVED = 0 as const;
 const PROMISE_REJECTED = 1 as const;
 
-type TsonAsyncValueTuple = [
+export type TsonAsyncValueTuple = [
 	TsonAsyncIndex,
 	typeof PROMISE_REJECTED | typeof PROMISE_RESOLVED,
 	unknown,
@@ -182,4 +184,45 @@ export function createAsyncTsonSerializer(
 			iterator,
 		];
 	};
+}
+
+export function createAsyncTsonStringifier(
+	opts: TsonAsyncOptions,
+): TsonAsyncStringifier {
+	const indent = (length: number) => " ".repeat(length);
+	const stringifier: (value: unknown, space?: number) => AsyncIterable<string> =
+		async function* stringify(value, space = 0) {
+			// head looks like
+
+			// [
+			// 		{ json: {}, nonce: "..." }
+			//  	,[
+
+			const [head, iterator] = createAsyncTsonSerializer(opts)(value);
+
+			// first line of the json: init the array, ignored when parsing>
+			yield "[";
+			// second line: the shape of the json - used when parsing>
+			yield indent(space * 1) + JSON.stringify(head);
+
+			// third line: comma before values, ignored when parsing
+			yield indent(space * 1) + ",";
+			// fourth line: the values array, ignored when parsing
+			yield indent(space * 1) + "[";
+
+			let isFirstStreamedValue = true;
+			for await (const value of iterator) {
+				let string = !isFirstStreamedValue ? "," : "";
+				isFirstStreamedValue = false;
+				string += JSON.stringify(value);
+				yield indent(space * 2) + string;
+
+				continue;
+			}
+
+			yield indent(space * 1) + "]"; // end value array
+			yield "]"; // end response
+		};
+
+	return stringifier as TsonAsyncStringifier;
 }

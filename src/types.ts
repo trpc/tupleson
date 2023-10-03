@@ -168,3 +168,12 @@ export type TsonStringifyFn = <TValue>(
 ) => TsonStringified<TValue>;
 
 export type TsonParseFn = <TValue>(string: TsonStringified<TValue>) => TValue;
+
+export type TsonAsyncStringifierIterator<TValue> = AsyncIterable<string> & {
+	[serialized]: TValue;
+};
+
+export type TsonAsyncStringifier = <TValue>(
+	value: TValue,
+	space?: number,
+) => TsonAsyncStringifierIterator<TValue>;
