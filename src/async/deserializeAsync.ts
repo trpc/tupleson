@@ -113,9 +113,17 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const deferred = deferreds.get(index)!;
+
+				const walkedResult = walk(result);
 				status === PROMISE_RESOLVED
-					? deferred.resolve(walk(result))
-					: deferred.reject(walk(result));
+					? deferred.resolve(walkedResult)
+					: deferred.reject(
+							walkedResult instanceof Error
+								? walkedResult
+								: new TsonError("Promise rejected on server", {
+										cause: walkedResult,
+								  }),
+					  );
 			}
 
 			buffer.forEach(readString);
@@ -140,13 +148,13 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 			// console.log("getting head of JSON");
 			let lastResult: IteratorResult<string>;
-			while (lines.length < 4) {
+			do {
 				lastResult = await instance.next();
 
 				lines.push(...(lastResult.value as string).split("\n").filter(Boolean));
 
 				// console.log("got line", lines);
-			}
+			} while (lines.length < 4);
 
 			const [
 				/**
@@ -176,7 +184,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 			const walk = walker(secondValueParsed.nonce);
 
-			void getStreamedValues(buffer, lastResult.done, walk).catch((cause) => {
+			void getStreamedValues(buffer, !!lastResult.done, walk).catch((cause) => {
 				// Something went wrong while getting the streamed values
 
 				const err = new TsonError(

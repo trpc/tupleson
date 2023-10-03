@@ -12,3 +12,18 @@ export const expectError = (fn: () => unknown) => {
 	expect(err).toBeInstanceOf(Error);
 	return err as Error;
 };
+
+export const waitError = async (
+	fnOrPromise: (() => unknown) | Promise<unknown>,
+) => {
+	let err: unknown;
+	try {
+		await (typeof fnOrPromise === "function" ? fnOrPromise() : fnOrPromise);
+	} catch (_err) {
+		err = _err;
+	}
+
+	expect(err).toBeDefined();
+	expect(err).toBeInstanceOf(Error);
+	return err as Error;
+};

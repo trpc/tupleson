@@ -9,9 +9,14 @@ import { createTsonAsync, tsonPromise } from "../index.js";
 import { TsonSerialized } from "../types.js";
 
 const createPromise = <T>(result: () => T, wait = 1) => {
-	return new Promise<T>((resolve) => {
+	return new Promise<T>((resolve, reject) => {
 		setTimeout(() => {
-			resolve(result());
+			try {
+				const res = result();
+				resolve(res);
+			} catch (err) {
+				reject(err);
+			}
 		}, wait);
 	});
 };
@@ -376,19 +381,13 @@ test("stringify and parse promise with a promise", async () => {
 
 // let's do it over an actual network connection
 test("stringify and parse promise with a promise over a network connection", async () => {
-	const obj = {
-		promise: createPromise(() => {
-			return {
-				aThirdPromise: createPromise(() => {
-					return 43;
-				}, 101),
-				anotherPromise: createPromise(() => {
-					return 42;
-				}, 100),
-			};
-		}, 100),
-	};
-	// create a node server
+	interface Obj {
+		promise: Promise<{
+			anotherPromise: Promise<number>;
+			rejectedPromise: Promise<number>;
+		}>;
+	}
+
 	const server = await new Promise<http.Server>((resolve) => {
 		const server = http.createServer((_req, res) => {
 			async function handle() {
@@ -397,6 +396,18 @@ test("stringify and parse promise with a promise over a network connection", asy
 					types: [tsonPromise],
 				});
 
+				const obj: Obj = {
+					promise: createPromise(() => {
+						return {
+							anotherPromise: createPromise(() => {
+								return 42;
+							}, 8),
+							rejectedPromise: createPromise<number>(() => {
+								throw new Error("foo");
+							}, 10),
+						};
+					}, 3),
+				};
 				const strIterarable = tson.stringify(obj, 4);
 
 				for await (const value of strIterarable) {
@@ -435,15 +446,27 @@ test("stringify and parse promise with a promise over a network connection", asy
 	});
 
 	const value = await tson.parse(stringIterator);
-	const asObj = value as typeof obj;
+	const asObj = value as Obj;
 
 	const firstPromise = await asObj.promise;
 
 	expect(firstPromise).toHaveProperty("anotherPromise");
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+	const err = await firstPromise.rejectedPromise.catch((err) => err);
+	assert.instanceOf(err, Error);
+
+	expect(err.cause).toMatchInlineSnapshot(`
+		{
+		  "name": "TsonPromiseRejectionError",
+		}
+	`);
+
 	const secondPromise = await firstPromise.anotherPromise;
 
 	expect(secondPromise).toBe(42);
+
+	expect(err).toMatchInlineSnapshot("[TsonError: Promise rejected on server]");
 
 	server.close();
 });
