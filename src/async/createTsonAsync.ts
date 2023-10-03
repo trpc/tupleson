@@ -1,4 +1,4 @@
-import { TsonAsyncOptions } from "../types.js";
+import { TsonAsyncOptions } from "./asyncTypes.js";
 import {
 	createAsyncTsonSerializer,
 	createAsyncTsonStringifier,

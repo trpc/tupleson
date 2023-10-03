@@ -1,4 +1,4 @@
-import { TsonAsyncType } from "../types.js";
+import { TsonAsyncType } from "../async/asyncTypes.js";
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
 	return typeof value === "object" && value !== null && "then" in value;

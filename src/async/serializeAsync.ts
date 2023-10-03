@@ -6,8 +6,6 @@ import { getNonce } from "../internals/getNonce.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
 	TsonAllTypes,
-	TsonAsyncIndex,
-	TsonAsyncOptions,
 	TsonNonce,
 	TsonSerialized,
 	TsonSerializedValue,
@@ -16,10 +14,9 @@ import {
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
 } from "../types.js";
-import {
-	TsonAsyncStringifier,
-	TsonAsyncStringifierIterator,
-} from "./asyncTypes.js";
+import { TsonAsyncOptions } from "./asyncTypes.js";
+import { TsonAsyncIndex } from "./asyncTypes.js";
+import { TsonAsyncStringifier } from "./asyncTypes.js";
 
 type WalkFn = (value: unknown) => unknown;
 
