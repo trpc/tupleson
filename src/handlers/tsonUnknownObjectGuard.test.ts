@@ -44,7 +44,7 @@ test("guard unwanted objects", () => {
 		assert(err instanceof TsonUnknownObjectGuardError);
 
 		expect(err).toMatchInlineSnapshot(
-			'[TsonUnknownObjectGuardError: Unknown object found]',
+			"[TsonUnknownObjectGuardError: Unknown object found]",
 		);
 		expect(err.value).toEqual(expected);
 	}
