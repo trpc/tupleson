@@ -14,6 +14,8 @@
 		"commitlint",
 		"contributorsrc",
 		"conventionalcommits",
+		"Iterarable",
+		"KATT",
 		"knip",
 		"lcov",
 		"markdownlintignore",
@@ -21,11 +23,10 @@
 		"outro",
 		"packagejson",
 		"quickstart",
-		"tsup",
-		"wontfix",
-		"tson",
 		"stringifier",
-		"KATT",
-		"tupleson"
+		"tson",
+		"tsup",
+		"tupleson",
+		"wontfix"
 	]
 }
