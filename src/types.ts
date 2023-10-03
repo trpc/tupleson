@@ -95,13 +95,13 @@ export type TsonType<
 	TSerializedType extends SerializedType,
 > = TsonTypeTester & TsonTransformer<TValue, TSerializedType>;
 
-type AsyncRegistered = TsonBranded<number, "AsyncRegistered">;
+export type TsonAsyncIndex = TsonBranded<number, "AsyncRegistered">;
 export interface TsonTransformerSerializeDeserializeAsync<TValue> {
 	async: true;
 	/**
 	 * From JSON-serializable value
 	 */
-	deserialize: (v: AsyncRegistered) => TValue;
+	deserialize: (v: TsonAsyncIndex) => TValue;
 
 	/**
 	 * The key to use when serialized
@@ -112,8 +112,8 @@ export interface TsonTransformerSerializeDeserializeAsync<TValue> {
 	 */
 	serialize: (
 		v: TValue,
-		register: (thing: TValue) => AsyncRegistered,
-	) => AsyncRegistered;
+		register: (thing: TValue) => TsonAsyncIndex,
+	) => TsonAsyncIndex;
 }
 
 export interface TsonAsyncType<TValue>
