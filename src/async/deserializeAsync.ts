@@ -92,7 +92,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 			done: boolean,
 			walk: WalkFn,
 		) {
-			function readString(str: string) {
+			function readLine(str: string) {
 				str = str.trimStart();
 				if (!str) {
 					return;
@@ -126,7 +126,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 					  );
 			}
 
-			buffer.forEach(readString);
+			buffer.forEach(readLine);
 
 			if (done) {
 				return;
@@ -135,7 +135,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 			let nextValue = await instance.next();
 
 			while (!nextValue.done) {
-				nextValue.value.split("\n").forEach(readString);
+				nextValue.value.split("\n").forEach(readLine);
 
 				nextValue = await instance.next();
 			}
