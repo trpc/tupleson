@@ -166,7 +166,7 @@ type TsonAsyncSerializer = <T>(
 	value: T,
 ) => [TsonSerialized<T>, AsyncIterable<TsonAsyncValueTuple>];
 
-export function createAsyncTsonSerializer(
+export function createAsyncTsonSerialize(
 	opts: TsonAsyncOptions,
 ): TsonAsyncSerializer {
 	return (value) => {
@@ -185,7 +185,7 @@ export function createAsyncTsonSerializer(
 	};
 }
 
-export function createAsyncTsonStringifier(
+export function createAsyncTsonStringify(
 	opts: TsonAsyncOptions,
 ): TsonAsyncStringifier {
 	const indent = (length: number) => " ".repeat(length);
@@ -197,7 +197,7 @@ export function createAsyncTsonStringifier(
 			// 		{ json: {}, nonce: "..." }
 			//  	,[
 
-			const [head, iterator] = createAsyncTsonSerializer(opts)(value);
+			const [head, iterator] = createAsyncTsonSerialize(opts)(value);
 
 			// first line of the json: init the array, ignored when parsing>
 			yield "[";
