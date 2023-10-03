@@ -123,6 +123,7 @@ module.exports = {
 		"no-only-tests/no-only-tests": "error",
 
 		// These on-by-default rules don't work well for this repo and we like them off.
+		"@typescript-eslint/no-explicit-any": "off",
 		"@typescript-eslint/padding-line-between-statements": [
 			"error",
 			{ blankLine: "always", next: "*", prev: "block-like" },

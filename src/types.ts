@@ -1,5 +1,3 @@
-// eslint-disable-next-line eslint-comments/disable-enable-pair
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const brand = Symbol("branded");
 
 export type TsonBranded<TType, TBrand> = TType & { [brand]: TBrand };
