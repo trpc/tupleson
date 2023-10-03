@@ -212,12 +212,11 @@ export function createAsyncTsonStringifier(
 
 			let isFirstStreamedValue = true;
 			for await (const value of iterator) {
-				let string = !isFirstStreamedValue ? "," : "";
-				isFirstStreamedValue = false;
-				string += JSON.stringify(value);
-				yield indent(space * 2) + string;
+				const prefix = indent(space * 2) + (isFirstStreamedValue ? "" : ",");
 
-				continue;
+				yield prefix + JSON.stringify(value);
+
+				isFirstStreamedValue = false;
 			}
 
 			yield indent(space * 1) + "]"; // end value array
