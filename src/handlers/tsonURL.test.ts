@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { createTson } from "../createTson.js";
+import { createTson } from "../index.js";
 import { tsonURL } from "./index.js";
 
 test("URL", () => {

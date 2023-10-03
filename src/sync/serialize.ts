@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, eslint-comments/disable-enable-pair */
-import { TsonCircularReferenceError } from "./errors.js";
-import { GetNonce, getNonce } from "./internals/getNonce.js";
-import { mapOrReturn } from "./internals/mapOrReturn.js";
+import { TsonCircularReferenceError } from "../errors.js";
+import { GetNonce, getNonce } from "../internals/getNonce.js";
+import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
 	TsonAllTypes,
 	TsonNonce,
@@ -14,7 +14,7 @@ import {
 	TsonTypeHandlerKey,
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
-} from "./types.js";
+} from "../types.js";
 
 type WalkFn = (value: unknown) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;

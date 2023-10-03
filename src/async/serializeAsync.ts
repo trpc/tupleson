@@ -1,9 +1,9 @@
 import {
 	TsonCircularReferenceError,
 	TsonPromiseRejectionError,
-} from "./errors.js";
-import { getNonce } from "./internals/getNonce.js";
-import { mapOrReturn } from "./internals/mapOrReturn.js";
+} from "../errors.js";
+import { getNonce } from "../internals/getNonce.js";
+import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
 	TsonAllTypes,
 	TsonAsyncIndex,
@@ -17,7 +17,7 @@ import {
 	TsonTypeHandlerKey,
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
-} from "./types.js";
+} from "../types.js";
 
 type WalkFn = (value: unknown) => unknown;
 

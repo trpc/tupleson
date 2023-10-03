@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 
+import { TsonAsyncValueTuple } from "../async/serializeAsync.js";
 import { createTsonAsync, tsonPromise } from "../index.js";
-import { TsonAsyncValueTuple } from "../serializeAsync.js";
 import { TsonSerialized, TsonSerializedValue } from "../types.js";
 
 const createPromise = <T>(result: () => T) => {

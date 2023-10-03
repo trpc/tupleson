@@ -1,7 +1,7 @@
-export { createTson } from "./createTson.js";
-export { createTsonAsync } from "./createTsonAsync.js";
+export { createTsonAsync } from "./async/createTsonAsync.js";
 export { createTsonDeserialize, createTsonParser } from "./deserialize.js";
-export { createTsonSerialize, createTsonStringify } from "./serialize.js";
+export { createTson } from "./sync/createTson.js";
+export { createTsonSerialize, createTsonStringify } from "./sync/serialize.js";
 
 export * from "./handlers/index.js";
 

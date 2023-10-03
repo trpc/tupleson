@@ -1,6 +1,6 @@
 import { assert, expect, test } from "vitest";
 
-import { createTson } from "../createTson.js";
+import { createTson } from "../index.js";
 import { expectError } from "../internals/testUtils.js";
 import { tsonSet } from "./index.js";
 import {
