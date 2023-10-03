@@ -124,6 +124,8 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 										cause: walkedResult,
 								  }),
 					  );
+
+				deferreds.delete(index);
 			}
 
 			buffer.forEach(readLine);
@@ -197,6 +199,8 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 				for (const deferred of deferreds.values()) {
 					deferred.reject(err);
 				}
+
+				deferreds.clear();
 			});
 
 			return walk(secondValueParsed.json);
