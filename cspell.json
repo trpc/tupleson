@@ -27,6 +27,7 @@
 		"tson",
 		"tsup",
 		"tupleson",
-		"wontfix"
+		"wontfix",
+		"deferreds"
 	]
 }
