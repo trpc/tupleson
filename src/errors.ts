@@ -1,11 +1,13 @@
 export class TsonError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = this.constructor.name;
+	constructor(message: string, opts?: ErrorOptions) {
+		super(message, opts);
+		this.name = "TsonError";
+
+		// set prototype
 	}
 }
 
-export class CircularReferenceError extends TsonError {
+export class TsonCircularReferenceError extends TsonError {
 	/**
 	 * The circular reference that was found
 	 */
@@ -13,7 +15,14 @@ export class CircularReferenceError extends TsonError {
 
 	constructor(value: unknown) {
 		super(`Circular reference detected`);
-		this.name = this.constructor.name;
+		this.name = "TsonCircularReferenceError";
 		this.value = value;
+	}
+}
+
+export class TsonPromiseRejectionError extends TsonError {
+	constructor(cause: unknown) {
+		super(`Promise rejected`, { cause });
+		this.name = "TsonPromiseRejectionError";
 	}
 }

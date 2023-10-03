@@ -8,3 +8,6 @@ export * from "./tsonUnknownObjectGuard.js";
 export * from "./tsonNumberGuard.js";
 export * from "./tsonURL.js";
 export * from "./tsonSymbol.js";
+
+// Async types
+export * from "./tsonPromise.js";
