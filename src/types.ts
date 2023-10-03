@@ -146,7 +146,7 @@ export interface TsonAsyncOptions {
 	types: (TsonAsyncType<any> | TsonType<any, any> | TsonType<any, never>)[];
 }
 
-const serialized = Symbol("serialized");
+export const serialized = Symbol("serialized");
 
 export interface TsonSerialized<TValue = unknown> {
 	json: TsonSerializedValue;
@@ -168,12 +168,3 @@ export type TsonStringifyFn = <TValue>(
 ) => TsonStringified<TValue>;
 
 export type TsonParseFn = <TValue>(string: TsonStringified<TValue>) => TValue;
-
-export type TsonAsyncStringifierIterator<TValue> = AsyncIterable<string> & {
-	[serialized]: TValue;
-};
-
-export type TsonAsyncStringifier = <TValue>(
-	value: TValue,
-	space?: number,
-) => TsonAsyncStringifierIterator<TValue>;

@@ -8,8 +8,6 @@ import {
 	TsonAllTypes,
 	TsonAsyncIndex,
 	TsonAsyncOptions,
-	TsonAsyncStringifier,
-	TsonAsyncStringifierIterator,
 	TsonNonce,
 	TsonSerialized,
 	TsonSerializedValue,
@@ -18,6 +16,10 @@ import {
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
 } from "../types.js";
+import {
+	TsonAsyncStringifier,
+	TsonAsyncStringifierIterator,
+} from "./asyncTypes.js";
 
 type WalkFn = (value: unknown) => unknown;
 
