@@ -6,7 +6,7 @@ function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
 
 export const tsonPromise: TsonAsyncType<PromiseLike<unknown>> = {
 	async: true,
-	deserialize: (idx, unwrap) => {},
+	deserialize: (idx, register) => register(idx),
 	key: "Promise",
 	serialize: (value, register) => register(value),
 	test: isPromiseLike,

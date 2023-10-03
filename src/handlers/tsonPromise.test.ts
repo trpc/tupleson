@@ -294,7 +294,8 @@ test("stringifier - promise in promise", async () => {
 	`);
 });
 
-test("pipe stringifier to parser", async () => {
+test.only("pipe stringifier to parser", async () => {
+	//
 	const obj = {
 		foo: createPromise(() => "bar" as const),
 	};

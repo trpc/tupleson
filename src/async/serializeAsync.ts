@@ -20,8 +20,8 @@ import { TsonAsyncStringifier } from "./asyncTypes.js";
 
 type WalkFn = (value: unknown) => unknown;
 
-const PROMISE_RESOLVED = 0 as const;
-const PROMISE_REJECTED = 1 as const;
+export const PROMISE_RESOLVED = 0 as const;
+export const PROMISE_REJECTED = 1 as const;
 
 export type TsonAsyncValueTuple = [
 	TsonAsyncIndex,

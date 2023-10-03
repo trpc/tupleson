@@ -18,7 +18,10 @@ export interface TsonTransformerSerializeDeserializeAsync<TValue> {
 	/**
 	 * From JSON-serializable value
 	 */
-	deserialize: (v: TsonAsyncIndex) => TValue;
+	deserialize: (
+		v: TsonAsyncIndex,
+		register: (index: TsonAsyncIndex) => Promise<TValue>,
+	) => TValue;
 
 	/**
 	 * The key to use when serialized
