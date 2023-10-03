@@ -59,7 +59,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 		}
 	}
 
-	return async (iterator) => {
+	return (async (iterator) => {
 		const instance = iterator[Symbol.asyncIterator]();
 
 		const walker: WalkerFactory = (nonce) => {
@@ -86,7 +86,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 			return walk;
 		};
 
-		async function getStreamedValues() {
+		async function getStreamedValues(walk: WalkFn) {
 			let nextValue = await instance.next();
 
 			while (!nextValue.done) {
@@ -109,8 +109,8 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					const deferred = deferreds.get(index)!;
 					status === PROMISE_RESOLVED
-						? deferred.resolve(result)
-						: deferred.reject(result);
+						? deferred.resolve(walk(result))
+						: deferred.reject(walk(result));
 				}
 
 				nextValue = await instance.next();
@@ -143,15 +143,16 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 				throw new TsonError("Expected fourth line to be `[`");
 			}
 
-			void getStreamedValues().catch((cause) => {
+			void getStreamedValues(walk).catch((cause) => {
 				throw new TsonError("Failed to parse TSON stream", { cause });
 			});
 
 			return walk(secondValueParsed.json);
 		}
 
-		return await init().catch((cause: unknown) => {
+		const result = await init().catch((cause: unknown) => {
 			throw new TsonError("Failed to parse TSON stream", { cause });
 		});
-	};
+		return result;
+	}) as TsonParseAsync;
 }

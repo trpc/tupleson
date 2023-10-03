@@ -294,8 +294,7 @@ test("stringifier - promise in promise", async () => {
 	`);
 });
 
-test.only("pipe stringifier to parser", async () => {
-	//
+test("pipe stringifier to parser", async () => {
 	const obj = {
 		foo: createPromise(() => "bar" as const),
 	};
@@ -311,4 +310,32 @@ test.only("pipe stringifier to parser", async () => {
 
 	expect(value).toHaveProperty("foo");
 	expect(await value.foo).toBe("bar");
+});
+
+test("stringify and parse promise with a promise", async () => {
+	const obj = {
+		promise: createPromise(() => {
+			return {
+				anotherPromise: createPromise(() => {
+					return 42;
+				}),
+			};
+		}),
+	};
+	const tson = createTsonAsync({
+		nonce: () => "__tson",
+		types: [tsonPromise],
+	});
+
+	const strIterarable = tson.stringify(obj, 4);
+
+	const value = await tson.parse(strIterarable);
+
+	const firstPromise = await value.promise;
+
+	expect(firstPromise).toHaveProperty("anotherPromise");
+
+	const secondPromise = await firstPromise.anotherPromise;
+
+	expect(secondPromise).toBe(42);
 });
