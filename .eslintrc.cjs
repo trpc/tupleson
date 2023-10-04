@@ -16,6 +16,9 @@ module.exports = {
 			extends: ["plugin:markdown/recommended"],
 			files: ["**/*.md"],
 			processor: "markdown/markdown",
+			rules: {
+				"eslint-comments/disable-enable-pair": "off",
+			},
 		},
 		{
 			extends: [
@@ -58,6 +61,7 @@ module.exports = {
 				"@typescript-eslint/no-explicit-any": "off",
 				"@typescript-eslint/no-unsafe-member-access": "off",
 				"deprecation/deprecation": "error",
+				"eslint-comments/disable-enable-pair": "off",
 			},
 		},
 		{
@@ -121,7 +125,8 @@ module.exports = {
 	rules: {
 		// These off/less-strict-by-default rules work well for this repo and we like them on.
 
-		"@typescript-eslint/no-unused-vars": ["error", { caughtErrors: "all" }],
+		"@typescript-eslint/no-unused-vars": "off",
+		"eslint-comments/disable-enable-pair": "off",
 		"no-only-tests/no-only-tests": "error",
 
 		// These on-by-default rules don't work well for this repo and we like them off.

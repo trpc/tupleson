@@ -36,7 +36,7 @@ Serialize exactly what you want; no more, no less.
 ### Example
 
 ```ts
-/* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import */
+/* eslint-disable @typescript-eslint/no-unused-vars, n/no-missing-import */
 
 import {
 	// Create serializer / deserializer
@@ -113,7 +113,7 @@ type Obj = typeof obj;
 > See test reference in [`./src/extend/temporal.test.ts`](./src/extend/temporal.test.ts)
 
 ```ts
-/* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import, n/no-unpublished-import */
+/* eslint-disable @typescript-eslint/no-unused-vars, n/no-missing-import, n/no-unpublished-import */
 import { Temporal } from "@js-temporal/polyfill";
 import { TsonType, createTson } from "tupleson";
 
@@ -141,7 +141,7 @@ const tson = createTson({
 > See test reference in [`./src/extend/decimal.test.ts`](./src/extend/decimal.test.ts)
 
 ```ts
-/* eslint-disable eslint-comments/disable-enable-pair, @typescript-eslint/no-unused-vars, n/no-missing-import, n/no-unpublished-import */
+/* eslint-disable @typescript-eslint/no-unused-vars, n/no-missing-import, n/no-unpublished-import */
 import { Decimal } from "decimal.js";
 
 const decimalJs: TsonType<Decimal, string> = {
