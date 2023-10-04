@@ -188,27 +188,28 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 			const walk = walker(head.nonce);
 
-			const result = walk(head.json);
-			void getStreamedValues(buffer, walk).catch((cause) => {
-				// Something went wrong while getting the streamed values
+			try {
+				return walk(head.json);
+			} finally {
+				void getStreamedValues(buffer, walk).catch((cause) => {
+					// Something went wrong while getting the streamed values
 
-				const err = new TsonError(
-					`Stream interrupted: ${(cause as Error).message}`,
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					{ cause },
-				);
+					const err = new TsonError(
+						`Stream interrupted: ${(cause as Error).message}`,
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						{ cause },
+					);
 
-				// cancel all pending promises
-				for (const deferred of deferreds.values()) {
-					deferred.reject(err);
-				}
+					// cancel all pending promises
+					for (const deferred of deferreds.values()) {
+						deferred.reject(err);
+					}
 
-				deferreds.clear();
+					deferreds.clear();
 
-				opts.onStreamError?.(err);
-			});
-
-			return result;
+					opts.onStreamError?.(err);
+				});
+			}
 		}
 
 		const result = await init().catch((cause: unknown) => {
