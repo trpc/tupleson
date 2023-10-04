@@ -205,7 +205,6 @@ test("stringifier - no promises", async () => {
 		buffer.push(value.trimEnd());
 	}
 
-	// expect(buffer).toHaveLength(5);
 	expect(buffer).toMatchInlineSnapshot(`
 		[
 		  "[",

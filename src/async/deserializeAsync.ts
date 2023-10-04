@@ -94,16 +94,14 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 		) {
 			function readLine(str: string) {
 				str = str.trimStart();
-				if (!str) {
-					return;
-				}
 
 				if (str.startsWith(",")) {
 					// ignore leading comma
 					str = str.slice(1);
 				}
 
-				if (!str.startsWith("[")) {
+				if (str.length < 2) {
+					// minimum length is 2: '[]'
 					return;
 				}
 
@@ -156,7 +154,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 				lines.push(...(lastResult.value as string).split("\n").filter(Boolean));
 
 				// console.log("got line", lines);
-			} while (lines.length < 4);
+			} while (lines.length < 2);
 
 			const [
 				/**
@@ -166,25 +164,16 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 				/**
 				 * Second line is the shape of the JSON
 				 */
-				secondLine,
-				/**
-				 * Third line is a `,`
-				 */
-				_thirdLine,
-				/**
-				 * Fourth line is the start of the values array
-				 */
-				_fourthLine,
-				/**
-				 * Buffer is the rest of the iterator that came in the chunks while we were waiting for the first 4 lines
-				 */
+				headLine,
+				// .. third line is a `,`
+				// .. fourth line is the start of the values array
 				...buffer
 			] = lines;
 
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const secondValueParsed = JSON.parse(secondLine!) as TsonSerialized<any>;
+			const head = JSON.parse(headLine!) as TsonSerialized<any>;
 
-			const walk = walker(secondValueParsed.nonce);
+			const walk = walker(head.nonce);
 
 			void getStreamedValues(buffer, !!lastResult.done, walk).catch((cause) => {
 				// Something went wrong while getting the streamed values
@@ -203,7 +192,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 				deferreds.clear();
 			});
 
-			return walk(secondValueParsed.json);
+			return walk(head.json);
 		}
 
 		const result = await init().catch((cause: unknown) => {
