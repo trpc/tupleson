@@ -7,31 +7,31 @@
 
 * make promise deserialization less flaky ([#21](https://github.com/KATT/tupleson/issues/21)) ([4cadad0](https://github.com/KATT/tupleson/commit/4cadad09ba651daac95391f7c59c084038407365))
 
-# [0.11.0](https://github.com/KATT/tupleson/compare/0.10.0...0.11.0) (2023-10-03)
+## [0.11.0](https://github.com/KATT/tupleson/compare/0.10.0...0.11.0) (2023-10-03)
 
 ### Features
 
 * serialization of promises ([#20](https://github.com/KATT/tupleson/issues/20)) ([dc286be](https://github.com/KATT/tupleson/commit/dc286bef71e537a658bbd7cb5dad7596eaf59b47))
 
-# [0.10.0](https://github.com/KATT/tupleson/compare/0.9.0...0.10.0) (2023-10-02)
+## [0.10.0](https://github.com/KATT/tupleson/compare/0.9.0...0.10.0) (2023-10-02)
 
 ### Features
 
 * use UUIDs for nonce ([#19](https://github.com/KATT/tupleson/issues/19)) ([e347640](https://github.com/KATT/tupleson/commit/e347640dd10bf6ecc6b93f99e3118f572da671b3))
 
-# [0.9.0](https://github.com/KATT/tupleson/compare/0.8.0...0.9.0) (2023-10-01)
+## [0.9.0](https://github.com/KATT/tupleson/compare/0.8.0...0.9.0) (2023-10-01)
 
 ### Features
 
 * simplify symbols ([#16](https://github.com/KATT/tupleson/issues/16)) ([32720a4](https://github.com/KATT/tupleson/commit/32720a445acfcf31d51caa38dc9d7c7a165771d3))
 
-# [0.8.0](https://github.com/KATT/tupleson/compare/0.7.0...0.8.0) (2023-10-01)
+## [0.8.0](https://github.com/KATT/tupleson/compare/0.7.0...0.8.0) (2023-10-01)
 
 ### Features
 
 * prevent maximum call stack in favor of a custom error ([#15](https://github.com/KATT/tupleson/issues/15)) ([18cdf03](https://github.com/KATT/tupleson/commit/18cdf03aee46dbb0a58cb781d1a464f1dba992f1))
 
-# [0.7.0](https://github.com/KATT/tupleson/compare/0.6.1...0.7.0) (2023-09-30)
+## [0.7.0](https://github.com/KATT/tupleson/compare/0.6.1...0.7.0) (2023-09-30)
 
 ### Features
 
@@ -43,19 +43,19 @@
 
 * update readme ([#12](https://github.com/KATT/tupleson/issues/12)) ([d47b05d](https://github.com/KATT/tupleson/commit/d47b05de2348d05b62db236bae66cdf6b25896f9))
 
-# [0.6.0](https://github.com/KATT/tupleson/compare/0.5.0...0.6.0) (2023-09-30)
+## [0.6.0](https://github.com/KATT/tupleson/compare/0.5.0...0.6.0) (2023-09-30)
 
 ### Features
 
 * add custom serializer example ([#8](https://github.com/KATT/tupleson/issues/8)) ([58eab05](https://github.com/KATT/tupleson/commit/58eab05baff0dd07803b5aa01c402fcd02df5b09))
 
-# [0.5.0](https://github.com/KATT/tupleson/compare/0.4.0...0.5.0) (2023-09-30)
+## [0.5.0](https://github.com/KATT/tupleson/compare/0.4.0...0.5.0) (2023-09-30)
 
 ### Features
 
 * `createTypeson` -> `createTson` ([#6](https://github.com/KATT/tupleson/issues/6)) ([3613716](https://github.com/KATT/tupleson/commit/3613716eedb541c2592d14f76130a7295d340d5c))
 
-# [0.4.0](https://github.com/KATT/tupleson/compare/0.3.1...0.4.0) (2023-09-30)
+## [0.4.0](https://github.com/KATT/tupleson/compare/0.3.1...0.4.0) (2023-09-30)
 
 ### Features
 
@@ -67,7 +67,7 @@
 
 * `serializer` -> `serialize` ([#4](https://github.com/KATT/tupleson/issues/4)) ([93a45a5](https://github.com/KATT/tupleson/commit/93a45a5e32ad1ebddba6283627551830c1e621ec))
 
-# [0.3.0](https://github.com/KATT/tupleson/compare/0.2.0...0.3.0) (2023-09-30)
+## [0.3.0](https://github.com/KATT/tupleson/compare/0.2.0...0.3.0) (2023-09-30)
 
 ### Features
 
