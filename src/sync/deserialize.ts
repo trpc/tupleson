@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, eslint-comments/disable-enable-pair */
-
 import { isTsonTuple } from "../internals/isTsonTuple.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {

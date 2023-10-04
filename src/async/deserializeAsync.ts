@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, eslint-comments/disable-enable-pair */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { TsonError } from "../errors.js";
@@ -189,26 +188,28 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 			const walk = walker(head.nonce);
 
-			void getStreamedValues(buffer, walk).catch((cause) => {
-				// Something went wrong while getting the streamed values
+			try {
+				return walk(head.json);
+			} finally {
+				getStreamedValues(buffer, walk).catch((cause) => {
+					// Something went wrong while getting the streamed values
 
-				const err = new TsonError(
-					`Stream interrupted: ${(cause as Error).message}`,
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					{ cause },
-				);
+					const err = new TsonError(
+						`Stream interrupted: ${(cause as Error).message}`,
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						{ cause },
+					);
 
-				// cancel all pending promises
-				for (const deferred of deferreds.values()) {
-					deferred.reject(err);
-				}
+					// cancel all pending promises
+					for (const deferred of deferreds.values()) {
+						deferred.reject(err);
+					}
 
-				deferreds.clear();
+					deferreds.clear();
 
-				opts.onStreamError?.(err);
-			});
-
-			return walk(head.json);
+					opts.onStreamError?.(err);
+				});
+			}
 		}
 
 		const result = await init().catch((cause: unknown) => {

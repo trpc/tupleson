@@ -1,5 +1,3 @@
-// eslint-disable-next-line eslint-comments/disable-enable-pair
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TsonError } from "../errors.js";
 import { TsonType } from "../types.js";
 import { TsonBranded, TsonTypeTesterCustom } from "../types.js";

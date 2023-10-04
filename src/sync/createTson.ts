@@ -1,5 +1,3 @@
-/* eslint-disable eslint-comments/disable-enable-pair */
-
 import { TsonOptions } from "../types.js";
 import { createTsonDeserialize, createTsonParser } from "./deserialize.js";
 import { createTsonSerialize, createTsonStringify } from "./serialize.js";

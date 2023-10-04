@@ -1,5 +1,3 @@
-// eslint-disable-next-line eslint-comments/disable-enable-pair
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect, test, vitest } from "vitest";
 
 import {
@@ -179,7 +177,6 @@ test("async: bad values", async () => {
 		expect(onErrorSpy).toHaveBeenCalledTimes(1);
 	});
 
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
 		"[TsonError: Stream interrupted: Stream ended with 1 pending promises]",
 	);
