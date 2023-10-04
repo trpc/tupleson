@@ -1,7 +1,16 @@
-import { expect, test } from "vitest";
+// eslint-disable-next-line eslint-comments/disable-enable-pair
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { expect, test, vitest } from "vitest";
 
-import { TsonOptions, TsonType, createTson } from "./index.js";
-import { expectError } from "./internals/testUtils.js";
+import {
+	TsonOptions,
+	TsonType,
+	createTson,
+	createTsonAsync,
+	tsonPromise,
+} from "./index.js";
+import { expectError, waitError, waitFor } from "./internals/testUtils.js";
+import { TsonNonce, TsonSerialized } from "./types.js";
 
 test("multiple handlers for primitive string found", () => {
 	const stringHandler: TsonType<string, never> = {
@@ -67,4 +76,111 @@ test("allow duplicate objects", () => {
 	const actual = t.deserialize(t.serialize(expected));
 
 	expect(actual).toEqual(expected);
+});
+
+test("async: duplicate keys", async () => {
+	const str = "hello world";
+
+	async function* generator() {
+		await Promise.resolve();
+		yield str;
+	}
+
+	const stringHandler: TsonType<string, string> = {
+		deserialize: (v) => v,
+		key: "string",
+		serialize: (v) => v,
+		test: (v) => typeof v === "string",
+	};
+
+	const err = await waitError(async () => {
+		const gen = generator();
+		await createTsonAsync({
+			types: [stringHandler, stringHandler],
+		}).parse(gen);
+	});
+
+	expect(err).toMatchInlineSnapshot(
+		"[Error: Multiple handlers for key string found]",
+	);
+});
+
+test("async: multiple handlers for primitive string found", async () => {
+	const stringHandler: TsonType<string, never> = {
+		primitive: "string",
+	};
+
+	const err = await waitError(async () => {
+		const iterator = createTsonAsync({
+			types: [stringHandler, stringHandler],
+		}).stringify({});
+
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		for await (const _ of iterator) {
+			// noop
+		}
+	});
+
+	expect(err).toMatchInlineSnapshot(
+		"[Error: Multiple handlers for primitive string found]",
+	);
+});
+
+test("async: bad init", async () => {
+	const str = "hello world";
+
+	async function* generator() {
+		await Promise.resolve();
+		yield str;
+	}
+
+	const err = await waitError(async () => {
+		const gen = generator();
+		await createTsonAsync({
+			types: [],
+		}).parse(gen);
+	});
+
+	expect(err).toMatchInlineSnapshot(
+		"[TsonError: Failed to initialize TSON stream]",
+	);
+});
+
+test.only("async: bad values", async () => {
+	async function* generator() {
+		await Promise.resolve();
+
+		yield "[" + "\n";
+
+		const obj = {
+			json: {
+				foo: ["Promise", 0, "__tson"],
+			},
+			nonce: "__tson",
+		} as TsonSerialized<any>;
+		yield JSON.stringify(obj) + "\n";
+
+		await Promise.resolve();
+
+		yield "  ," + "\n";
+		yield "  [" + "\n";
+		// [....... values should be here .......]
+		yield "  ]" + "\n";
+		yield "]";
+	}
+
+	const onErrorSpy = vitest.fn();
+	await createTsonAsync({
+		onStreamError: onErrorSpy,
+		types: [tsonPromise],
+	}).parse(generator());
+
+	await waitFor(() => {
+		expect(onErrorSpy).toHaveBeenCalledTimes(1);
+	});
+
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
+		'[TsonError: Stream interrupted: Stream ended with 1 pending promises]',
+	);
 });

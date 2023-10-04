@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { TsonError } from "../errors.js";
+import { assert } from "../internals/assert.js";
 import { isTsonTuple } from "../internals/isTsonTuple.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
@@ -119,11 +120,10 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 				// console.log("got value", index, status, result, deferred);
 				const walkedResult = walk(result);
 
-				if (!deferred) {
-					throw new TsonError(
-						`No deferred found for index ${index} (status: ${status})`,
-					);
-				}
+				assert(
+					deferred,
+					`No deferred found for index ${index} (status: ${status})`,
+				);
 
 				status === PROMISE_RESOLVED
 					? deferred.resolve(walkedResult)
@@ -147,6 +147,11 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 				nextValue = await instance.next();
 			}
+
+			assert(
+				!deferreds.size,
+				`Stream ended with ${deferreds.size} pending promises`,
+			);
 		}
 
 		async function init() {
@@ -178,8 +183,9 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 				...buffer
 			] = lines;
 
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const head = JSON.parse(headLine!) as TsonSerialized<any>;
+			assert(headLine, "No head line found");
+
+			const head = JSON.parse(headLine) as TsonSerialized<any>;
 
 			const walk = walker(head.nonce);
 
@@ -198,6 +204,8 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 				}
 
 				deferreds.clear();
+
+				opts.onStreamError?.(err);
 			});
 
 			return walk(head.json);
