@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, eslint-comments/disable-enable-pair */
+/* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { TsonError } from "../errors.js";
