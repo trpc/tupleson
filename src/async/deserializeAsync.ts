@@ -191,7 +191,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 			try {
 				return walk(head.json);
 			} finally {
-				void getStreamedValues(buffer, walk).catch((cause) => {
+				getStreamedValues(buffer, walk).catch((cause) => {
 					// Something went wrong while getting the streamed values
 
 					const err = new TsonError(
