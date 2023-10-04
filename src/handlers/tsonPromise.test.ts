@@ -1,11 +1,15 @@
 import http from "node:http";
 import { assert, expect, test } from "vitest";
 
+import { TsonAsyncOptions } from "../async/asyncTypes.js";
+import { createTsonParseAsyncInner } from "../async/deserializeAsync.js";
 import {
 	TsonAsyncValueTuple,
 	createAsyncTsonSerialize,
+	createAsyncTsonStringify,
 } from "../async/serializeAsync.js";
 import { createTsonAsync, tsonPromise } from "../index.js";
+import { waitError, waitFor } from "../internals/testUtils.js";
 import { TsonSerialized } from "../types.js";
 
 const createPromise = <T>(result: () => T, wait = 1) => {
@@ -474,4 +478,42 @@ test("stringify and parse promise with a promise over a network connection", asy
 	`);
 
 	server.close();
+});
+
+test("does not crash node when it receives a promise rejection", async () => {
+	const opts: TsonAsyncOptions = {
+		nonce: () => "__tson",
+		types: [tsonPromise],
+	};
+	const stringify = createAsyncTsonStringify(opts);
+
+	const parse = createTsonParseAsyncInner(opts);
+
+	const original = {
+		foo: createPromise(() => {
+			throw new Error("foo");
+		}, 5),
+	};
+	const iterator = stringify(original);
+
+	const [_result, deferreds] = await parse(iterator);
+
+	const result = _result as typeof original;
+	await waitFor(() => {
+		assert(deferreds.size === 1);
+	});
+
+	await waitFor(() => {
+		assert(deferreds.size === 0);
+	});
+
+	expect(result).toMatchInlineSnapshot(`
+		{
+		  "foo": Promise {},
+		}
+	`);
+
+	const err = await waitError(result.foo);
+
+	expect(err).toMatchInlineSnapshot("[TsonError: Promise rejected on server]");
 });
