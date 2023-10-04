@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, eslint-comments/disable-enable-pair */
+/* eslint-disable eslint-comments/disable-enable-pair */
 import { TsonCircularReferenceError } from "../errors.js";
 import { GetNonce, getNonce } from "../internals/getNonce.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
