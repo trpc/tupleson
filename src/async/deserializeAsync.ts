@@ -95,7 +95,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 		async function getStreamedValues(
 			buffer: string[],
-			done: boolean,
+
 			walk: WalkFn,
 		) {
 			function readLine(str: string) {
@@ -140,10 +140,6 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 			buffer.forEach(readLine);
 
-			if (done) {
-				return;
-			}
-
 			let nextValue = await instance.next();
 
 			while (!nextValue.done) {
@@ -187,7 +183,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 			const walk = walker(head.nonce);
 
-			void getStreamedValues(buffer, !!lastResult.done, walk).catch((cause) => {
+			void getStreamedValues(buffer, walk).catch((cause) => {
 				// Something went wrong while getting the streamed values
 
 				const err = new TsonError(
