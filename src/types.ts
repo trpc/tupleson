@@ -39,6 +39,7 @@ export interface TsonTransformerSerializeDeserialize<
 	TValue,
 	TSerializedType extends SerializedType,
 > {
+	async?: false;
 	/**
 	 * From JSON-serializable value
 	 */
@@ -105,7 +106,7 @@ export interface TsonOptions {
 	types: (TsonType<any, any> | TsonType<any, never>)[];
 }
 
-const serialized = Symbol("serialized");
+export const serialized = Symbol("serialized");
 
 export interface TsonSerialized<TValue = unknown> {
 	json: TsonSerializedValue;

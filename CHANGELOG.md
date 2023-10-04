@@ -1,11 +1,14 @@
-
-
-# [0.10.0](https://github.com/KATT/tupleson/compare/0.9.0...0.10.0) (2023-10-02)
-
+# [0.11.0](https://github.com/KATT/tupleson/compare/0.10.0...0.11.0) (2023-10-03)
 
 ### Features
 
-* use UUIDs for nonce ([#19](https://github.com/KATT/tupleson/issues/19)) ([e347640](https://github.com/KATT/tupleson/commit/e347640dd10bf6ecc6b93f99e3118f572da671b3))
+- serialization of promises ([#20](https://github.com/KATT/tupleson/issues/20)) ([dc286be](https://github.com/KATT/tupleson/commit/dc286bef71e537a658bbd7cb5dad7596eaf59b47))
+
+# [0.10.0](https://github.com/KATT/tupleson/compare/0.9.0...0.10.0) (2023-10-02)
+
+### Features
+
+- use UUIDs for nonce ([#19](https://github.com/KATT/tupleson/issues/19)) ([e347640](https://github.com/KATT/tupleson/commit/e347640dd10bf6ecc6b93f99e3118f572da671b3))
 
 # [0.9.0](https://github.com/KATT/tupleson/compare/0.8.0...0.9.0) (2023-10-01)
 

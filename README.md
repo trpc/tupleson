@@ -25,6 +25,8 @@
 
 ## Introduction
 
+> This package is still experimental (although it's pretty well tested) & is subject to big changes
+
 A hackable JSON serializer/deserializer that allows you to serialize/deserialize almost[^1] anything.
 
 Serialize exactly what you want; no more, no less.
@@ -104,9 +106,9 @@ type Obj = typeof obj;
 // -> type Obj = { foo: string; set: Set<number>; }
 ```
 
-### Extend with a custom serializer
+## Extend with a custom serializer
 
-#### [Temporal](https://www.npmjs.com/package/@js-temporal/polyfill)
+### [Temporal](https://www.npmjs.com/package/@js-temporal/polyfill)
 
 > See test reference in [`./src/extend/temporal.test.ts`](./src/extend/temporal.test.ts)
 
@@ -134,7 +136,7 @@ const tson = createTson({
 });
 ```
 
-#### [Decimal.js](https://github.com/MikeMcl/decimal.js)
+### [Decimal.js](https://github.com/MikeMcl/decimal.js)
 
 > See test reference in [`./src/extend/decimal.test.ts`](./src/extend/decimal.test.ts)
 
@@ -153,6 +155,8 @@ const tson = createTson({
 	types: [decimalJs],
 });
 ```
+
+---
 
 <!-- ## All contributors ✨
 

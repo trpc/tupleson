@@ -1,10 +1,10 @@
 import { assert, expect, test } from "vitest";
 
-import { createTson } from "../createTson.js";
+import { createTson } from "../index.js";
 import { expectError } from "../internals/testUtils.js";
 import { tsonSet } from "./index.js";
 import {
-	UnknownObjectGuardError,
+	TsonUnknownObjectGuardError,
 	tsonUnknownObjectGuard,
 } from "./tsonUnknownObjectGuard.js";
 
@@ -41,10 +41,10 @@ test("guard unwanted objects", () => {
 		const expected = new Map([["a", 1]]);
 
 		const err = expectError(() => t.parse(t.stringify(expected)));
-		assert(err instanceof UnknownObjectGuardError);
+		assert(err instanceof TsonUnknownObjectGuardError);
 
 		expect(err).toMatchInlineSnapshot(
-			"[UnknownObjectGuardError: Unknown object found]",
+			"[TsonUnknownObjectGuardError: Unknown object found]",
 		);
 		expect(err.value).toEqual(expected);
 	}
