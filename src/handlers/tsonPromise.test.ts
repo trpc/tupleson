@@ -387,6 +387,7 @@ test("stringify and parse promise with a promise over a network connection", asy
 		}>;
 	}
 
+	// ----- server --------
 	const server = await new Promise<http.Server>((resolve) => {
 		const server = http.createServer((_req, res) => {
 			async function handle() {
@@ -403,7 +404,7 @@ test("stringify and parse promise with a promise over a network connection", asy
 							}, 8),
 							rejectedPromise: createPromise<number>(() => {
 								throw new Error("foo");
-							}, 10),
+							}, 1),
 						};
 					}, 3),
 				};
@@ -427,6 +428,12 @@ test("stringify and parse promise with a promise over a network connection", asy
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
 	const port = (server.address() as any).port as number;
 
+	// ----- client --------
+	const tson = createTsonAsync({
+		nonce: () => "__tson",
+		types: [tsonPromise],
+	});
+
 	// do a streamed fetch request
 	const response = await fetch(`http://localhost:${port}`);
 
@@ -439,17 +446,16 @@ test("stringify and parse promise with a promise over a network connection", asy
 		readableStreamToAsyncIterable(response.body),
 		(v) => textDecoder.decode(v),
 	);
-	const tson = createTsonAsync({
-		nonce: () => "__tson",
-		types: [tsonPromise],
-	});
-
 	const value = await tson.parse(stringIterator);
 	const asObj = value as Obj;
 
 	const firstPromise = await asObj.promise;
 
 	expect(firstPromise).toHaveProperty("anotherPromise");
+
+	const secondPromise = await firstPromise.anotherPromise;
+
+	expect(secondPromise).toBe(42);
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 	const err = await firstPromise.rejectedPromise.catch((err) => err);
@@ -461,10 +467,6 @@ test("stringify and parse promise with a promise over a network connection", asy
 		  "name": "TsonPromiseRejectionError",
 		}
 	`);
-
-	const secondPromise = await firstPromise.anotherPromise;
-
-	expect(secondPromise).toBe(42);
 
 	expect(err).toMatchInlineSnapshot("[TsonError: Promise rejected on server]");
 

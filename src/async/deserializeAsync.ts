@@ -76,6 +76,12 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 							deferreds.set(idx, deferred);
 
+							if (typeof window === "undefined") {
+								deferred.promise.catch(() => {
+									// prevent unhandled promise rejection crashes 🤷‍♂️
+								});
+							}
+
 							return deferred.promise;
 						},
 					);
@@ -109,10 +115,16 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 				const [index, status, result] = JSON.parse(str) as TsonAsyncValueTuple;
 
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const deferred = deferreds.get(index)!;
-
+				const deferred = deferreds.get(index);
+				// console.log("got value", index, status, result, deferred);
 				const walkedResult = walk(result);
+
+				if (!deferred) {
+					throw new TsonError(
+						`No deferred found for index ${index} (status: ${status})`,
+					);
+				}
+
 				status === PROMISE_RESOLVED
 					? deferred.resolve(walkedResult)
 					: deferred.reject(
@@ -179,7 +191,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 				// Something went wrong while getting the streamed values
 
 				const err = new TsonError(
-					"Stream interrupted: failed to get streamed values",
+					`Stream interrupted: ${(cause as Error).message}`,
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					{ cause },
 				);
