@@ -459,7 +459,6 @@ test("stringify and parse promise with a promise over a network connection", asy
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 	const err = await firstPromise.rejectedPromise.catch((err) => err);
-	assert.instanceOf(err, Error);
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	expect(err.cause).toMatchInlineSnapshot(`
@@ -467,8 +466,14 @@ test("stringify and parse promise with a promise over a network connection", asy
 		  "name": "TsonPromiseRejectionError",
 		}
 	`);
-
+	assert(err instanceof Error);
 	expect(err).toMatchInlineSnapshot("[TsonError: Promise rejected on server]");
+
+	expect(err.cause).toMatchInlineSnapshot(`
+		{
+		  "name": "TsonPromiseRejectionError",
+		}
+	`);
 
 	server.close();
 });
