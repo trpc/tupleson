@@ -188,6 +188,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 			const walk = walker(head.nonce);
 
+			const result = walk(head.json);
 			void getStreamedValues(buffer, walk).catch((cause) => {
 				// Something went wrong while getting the streamed values
 
@@ -207,7 +208,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 				opts.onStreamError?.(err);
 			});
 
-			return walk(head.json);
+			return result;
 		}
 
 		const result = await init().catch((cause: unknown) => {
