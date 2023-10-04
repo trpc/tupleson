@@ -1,3 +1,12 @@
+
+
+## [0.11.1](https://github.com/KATT/tupleson/compare/0.11.0...0.11.1) (2023-10-04)
+
+
+### Bug Fixes
+
+* make promise deserialization less flaky ([#21](https://github.com/KATT/tupleson/issues/21)) ([4cadad0](https://github.com/KATT/tupleson/commit/4cadad09ba651daac95391f7c59c084038407365))
+
 # [0.11.0](https://github.com/KATT/tupleson/compare/0.10.0...0.11.0) (2023-10-03)
 
 ### Features
