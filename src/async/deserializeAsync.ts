@@ -45,10 +45,9 @@ function createDeferred<T>() {
 
 type Deferred<T> = ReturnType<typeof createDeferred<T>>;
 
-export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
+export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
-	const deferreds = new Map<TsonAsyncIndex, Deferred<unknown>>();
 	for (const handler of opts.types) {
 		if (handler.key) {
 			if (typeByKey[handler.key]) {
@@ -60,7 +59,8 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 		}
 	}
 
-	return (async (iterator) => {
+	return async (iterator: AsyncIterable<string>) => {
+		const deferreds = new Map<TsonAsyncIndex, Deferred<unknown>>();
 		const instance = iterator[Symbol.asyncIterator]();
 
 		const walker: WalkerFactory = (nonce) => {
@@ -78,7 +78,7 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 
 							if (typeof window === "undefined") {
 								deferred.promise.catch(() => {
-									// prevent unhandled promise rejection crashes 🤷‍♂️
+									// prevent unhandled promise rejection crashes in Node.js 🤷‍♂️
 								});
 							}
 
@@ -215,6 +215,16 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 		const result = await init().catch((cause: unknown) => {
 			throw new TsonError("Failed to initialize TSON stream", { cause });
 		});
+		return [result, deferreds] as const;
+	};
+}
+
+export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
+	const instance = createTsonParseAsyncInner(opts);
+
+	return (async (iterator) => {
+		const [result] = await instance(iterator);
+
 		return result;
 	}) as TsonParseAsync;
 }
