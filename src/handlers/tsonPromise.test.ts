@@ -1,5 +1,5 @@
 import http from "node:http";
-import { assert, expect, test, vi } from "vitest";
+import { assert, expect, test } from "vitest";
 
 import {
 	TsonAsyncValueTuple,

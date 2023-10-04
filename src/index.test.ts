@@ -10,7 +10,7 @@ import {
 	tsonPromise,
 } from "./index.js";
 import { expectError, waitError, waitFor } from "./internals/testUtils.js";
-import { TsonNonce, TsonSerialized } from "./types.js";
+import { TsonSerialized } from "./types.js";
 
 test("multiple handlers for primitive string found", () => {
 	const stringHandler: TsonType<string, never> = {
