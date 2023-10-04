@@ -146,7 +146,7 @@ test("async: bad init", async () => {
 	);
 });
 
-test.only("async: bad values", async () => {
+test("async: bad values", async () => {
 	async function* generator() {
 		await Promise.resolve();
 
@@ -181,6 +181,6 @@ test.only("async: bad values", async () => {
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
-		'[TsonError: Stream interrupted: Stream ended with 1 pending promises]',
+		"[TsonError: Stream interrupted: Stream ended with 1 pending promises]",
 	);
 });
