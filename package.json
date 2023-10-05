@@ -16,7 +16,8 @@
 		"LICENSE.md",
 		"README.md",
 		"src",
-		"!**/*.test.*"
+		"!**/*.test.*",
+		"!**/test*"
 	],
 	"scripts": {
 		"build": "tsup",
