@@ -14,7 +14,10 @@
 		"lib/",
 		"package.json",
 		"LICENSE.md",
-		"README.md"
+		"README.md",
+		"src",
+		"!**/*.test.*",
+		"!**/test*"
 	],
 	"scripts": {
 		"build": "tsup",
