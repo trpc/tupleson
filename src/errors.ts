@@ -1,3 +1,5 @@
+import { isPlainObject } from "./internals/isPlainObject.js";
+
 export class TsonError extends Error {
 	constructor(message: string, opts?: ErrorOptions) {
 		super(message, opts);
@@ -20,9 +22,28 @@ export class TsonCircularReferenceError extends TsonError {
 	}
 }
 
+function getErrorMessageFromUnknown(unknown: unknown): null | string {
+	if (typeof unknown === "string") {
+		return unknown;
+	}
+
+	if (unknown instanceof Error) {
+		return unknown.message;
+	}
+
+	if (isPlainObject(unknown) && typeof unknown["message"] === "string") {
+		return unknown["message"];
+	}
+
+	return null;
+}
+
 export class TsonPromiseRejectionError extends TsonError {
 	constructor(cause: unknown) {
-		super(`Promise rejected`, { cause });
+		// get error message from cause if possible
+
+		const message = getErrorMessageFromUnknown(cause) ?? "Promise rejected";
+		super(message, { cause });
 		this.name = "TsonPromiseRejectionError";
 	}
 
