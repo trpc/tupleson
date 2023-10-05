@@ -25,7 +25,7 @@
 
 ## Introduction
 
-> This package is still experimental (although it's pretty well tested) & is subject to big changes
+> ⚠️ This package is still experimental (although it's pretty well tested) & is subject to big changes
 
 A hackable JSON serializer/deserializer that allows you to serialize/deserialize almost[^1] anything.
 
@@ -105,6 +105,10 @@ type Obj = typeof obj;
 //   ^?
 // -> type Obj = { foo: string; set: Set<number>; }
 ```
+
+### Streaming `Promise`s and `AsyncIterable`s
+
+> See test files called `deserializeAsync.test.ts`
 
 ## Extend with a custom serializer
 
