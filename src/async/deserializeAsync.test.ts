@@ -1,7 +1,6 @@
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 
 import {
-	createTson,
 	createTsonAsync,
 	tsonAsyncIterator,
 	tsonBigint,
@@ -42,8 +41,10 @@ test("deserialize async iterable", async () => {
 });
 
 test("stringify async iterable + promise", async () => {
+	const onErr = vi.fn();
 	const tson = createTsonAsync({
 		nonce: () => "__tson",
+		onStreamError: onErr,
 		types: [tsonAsyncIterator, tsonPromise, tsonBigint],
 	});
 

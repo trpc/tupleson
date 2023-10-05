@@ -85,7 +85,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					return transformer.deserialize({
 						// abortSignal
 						onDone() {
-							// TODO
+							deferreds.delete(idx);
 						},
 						stream: {
 							[Symbol.asyncIterator]: () => {
@@ -98,9 +98,10 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 											// console.log("waiting for deferred", idx, def.promise);
 
 											const value = await def.promise;
-											deferreds.delete(idx);
 
-											// console.log("got deferred, deleting", idx, value);
+											// creating a new deferred for the next value
+											deferreds.set(idx, createDeferred());
+
 											return {
 												done: false,
 												value,

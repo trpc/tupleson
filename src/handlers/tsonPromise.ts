@@ -32,6 +32,8 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 				const [status, result] = value.value;
 
 				status === PROMISE_RESOLVED ? resolve(result as any) : reject(result);
+
+				opts.onDone();
 			}
 
 			void _handle().catch(reject);
@@ -74,21 +76,25 @@ export const tsonAsyncIterator: TsonAsyncType<
 	async: true,
 	deserialize: (opts) => {
 		return (async function* generator() {
-			for await (const value of opts.stream) {
-				switch (value[0]) {
-					case ITERATOR_DONE: {
-						return;
-					}
+			try {
+				for await (const value of opts.stream) {
+					switch (value[0]) {
+						case ITERATOR_DONE: {
+							return;
+						}
 
-					case ITERATOR_ERROR: {
-						throw value[1];
-					}
+						case ITERATOR_ERROR: {
+							throw value[1];
+						}
 
-					case ITERATOR_VALUE: {
-						yield value[1];
-						break;
+						case ITERATOR_VALUE: {
+							yield value[1];
+							break;
+						}
 					}
 				}
+			} finally {
+				opts.onDone();
 			}
 		})();
 	},

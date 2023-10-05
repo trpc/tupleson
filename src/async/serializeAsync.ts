@@ -44,7 +44,7 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 
 			// let _tmp = 0;
 
-			do {
+			while (iterators.size > 0) {
 				// if (_tmp++ > 10) {
 				// 	throw new Error("too many iterations");
 				// }
@@ -79,7 +79,7 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 
 				const valueTuple: TsonAsyncValueTuple = [idx, walk(result.value)];
 				yield valueTuple;
-			} while (iterators.size > 0);
+			}
 		},
 	};
 
@@ -234,6 +234,7 @@ export function createAsyncTsonStringify(
 			yield indent(space * 1) + "[" + "\n";
 
 			let isFirstStreamedValue = true;
+
 			for await (const value of iterator) {
 				const prefix = indent(space * 2) + (isFirstStreamedValue ? "" : ",");
 
