@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { TsonError } from "../errors.js";
 import { assert } from "../internals/assert.js";
 import { isTsonTuple } from "../internals/isTsonTuple.js";
@@ -15,13 +15,13 @@ import {
 	TsonAsyncStringifierIterator,
 	TsonAsyncType,
 } from "./asyncTypes.js";
-import { PROMISE_RESOLVED, TsonAsyncValueTuple } from "./serializeAsync.js";
+import { TsonAsyncValueTuple } from "./serializeAsync.js";
 
 type WalkFn = (value: unknown) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 
 type AnyTsonTransformerSerializeDeserialize =
-	| TsonAsyncType<any>
+	| TsonAsyncType<any, any>
 	| TsonTransformerSerializeDeserialize<any, any>;
 
 type TsonParseAsync = <TValue>(
@@ -45,6 +45,15 @@ function createDeferred<T>() {
 
 type Deferred<T> = ReturnType<typeof createDeferred<T>>;
 
+function createSafeDeferred<T>() {
+	const deferred = createDeferred();
+
+	deferred.promise.catch(() => {
+		// prevent unhandled promise rejection
+	});
+	return deferred as Deferred<T>;
+}
+
 export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
@@ -60,31 +69,67 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 	}
 
 	return async (iterator: AsyncIterable<string>) => {
-		const deferreds = new Map<TsonAsyncIndex, Deferred<unknown>>();
+		// this is an awful hack to get around making a some sort of pipeline
+		const cache = new Map<
+			TsonAsyncIndex,
+			{
+				next: Deferred<unknown>;
+				values: unknown[];
+			}
+		>();
 		const instance = iterator[Symbol.asyncIterator]();
 
 		const walker: WalkerFactory = (nonce) => {
 			const walk: WalkFn = (value) => {
 				if (isTsonTuple(value, nonce)) {
 					const [type, serializedValue] = value;
-					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					const transformer = typeByKey[type]!;
-					return transformer.deserialize(
-						walk(serializedValue) as any,
-						(idx) => {
-							const deferred = createDeferred<unknown>();
+					const transformer = typeByKey[type];
 
-							deferreds.set(idx, deferred);
+					assert(transformer, `No transformer found for type ${type}`);
 
-							if (typeof window === "undefined") {
-								deferred.promise.catch(() => {
-									// prevent unhandled promise rejection crashes in Node.js 🤷‍♂️
-								});
-							}
+					const walkedValue = walk(serializedValue);
+					if (!transformer.async) {
+						return transformer.deserialize(walk(walkedValue));
+					}
 
-							return deferred.promise;
+					const idx = serializedValue as TsonAsyncIndex;
+
+					const self = {
+						next: createSafeDeferred(),
+						values: [],
+					};
+					cache.set(idx, self);
+
+					return transformer.deserialize({
+						// abortSignal
+						onDone() {
+							cache.delete(idx);
 						},
-					);
+						stream: {
+							[Symbol.asyncIterator]: () => {
+								let index = 0;
+								return {
+									next: async () => {
+										const idx = index++;
+
+										if (self.values.length > idx) {
+											return {
+												done: false,
+												value: self.values[idx],
+											};
+										}
+
+										await self.next.promise;
+
+										return {
+											done: false,
+											value: self.values[idx],
+										};
+									},
+								};
+							},
+						},
+					});
 				}
 
 				return mapOrReturn(value, walk);
@@ -111,30 +156,18 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					return;
 				}
 
-				// console.log("got something that looks like a value", str);
+				const [index, result] = JSON.parse(str) as TsonAsyncValueTuple;
 
-				const [index, status, result] = JSON.parse(str) as TsonAsyncValueTuple;
+				const item = cache.get(index);
 
-				const deferred = deferreds.get(index);
-				// console.log("got value", index, status, result, deferred);
 				const walkedResult = walk(result);
 
-				assert(
-					deferred,
-					`No deferred found for index ${index} (status: ${status})`,
-				);
+				assert(item, `No deferred found for index ${index}`);
 
-				status === PROMISE_RESOLVED
-					? deferred.resolve(walkedResult)
-					: deferred.reject(
-							walkedResult instanceof Error
-								? walkedResult
-								: new TsonError("Promise rejected on server", {
-										cause: walkedResult,
-								  }),
-					  );
-
-				deferreds.delete(index);
+				// resolving deferred
+				item.values.push(walkedResult);
+				item.next.resolve(walkedResult);
+				item.next = createSafeDeferred();
 			}
 
 			buffer.forEach(readLine);
@@ -147,10 +180,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				nextValue = await instance.next();
 			}
 
-			assert(
-				!deferreds.size,
-				`Stream ended with ${deferreds.size} pending promises`,
-			);
+			assert(!cache.size, `Stream ended with ${cache.size} pending promises`);
 		}
 
 		async function init() {
@@ -158,14 +188,11 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 			// get the head of the JSON
 
-			// console.log("getting head of JSON");
 			let lastResult: IteratorResult<string>;
 			do {
 				lastResult = await instance.next();
 
 				lines.push(...(lastResult.value as string).split("\n").filter(Boolean));
-
-				// console.log("got line", lines);
 			} while (lines.length < 2);
 
 			const [
@@ -201,11 +228,11 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					);
 
 					// cancel all pending promises
-					for (const deferred of deferreds.values()) {
-						deferred.reject(err);
+					for (const deferred of cache.values()) {
+						deferred.next.reject(err);
 					}
 
-					deferreds.clear();
+					cache.clear();
 
 					opts.onStreamError?.(err);
 				});
@@ -215,7 +242,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 		const result = await init().catch((cause: unknown) => {
 			throw new TsonError("Failed to initialize TSON stream", { cause });
 		});
-		return [result, deferreds] as const;
+		return [result, cache] as const;
 	};
 }
 

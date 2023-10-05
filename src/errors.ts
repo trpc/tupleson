@@ -25,4 +25,10 @@ export class TsonPromiseRejectionError extends TsonError {
 		super(`Promise rejected`, { cause });
 		this.name = "TsonPromiseRejectionError";
 	}
+
+	static from(cause: unknown) {
+		return cause instanceof Error
+			? cause
+			: new TsonPromiseRejectionError(cause);
+	}
 }

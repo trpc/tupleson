@@ -1,7 +1,5 @@
-import {
-	TsonCircularReferenceError,
-	TsonPromiseRejectionError,
-} from "../errors.js";
+import { TsonCircularReferenceError } from "../errors.js";
+import { assert } from "../internals/assert.js";
 import { getNonce } from "../internals/getNonce.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
@@ -14,62 +12,76 @@ import {
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
 } from "../types.js";
-import { TsonAsyncOptions } from "./asyncTypes.js";
-import { TsonAsyncIndex } from "./asyncTypes.js";
-import { TsonAsyncStringifier } from "./asyncTypes.js";
+import {
+	TsonAsyncIndex,
+	TsonAsyncOptions,
+	TsonAsyncStringifier,
+} from "./asyncTypes.js";
 
 type WalkFn = (value: unknown) => unknown;
 
-export const PROMISE_RESOLVED = 0 as const;
-const PROMISE_REJECTED = 1 as const;
-
-export type TsonAsyncValueTuple = [
-	TsonAsyncIndex,
-	typeof PROMISE_REJECTED | typeof PROMISE_RESOLVED,
-	unknown,
-];
+export type TsonAsyncValueTuple = [TsonAsyncIndex, unknown];
 
 function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 	// instance variables
-	let promiseIndex = 0 as TsonAsyncIndex;
-	const promises = new Map<TsonAsyncIndex, Promise<TsonAsyncValueTuple>>();
+	let asyncIndex = 0;
 	const seen = new WeakSet();
 	const cache = new WeakMap<object, unknown>();
 
+	const iterators = new Map<TsonAsyncIndex, AsyncIterator<unknown>>();
+
 	const iterator = {
 		async *[Symbol.asyncIterator]() {
-			while (promises.size > 0) {
-				const tuple = await Promise.race(promises.values());
+			// race all active iterators and yield next value as they come
+			// when one iterator is done, remove it from the list
 
-				promises.delete(tuple[0]);
-				yield walk(tuple) as typeof tuple;
+			// when all iterators are done, we're done
+
+			const nextAsyncIteratorValue = new Map<
+				TsonAsyncIndex,
+				Promise<[TsonAsyncIndex, IteratorResult<unknown>]>
+			>();
+
+			// let _tmp = 0;
+
+			while (iterators.size > 0) {
+				// if (_tmp++ > 10) {
+				// 	throw new Error("too many iterations");
+				// }
+
+				// set next cursor
+				for (const [idx, iterator] of iterators) {
+					if (!nextAsyncIteratorValue.has(idx)) {
+						nextAsyncIteratorValue.set(
+							idx,
+							iterator.next().then((result) => [idx, result]),
+						);
+					}
+				}
+
+				const nextValues = Array.from(nextAsyncIteratorValue.values());
+
+				const [idx, result] = await Promise.race(nextValues);
+
+				if (result.done) {
+					nextAsyncIteratorValue.delete(idx);
+					iterators.delete(idx);
+					continue;
+				} else {
+					const iterator = iterators.get(idx);
+
+					assert(iterator, `iterator ${idx} not found`);
+					nextAsyncIteratorValue.set(
+						idx,
+						iterator.next().then((result) => [idx, result]),
+					);
+				}
+
+				const valueTuple: TsonAsyncValueTuple = [idx, walk(result.value)];
+				yield valueTuple;
 			}
 		},
 	};
-	// helper fns
-	function registerPromise(promise: Promise<unknown>): TsonAsyncIndex {
-		const index = promiseIndex++ as TsonAsyncIndex;
-		promises.set(
-			index,
-			promise
-				.then((result) => {
-					const tuple: TsonAsyncValueTuple = [index, PROMISE_RESOLVED, result];
-					return tuple;
-				})
-				//        ^?
-				.catch((err) => {
-					const tuple: TsonAsyncValueTuple = [
-						index,
-						PROMISE_REJECTED,
-						new TsonPromiseRejectionError(err),
-					];
-
-					return tuple;
-				}),
-		);
-
-		return index;
-	}
 
 	const handlers = (() => {
 		const all = types.map((handler) => {
@@ -79,10 +91,22 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 				walk: WalkFn,
 			) => TsonSerializedValue;
 
-			const $serialize: Serializer = handler.serialize
+			const $serialize: Serializer = handler.serializeIterator
+				? (value): TsonTuple => {
+						const idx = asyncIndex++ as TsonAsyncIndex;
+
+						const iterator = handler.serializeIterator({
+							// abortSignal: new AbortSignal(),
+							value,
+						});
+						iterators.set(idx, iterator[Symbol.asyncIterator]());
+
+						return [handler.key as TsonTypeHandlerKey, idx, nonce];
+				  }
+				: handler.serialize
 				? (value, nonce, walk): TsonTuple => [
 						handler.key as TsonTypeHandlerKey,
-						walk(handler.serialize(value, registerPromise)),
+						walk(handler.serialize(value)),
 						nonce,
 				  ]
 				: (value, _nonce, walk) => walk(value);
@@ -210,6 +234,7 @@ export function createAsyncTsonStringify(
 			yield indent(space * 1) + "[" + "\n";
 
 			let isFirstStreamedValue = true;
+
 			for await (const value of iterator) {
 				const prefix = indent(space * 2) + (isFirstStreamedValue ? "" : ",");
 

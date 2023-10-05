@@ -1,16 +1,26 @@
-import http from "node:http";
 import { assert, expect, test } from "vitest";
 
 import { TsonAsyncOptions } from "../async/asyncTypes.js";
-import { createTsonParseAsyncInner } from "../async/deserializeAsync.js";
+import {
+	createTsonParseAsync,
+	createTsonParseAsyncInner,
+} from "../async/deserializeAsync.js";
 import {
 	TsonAsyncValueTuple,
 	createAsyncTsonSerialize,
 	createAsyncTsonStringify,
 } from "../async/serializeAsync.js";
 import { createTsonAsync, tsonPromise } from "../index.js";
-import { waitError, waitFor } from "../internals/testUtils.js";
-import { TsonSerialized } from "../types.js";
+import {
+	mapIterable,
+	readableStreamToAsyncIterable,
+} from "../internals/iterableUtils.js";
+import {
+	createTestServer,
+	waitError,
+	waitFor,
+} from "../internals/testUtils.js";
+import { TsonSerialized, TsonType } from "../types.js";
 
 const createPromise = <T>(result: () => T, wait = 1) => {
 	return new Promise<T>((resolve, reject) => {
@@ -25,38 +35,22 @@ const createPromise = <T>(result: () => T, wait = 1) => {
 	});
 };
 
-async function* readableStreamToAsyncIterable<T>(
-	stream: ReadableStream<T>,
-): AsyncIterable<T> {
-	// Get a lock on the stream
-	const reader = stream.getReader();
-
-	try {
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		while (true) {
-			// Read from the stream
-			const result = await reader.read();
-			// Exit if we're done
-			if (result.done) {
-				return;
-			}
-
-			// Else yield the chunk
-			yield result.value;
-		}
-	} finally {
-		reader.releaseLock();
+const tsonError: TsonType<
+	Error,
+	{
+		message: string;
 	}
-}
-
-async function* mapIterator<T, TValue>(
-	iterable: AsyncIterable<T>,
-	fn: (v: T) => TValue,
-): AsyncIterable<TValue> {
-	for await (const value of iterable) {
-		yield fn(value);
-	}
-}
+> = {
+	deserialize: (v) => {
+		const err = new Error(v.message);
+		return err;
+	},
+	key: "Error",
+	serialize: (v) => ({
+		message: v.message,
+	}),
+	test: (v): v is Error => v instanceof Error,
+};
 
 test("serialize promise", async () => {
 	const serialize = createAsyncTsonSerialize({
@@ -88,8 +82,10 @@ test("serialize promise", async () => {
 		[
 		  [
 		    0,
-		    0,
-		    42,
+		    [
+		      0,
+		      42,
+		    ],
 		  ],
 		]
 	`);
@@ -137,19 +133,23 @@ test("serialize promise that returns a promise", async () => {
 		[
 		  [
 		    0,
-		    0,
-		    {
-		      "anotherPromise": [
-		        "Promise",
-		        1,
-		        "__tson",
-		      ],
-		    },
+		    [
+		      0,
+		      {
+		        "anotherPromise": [
+		          "Promise",
+		          1,
+		          "__tson",
+		        ],
+		      },
+		    ],
 		  ],
 		  [
 		    1,
-		    0,
-		    42,
+		    [
+		      0,
+		      42,
+		    ],
 		  ],
 		]
 	`);
@@ -186,8 +186,10 @@ test("promise that rejects", async () => {
 		[
 		  [
 		    0,
-		    1,
-		    [TsonPromiseRejectionError: Promise rejected],
+		    [
+		      1,
+		      [Error: foo],
+		    ],
 		  ],
 		]
 	`);
@@ -253,7 +255,7 @@ test("stringifier - with promise", async () => {
 		  "    {\\"json\\":[\\"Promise\\",0,\\"__tson\\"],\\"nonce\\":\\"__tson\\"}",
 		  "    ,",
 		  "    [",
-		  "        [0,0,\\"bar\\"]",
+		  "        [0,[0,\\"bar\\"]]",
 		  "    ]",
 		  "]",
 		]
@@ -305,19 +307,23 @@ test("stringifier - promise in promise", async () => {
 		[
 		  [
 		    0,
-		    0,
-		    {
-		      "anotherPromise": [
-		        "Promise",
-		        1,
-		        "__tson",
-		      ],
-		    },
+		    [
+		      0,
+		      {
+		        "anotherPromise": [
+		          "Promise",
+		          1,
+		          "__tson",
+		        ],
+		      },
+		    ],
 		  ],
 		  [
 		    1,
-		    0,
-		    42,
+		    [
+		      0,
+		      42,
+		    ],
 		  ],
 		]
 	`);
@@ -328,8 +334,8 @@ test("stringifier - promise in promise", async () => {
 		  "  {\\"json\\":{\\"promise\\":[\\"Promise\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
 		  "  ,",
 		  "  [",
-		  "    [0,0,{\\"anotherPromise\\":[\\"Promise\\",1,\\"__tson\\"]}]",
-		  "    ,[1,0,42]",
+		  "    [0,[0,{\\"anotherPromise\\":[\\"Promise\\",1,\\"__tson\\"]}]]",
+		  "    ,[1,[0,42]]",
 		  "  ]",
 		  "]",
 		]
@@ -382,7 +388,6 @@ test("stringify and parse promise with a promise", async () => {
 	expect(secondPromise).toBe(42);
 });
 
-// let's do it over an actual network connection
 test("stringify and parse promise with a promise over a network connection", async () => {
 	interface Obj {
 		promise: Promise<{
@@ -390,65 +395,53 @@ test("stringify and parse promise with a promise over a network connection", asy
 			rejectedPromise: Promise<number>;
 		}>;
 	}
+	const opts: TsonAsyncOptions = {
+		nonce: () => "__tson",
+		types: [tsonPromise, tsonError],
+	};
 
-	// ----- server --------
-	const server = await new Promise<http.Server>((resolve) => {
-		const server = http.createServer((_req, res) => {
-			async function handle() {
-				const tson = createTsonAsync({
-					nonce: () => "__tson",
-					types: [tsonPromise],
-				});
+	const server = await createTestServer({
+		handleRequest: async (_req, res) => {
+			const tson = createTsonAsync(opts);
 
-				const obj: Obj = {
-					promise: createPromise(() => {
-						return {
-							anotherPromise: createPromise(() => {
-								return 42;
-							}, 8),
-							rejectedPromise: createPromise<number>(() => {
-								throw new Error("foo");
-							}, 1),
-						};
-					}, 3),
-				};
-				const strIterarable = tson.stringify(obj, 4);
+			const obj: Obj = {
+				promise: createPromise(() => {
+					return {
+						anotherPromise: createPromise(() => {
+							return 42;
+						}, 8),
+						rejectedPromise: createPromise<number>(() => {
+							throw new Error("foo");
+						}, 1),
+					};
+				}, 3),
+			};
+			const strIterarable = tson.stringify(obj, 4);
 
-				for await (const value of strIterarable) {
-					res.write(value);
-				}
-
-				res.end();
+			for await (const value of strIterarable) {
+				res.write(value);
 			}
 
-			void handle();
-		});
-
-		server.listen(0, () => {
-			resolve(server);
-		});
+			res.end();
+		},
 	});
-
-	const port = (server.address() as any).port as number;
 
 	// ----- client --------
-	const tson = createTsonAsync({
-		nonce: () => "__tson",
-		types: [tsonPromise],
-	});
+	const tson = createTsonAsync(opts);
 
 	// do a streamed fetch request
-	const response = await fetch(`http://localhost:${port}`);
+	const response = await fetch(server.url);
 
 	assert(response.body);
 
 	// make response.body to an async iterator
 
 	const textDecoder = new TextDecoder();
-	const stringIterator = mapIterator(
+	const stringIterator = mapIterable(
 		readableStreamToAsyncIterable(response.body),
 		(v) => textDecoder.decode(v),
 	);
+
 	const value = await tson.parse(stringIterator);
 	const asObj = value as Obj;
 
@@ -463,19 +456,11 @@ test("stringify and parse promise with a promise over a network connection", asy
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 	const err = await firstPromise.rejectedPromise.catch((err) => err);
 
-	expect(err.cause).toMatchInlineSnapshot(`
-		{
-		  "name": "TsonPromiseRejectionError",
-		}
-	`);
+	expect(err.cause).toMatchInlineSnapshot("undefined");
 	assert(err instanceof Error);
-	expect(err).toMatchInlineSnapshot("[TsonError: Promise rejected on server]");
+	expect(err).toMatchInlineSnapshot("[Error: foo]");
 
-	expect(err.cause).toMatchInlineSnapshot(`
-		{
-		  "name": "TsonPromiseRejectionError",
-		}
-	`);
+	expect(err.cause).toMatchInlineSnapshot("undefined");
 
 	server.close();
 });
@@ -515,5 +500,67 @@ test("does not crash node when it receives a promise rejection", async () => {
 
 	const err = await waitError(result.foo);
 
-	expect(err).toMatchInlineSnapshot("[TsonError: Promise rejected on server]");
+	expect(err).toMatchInlineSnapshot(
+		"[TsonPromiseRejectionError: Promise rejected]",
+	);
+});
+
+test("stringify promise rejection", async () => {
+	const opts: TsonAsyncOptions = {
+		nonce: () => "__tson",
+		types: [tsonPromise, tsonError],
+	};
+	const stringify = createAsyncTsonStringify(opts);
+
+	const parse = createTsonParseAsync(opts);
+
+	const original = {
+		foo: createPromise(() => {
+			return {
+				err: createPromise(() => {
+					throw new Error("foo");
+				}, 5),
+			};
+		}),
+	};
+	{
+		const iterator = stringify(original, 2);
+		const buffer: string[] = [];
+
+		for await (const value of iterator) {
+			buffer.push(value.trimEnd());
+		}
+
+		expect(buffer).toMatchInlineSnapshot(`
+		[
+		  "[",
+		  "  {\\"json\\":{\\"foo\\":[\\"Promise\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
+		  "  ,",
+		  "  [",
+		  "    [0,[0,{\\"err\\":[\\"Promise\\",1,\\"__tson\\"]}]]",
+		  "    ,[1,[1,[\\"Error\\",{\\"message\\":\\"foo\\"},\\"__tson\\"]]]",
+		  "  ]",
+		  "]",
+		]
+	`);
+	}
+
+	{
+		// parse
+		const iterator = stringify(original, 2);
+
+		const result = await parse(iterator);
+
+		expect(result).toMatchInlineSnapshot(`
+			{
+			  "foo": Promise {},
+			}
+		`);
+
+		const foo = await result.foo;
+
+		const err = await waitError(foo.err);
+
+		expect(err).toMatchInlineSnapshot("[Error: foo]");
+	}
 });
