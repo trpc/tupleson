@@ -90,26 +90,27 @@ test("stringify async iterable + promise", async () => {
 	expect(result).toEqual([1n, 2n, 3n, 4n, 5n]);
 });
 
-test("e2e: stringify and parse promise with a promise over a network connection", async () => {
+test("e2e: stringify async iterable and promise over the network", async () => {
 	function createMockObj() {
 		async function* generator() {
-			for (const number of [1, 2, 3, 4, 5]) {
+			for (const number of [1n, 2n, 3n, 4n, 5n]) {
 				await new Promise((resolve) => setTimeout(resolve, 1));
-				yield BigInt(number);
+				yield number;
 			}
 		}
 
 		return {
 			foo: "bar",
 			iterable: generator(),
-			// promise: Promise.resolve(42),
+			promise: Promise.resolve(42),
+			rejectedPromise: Promise.reject(new Error("rejected promise")),
 		};
 	}
 
 	type MockObj = ReturnType<typeof createMockObj>;
 
+	// ------------- server -------------------
 	const opts: TsonAsyncOptions = {
-		nonce: () => "__tson",
 		types: [tsonPromise, tsonAsyncIterator, tsonBigint],
 	};
 
@@ -119,9 +120,6 @@ test("e2e: stringify and parse promise with a promise over a network connection"
 
 			const obj = createMockObj();
 			const strIterarable = tson.stringify(obj, 4);
-
-			// set proper header for chunked responses
-			// res.setHeader("Transfer-Encoding", "chunked");
 
 			for await (const value of strIterarable) {
 				res.write(value);
@@ -141,22 +139,16 @@ test("e2e: stringify and parse promise with a promise over a network connection"
 
 	const textDecoder = new TextDecoder();
 
-	const spy = vi.fn();
+	// convert the response body to an async iterable
 	const stringIterator = mapIterable(
-		mapIterable(readableStreamToAsyncIterable(response.body), (v) =>
-			textDecoder.decode(v),
-		),
-		(val) => {
-			spy(val.trimEnd());
-			return val;
-		},
+		readableStreamToAsyncIterable(response.body),
+		(v) => textDecoder.decode(v),
 	);
 
 	const parsedRaw = await tson.parse(stringIterator);
 	const parsed = parsedRaw as MockObj;
 
 	expect(parsed.foo).toEqual("bar");
-	// expect(await parsed.promise).toEqual(42);
 
 	const results = [];
 
@@ -165,6 +157,12 @@ test("e2e: stringify and parse promise with a promise over a network connection"
 	}
 
 	expect(results).toEqual([1n, 2n, 3n, 4n, 5n]);
+
+	expect(await parsed.promise).toEqual(42);
+
+	await expect(
+		parsed.rejectedPromise,
+	).rejects.toThrowErrorMatchingInlineSnapshot('"Promise rejected"');
 
 	server.close();
 });
