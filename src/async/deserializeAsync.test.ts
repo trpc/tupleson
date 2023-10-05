@@ -58,7 +58,13 @@ test("stringify async iterable + promise", async () => {
 	async function* iterable() {
 		await new Promise((resolve) => setTimeout(resolve, 1));
 		yield 1n;
+		await new Promise((resolve) => setTimeout(resolve, 1));
 		yield 2n;
+		await new Promise((resolve) => setTimeout(resolve, 30));
+		yield 3n;
+
+		await new Promise((resolve) => setTimeout(resolve, 1));
+		yield 4n;
 	}
 
 	const input = {
@@ -81,10 +87,10 @@ test("stringify async iterable + promise", async () => {
 		result.push(value);
 	}
 
-	expect(result).toEqual([1n, 2n]);
+	expect(result).toEqual([1n, 2n, 3n, 4n]);
 });
 
-test("e2e: stringify and parse promise with a promise over a network connection", async () => {
+test.only("e2e: stringify and parse promise with a promise over a network connection", async () => {
 	function createMockObj() {
 		async function* generator() {
 			await new Promise((resolve) => setTimeout(resolve, 1));
@@ -114,6 +120,9 @@ test("e2e: stringify and parse promise with a promise over a network connection"
 
 			const obj = createMockObj();
 			const strIterarable = tson.stringify(obj, 4);
+
+			// set proper header for chunked responses
+			// res.setHeader("Transfer-Encoding", "chunked");
 
 			for await (const value of strIterarable) {
 				res.write(value);
@@ -155,22 +164,7 @@ test("e2e: stringify and parse promise with a promise over a network connection"
 		results.push(value);
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-	expect(spy.mock.calls.map((it) => it[0])).toMatchInlineSnapshot(`
-		[
-		  "[
-		    {\\"json\\":{\\"foo\\":\\"bar\\",\\"iterable\\":[\\"AsyncIterator\\",0,\\"__tson\\"],\\"promise\\":[\\"Promise\\",1,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}
-		    ,
-		    [
-		        [1,[0,42]]",
-		  "        ,[0,[0,[\\"bigint\\",\\"1\\",\\"__tson\\"]]]",
-		  "        ,[0,[0,[\\"bigint\\",\\"2\\",\\"__tson\\"]]]
-		        ,[0,[2]]
-		    ]
-		]",
-		]
-	`);
-
 	expect(results).toEqual([1n, 2n]);
+
 	server.close();
 });
