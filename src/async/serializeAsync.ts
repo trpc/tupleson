@@ -77,7 +77,7 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 					);
 				}
 
-				const valueTuple: TsonAsyncValueTuple = [idx, result.value];
+				const valueTuple: TsonAsyncValueTuple = [idx, walk(result.value)];
 				yield valueTuple;
 			} while (iterators.size > 0);
 		},
