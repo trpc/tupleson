@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 
 import {
+	createTson,
 	createTsonAsync,
 	tsonAsyncIterator,
 	tsonBigint,
@@ -40,65 +41,37 @@ test("deserialize async iterable", async () => {
 	}
 });
 
-// test("stringify async iterable + promise", async () => {
-// 	const stringify = createAsyncTsonStringify({
-// 		nonce: () => "__tson",
-// 		types: [tsonAsyncIterator, tsonPromise, tsonBigint],
-// 	});
+test("stringify async iterable + promise", async () => {
+	const tson = createTsonAsync({
+		nonce: () => "__tson",
+		types: [tsonAsyncIterator, tsonPromise, tsonBigint],
+	});
 
-// 	async function* iterable() {
-// 		await new Promise((resolve) => setTimeout(resolve, 1));
-// 		yield 1n;
-// 		yield 2n;
-// 	}
+	async function* iterable() {
+		await new Promise((resolve) => setTimeout(resolve, 1));
+		yield 1n;
+		yield 2n;
+	}
 
-// 	const obj = {
-// 		foo: "bar",
-// 		iterable: iterable(),
-// 		promise: Promise.resolve(42),
-// 	};
-// 	const buffer: string[] = [];
-// 	for await (const value of stringify(obj, 2)) {
-// 		buffer.push(value.trimEnd());
-// 	}
+	const input = {
+		foo: "bar",
+		iterable: iterable(),
+		promise: Promise.resolve(42),
+	};
 
-// 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-// 	const head: any = JSON.parse(buffer[1]!);
+	const strIterable = tson.stringify(input);
 
-// 	expect(buffer).toMatchInlineSnapshot(`
-// 		[
-// 		  "[",
-// 		  "  {\\"json\\":{\\"foo\\":\\"bar\\",\\"iterable\\":[\\"AsyncIterator\\",0,\\"__tson\\"],\\"promise\\":[\\"Promise\\",1,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
-// 		  "  ,",
-// 		  "  [",
-// 		  "    [1,[0,42]]",
-// 		  "    ,[0,[0,[\\"bigint\\",\\"1\\",\\"__tson\\"]]]",
-// 		  "    ,[0,[0,[\\"bigint\\",\\"2\\",\\"__tson\\"]]]",
-// 		  "    ,[0,[2]]",
-// 		  "  ]",
-// 		  "]",
-// 		]
-// 	`);
+	const output = await tson.parse(strIterable);
 
-// 	expect(head).toMatchInlineSnapshot(`
-// 		{
-// 		  "json": {
-// 		    "foo": "bar",
-// 		    "iterable": [
-// 		      "AsyncIterator",
-// 		      0,
-// 		      "__tson",
-// 		    ],
-// 		    "promise": [
-// 		      "Promise",
-// 		      1,
-// 		      "__tson",
-// 		    ],
-// 		  },
-// 		  "nonce": "__tson",
-// 		}
-// 	`);
+	expect(output.foo).toEqual("bar");
 
-// 	expect(head.json.iterable[0]).toBe("AsyncIterator");
-// 	expect(head.json.promise[0]).toBe("Promise");
-// });
+	expect(await output.promise).toEqual(42);
+
+	const result = [];
+
+	for await (const value of output.iterable) {
+		result.push(value);
+	}
+
+	expect(result).toEqual([1n, 2n]);
+});
