@@ -22,7 +22,7 @@ type MyPromise = Promise<unknown>;
 export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 	async: true,
 	deserialize: (opts) => {
-		return new Promise((resolve, reject) => {
+		const promise = new Promise((resolve, reject) => {
 			async function _handle() {
 				const value = await opts.stream[Symbol.asyncIterator]().next();
 
@@ -41,6 +41,11 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 
 			void _handle().catch(reject);
 		});
+
+		promise.catch(() => {
+			// prevent unhandled promise rejection
+		});
+		return promise;
 	},
 	key: "Promise",
 	serializeIterator(opts) {
