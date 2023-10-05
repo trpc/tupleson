@@ -12,15 +12,29 @@ export type TsonAsyncStringifier = <TValue>(
 	space?: number,
 ) => TsonAsyncStringifierIterator<TValue>;
 export type TsonAsyncIndex = TsonBranded<number, "AsyncRegistered">;
-export interface TsonTransformerSerializeDeserializeAsync<TValue> {
+
+export interface TsonTransformerSerializeDeserializeAsync<
+	TValue,
+	TSerializedValue,
+> {
 	async: true;
 	/**
 	 * From JSON-serializable value
 	 */
-	deserialize: (
-		v: TsonAsyncIndex,
-		register: (index: TsonAsyncIndex) => Promise<TValue>,
-	) => TValue;
+	deserialize: (opts: {
+		/**
+		 * Abort signal from of the full stream
+		 */
+		abortSignal: Promise<never>;
+		/**
+		 * Notify that we don't expect more values
+		 */
+		onDone: () => void;
+		/**
+		 * Stream of values
+		 */
+		stream: AsyncIterable<TSerializedValue>;
+	}) => TValue;
 
 	/**
 	 * The key to use when serialized
@@ -29,14 +43,24 @@ export interface TsonTransformerSerializeDeserializeAsync<TValue> {
 	/**
 	 * JSON-serializable value
 	 */
-	serialize: (
-		v: TValue,
-		register: (thing: TValue) => TsonAsyncIndex,
-	) => TsonAsyncIndex;
+	serializeIterator: (opts: {
+		/**
+		 * Abort signal from of the full stream
+		 */
+		abortSignal: AbortSignal;
+		/**
+		 * Publish a value to the stream
+		 */
+		publish: (serialized: TSerializedValue) => void;
+		/**
+		 * The value we're serializing
+		 */
+		value: TValue;
+	}) => AsyncIterable<TSerializedValue>;
 }
 
-export interface TsonAsyncType<TValue>
-	extends TsonTransformerSerializeDeserializeAsync<TValue>,
+export interface TsonAsyncType<TValue, TSerializedValue>
+	extends TsonTransformerSerializeDeserializeAsync<TValue, TSerializedValue>,
 		TsonTypeTesterCustom {}
 export interface TsonAsyncOptions {
 	/**
@@ -53,5 +77,9 @@ export interface TsonAsyncOptions {
 	/**
 	 * The list of types to use
 	 */
-	types: (TsonAsyncType<any> | TsonType<any, any> | TsonType<any, never>)[];
+	types: (
+		| TsonAsyncType<any, any>
+		| TsonType<any, any>
+		| TsonType<any, never>
+	)[];
 }

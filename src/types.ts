@@ -27,6 +27,7 @@ type SerializedType =
 	| unknown[];
 
 export interface TsonTransformerNone {
+	async?: false;
 	deserialize?: never;
 
 	/**

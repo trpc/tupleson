@@ -31,45 +31,28 @@ export type TsonAsyncValueTuple = [
 
 function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 	// instance variables
-	let promiseIndex = 0 as TsonAsyncIndex;
+	const promiseIndex = 0 as TsonAsyncIndex;
 	const promises = new Map<TsonAsyncIndex, Promise<TsonAsyncValueTuple>>();
 	const seen = new WeakSet();
 	const cache = new WeakMap<object, unknown>();
 
+	const iterators = new Map<
+		TsonAsyncIndex,
+		[TsonAsyncIndex, AsyncIterableIterator<TsonAsyncValueTuple>]
+	>();
+
 	const iterator = {
 		async *[Symbol.asyncIterator]() {
-			while (promises.size > 0) {
-				const tuple = await Promise.race(promises.values());
+			while (iterators.size > 0) {
+				// race next() on all iterators
 
-				promises.delete(tuple[0]);
-				yield walk(tuple) as typeof tuple;
+				const nexts = Array.from(iterators.values()).map(([, iterator]) =>
+					iterator.next(),
+				);
+				const next = await Promise.race(nexts);
 			}
 		},
 	};
-	// helper fns
-	function registerPromise(promise: Promise<unknown>): TsonAsyncIndex {
-		const index = promiseIndex++ as TsonAsyncIndex;
-		promises.set(
-			index,
-			promise
-				.then((result) => {
-					const tuple: TsonAsyncValueTuple = [index, PROMISE_RESOLVED, result];
-					return tuple;
-				})
-				//        ^?
-				.catch((err) => {
-					const tuple: TsonAsyncValueTuple = [
-						index,
-						PROMISE_REJECTED,
-						new TsonPromiseRejectionError(err),
-					];
-
-					return tuple;
-				}),
-		);
-
-		return index;
-	}
 
 	const handlers = (() => {
 		const all = types.map((handler) => {
