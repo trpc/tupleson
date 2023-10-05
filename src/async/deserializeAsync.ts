@@ -45,6 +45,15 @@ function createDeferred<T>() {
 
 type Deferred<T> = ReturnType<typeof createDeferred<T>>;
 
+function createSafeDeferred<T>() {
+	const deferred = createDeferred();
+
+	deferred.promise.catch(() => {
+		// prevent unhandled promise rejection
+	});
+	return deferred as Deferred<T>;
+}
+
 export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
@@ -78,8 +87,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					const idx = serializedValue as TsonAsyncIndex;
 
-					const deferred = createDeferred<unknown>();
-					deferreds.set(idx, deferred);
+					deferreds.set(idx, createSafeDeferred());
 					// console.log("creating deferred for", idx, "with value", walkedValue);
 
 					return transformer.deserialize({
@@ -99,8 +107,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 											const value = await def.promise;
 
-											// creating a new deferred for the next value
-											deferreds.set(idx, createDeferred());
+											deferreds.set(idx, createSafeDeferred());
 
 											return {
 												done: false,
@@ -165,7 +172,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			let nextValue = await instance.next();
 
 			while (!nextValue.done) {
-				console.log("got next value", nextValue);
+				// console.log("got next value", nextValue);
 				nextValue.value.split("\n").forEach(readLine);
 
 				nextValue = await instance.next();

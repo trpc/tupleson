@@ -61,6 +61,23 @@ async function* mapIterator<T, TValue>(
 	}
 }
 
+const tsonError: TsonType<
+	Error,
+	{
+		message: string;
+	}
+> = {
+	deserialize: (v) => {
+		const err = new Error(v.message);
+		return err;
+	},
+	key: "Error",
+	serialize: (v) => ({
+		message: v.message,
+	}),
+	test: (v): v is Error => v instanceof Error,
+};
+
 test("serialize promise", async () => {
 	const serialize = createAsyncTsonSerialize({
 		nonce: () => "__tson",
@@ -398,22 +415,23 @@ test("stringify and parse promise with a promise", async () => {
 });
 
 // let's do it over an actual network connection
-test.only("stringify and parse promise with a promise over a network connection", async () => {
+test("stringify and parse promise with a promise over a network connection", async () => {
 	interface Obj {
 		promise: Promise<{
 			anotherPromise: Promise<number>;
 			rejectedPromise: Promise<number>;
 		}>;
 	}
+	const opts: TsonAsyncOptions = {
+		nonce: () => "__tson",
+		types: [tsonPromise, tsonError],
+	};
 
 	// ----- server --------
 	const server = await new Promise<http.Server>((resolve) => {
 		const server = http.createServer((_req, res) => {
 			async function handle() {
-				const tson = createTsonAsync({
-					nonce: () => "__tson",
-					types: [tsonPromise],
-				});
+				const tson = createTsonAsync(opts);
 
 				const obj: Obj = {
 					promise: createPromise(() => {
@@ -447,10 +465,7 @@ test.only("stringify and parse promise with a promise over a network connection"
 	const port = (server.address() as any).port as number;
 
 	// ----- client --------
-	const tson = createTsonAsync({
-		nonce: () => "__tson",
-		types: [tsonPromise],
-	});
+	const tson = createTsonAsync(opts);
 
 	// do a streamed fetch request
 	const response = await fetch(`http://localhost:${port}`);
@@ -464,9 +479,6 @@ test.only("stringify and parse promise with a promise over a network connection"
 		readableStreamToAsyncIterable(response.body),
 		(v) => textDecoder.decode(v),
 	);
-	for await (const value of stringIterator) {
-		console.log(value);
-	}
 
 	const value = await tson.parse(stringIterator);
 	const asObj = value as Obj;
@@ -484,13 +496,9 @@ test.only("stringify and parse promise with a promise over a network connection"
 
 	expect(err.cause).toMatchInlineSnapshot("undefined");
 	assert(err instanceof Error);
-	expect(err).toMatchInlineSnapshot("[TsonError: Promise rejected on server]");
+	expect(err).toMatchInlineSnapshot("[Error: foo]");
 
-	expect(err.cause).toMatchInlineSnapshot(`
-		{
-		  "name": "TsonPromiseRejectionError",
-		}
-	`);
+	expect(err.cause).toMatchInlineSnapshot("undefined");
 
 	server.close();
 });
@@ -536,22 +544,6 @@ test("does not crash node when it receives a promise rejection", async () => {
 });
 
 test("stringify promise rejection", async () => {
-	const tsonError: TsonType<
-		Error,
-		{
-			message: string;
-		}
-	> = {
-		deserialize: (v) => {
-			const err = new Error(v.message);
-			return err;
-		},
-		key: "Error",
-		serialize: (v) => ({
-			message: v.message,
-		}),
-		test: (v): v is Error => v instanceof Error,
-	};
 	const opts: TsonAsyncOptions = {
 		nonce: () => "__tson",
 		types: [tsonPromise, tsonError],
