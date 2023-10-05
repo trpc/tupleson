@@ -35,11 +35,9 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 				status === PROMISE_RESOLVED
 					? resolve(result as any)
 					: reject(TsonPromiseRejectionError.from(result));
-
-				opts.onDone();
 			}
 
-			void _handle().catch(reject);
+			void _handle().catch(reject).finally(opts.onDone);
 		});
 
 		promise.catch(() => {
