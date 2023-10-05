@@ -1,7 +1,4 @@
-import {
-	TsonCircularReferenceError,
-	TsonPromiseRejectionError,
-} from "../errors.js";
+import { TsonCircularReferenceError } from "../errors.js";
 import { assert } from "../internals/assert.js";
 import { getNonce } from "../internals/getNonce.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
@@ -15,25 +12,23 @@ import {
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
 } from "../types.js";
-import { TsonAsyncOptions } from "./asyncTypes.js";
-import { TsonAsyncIndex } from "./asyncTypes.js";
-import { TsonAsyncStringifier } from "./asyncTypes.js";
+import {
+	TsonAsyncIndex,
+	TsonAsyncOptions,
+	TsonAsyncStringifier,
+} from "./asyncTypes.js";
 
 type WalkFn = (value: unknown) => unknown;
-
-export const PROMISE_RESOLVED = 0 as const;
-const PROMISE_REJECTED = 1 as const;
 
 type TsonAsyncValueTuple = [TsonAsyncIndex, unknown];
 
 function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 	// instance variables
 	let asyncIndex = 0;
-	const promises = new Map<TsonAsyncIndex, Promise<TsonAsyncValueTuple>>();
 	const seen = new WeakSet();
 	const cache = new WeakMap<object, unknown>();
 
-	const iterators = new Map<TsonAsyncIndex, AsyncIterable<unknown>>();
+	const iterators = new Map<TsonAsyncIndex, AsyncIterator<unknown>>();
 
 	const iterator = {
 		async *[Symbol.asyncIterator]() {
@@ -42,53 +37,49 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 
 			// when all iterators are done, we're done
 
-			const cursors = new Map<TsonAsyncIndex, AsyncIterator<unknown>>();
+			const nextAsyncIteratorValue = new Map<
+				TsonAsyncIndex,
+				Promise<[TsonAsyncIndex, IteratorResult<unknown>]>
+			>();
 
 			let _tmp = 0;
-			while (iterators.size > 0) {
+
+			do {
 				if (_tmp++ > 10) {
 					throw new Error("too many iterations");
 				}
 
 				// set next cursor
 				for (const [idx, iterator] of iterators) {
-					// initialize cursor
-					if (cursors.has(idx)) {
-						continue;
-					}
-
-					const cursor = iterator[Symbol.asyncIterator]();
-					//     ^?
-					cursors.set(idx, cursor);
-				}
-
-				// it's a race!
-				for (const [idx, cursor] of cursors) {
-					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-					if (!cursor.next) {
-						cursors.delete(idx);
-						iterators.delete(idx);
+					if (!nextAsyncIteratorValue.has(idx)) {
+						nextAsyncIteratorValue.set(
+							idx,
+							iterator.next().then((result) => [idx, result]),
+						);
 					}
 				}
 
-				const nextValues = Array.from(cursors.entries()).map(
-					async ([idx, cursor]) => {
-						const result = await cursor.next();
-						return [idx, result] as const;
-					},
-				);
+				const nextValues = Array.from(nextAsyncIteratorValue.values());
 
 				const [idx, result] = await Promise.race(nextValues);
 
 				if (result.done) {
-					cursors.delete(idx);
+					nextAsyncIteratorValue.delete(idx);
 					iterators.delete(idx);
 					continue;
+				} else {
+					const iterator = iterators.get(idx);
+
+					assert(iterator, `iterator ${idx} not found`);
+					nextAsyncIteratorValue.set(
+						idx,
+						iterator.next().then((result) => [idx, result]),
+					);
 				}
 
 				const valueTuple: TsonAsyncValueTuple = [idx, result.value];
 				yield valueTuple;
-			}
+			} while (iterators.size > 0);
 		},
 	};
 
@@ -108,7 +99,7 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 							// abortSignal: new AbortSignal(),
 							value,
 						});
-						iterators.set(idx, iterator);
+						iterators.set(idx, iterator[Symbol.asyncIterator]());
 
 						return [handler.key as TsonTypeHandlerKey, idx, nonce];
 				  }
