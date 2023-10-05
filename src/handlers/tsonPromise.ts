@@ -36,12 +36,14 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 		});
 	},
 	key: "Promise",
-	serializeIterator: async function* serialize(opts) {
-		const value = await opts.value
+	serializeIterator(opts) {
+		const value = opts.value
 			.then((value): SerializedPromiseValue => [PROMISE_RESOLVED, value])
 			.catch((err): SerializedPromiseValue => [PROMISE_REJECTED, err]);
-
-		yield value;
+		return (async function* generator() {
+			// console.log("serializing", opts.value);
+			yield await value;
+		})();
 	},
 	test: isPromise,
 };

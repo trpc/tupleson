@@ -47,11 +47,7 @@ export interface TsonTransformerSerializeDeserializeAsync<
 		/**
 		 * Abort signal from of the full stream
 		 */
-		abortSignal: AbortSignal;
-		/**
-		 * Publish a value to the stream
-		 */
-		publish: (serialized: TSerializedValue) => void;
+		// abortSignal?: AbortSignal;
 		/**
 		 * The value we're serializing
 		 */
