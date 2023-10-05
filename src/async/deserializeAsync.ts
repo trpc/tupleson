@@ -69,7 +69,14 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 	}
 
 	return async (iterator: AsyncIterable<string>) => {
-		const deferreds = new Map<TsonAsyncIndex, Deferred<unknown>>();
+		// this is an awful hack to get around making a some sort of pipeline
+		const cache = new Map<
+			TsonAsyncIndex,
+			{
+				next: Deferred<unknown>;
+				values: unknown[];
+			}
+		>();
 		const instance = iterator[Symbol.asyncIterator]();
 
 		const walker: WalkerFactory = (nonce) => {
@@ -87,37 +94,36 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					const idx = serializedValue as TsonAsyncIndex;
 
-					deferreds.set(idx, createSafeDeferred());
-					// console.log("creating deferred for", idx, "with value", walkedValue);
+					const self = {
+						next: createSafeDeferred(),
+						values: [],
+					};
+					cache.set(idx, self);
 
 					return transformer.deserialize({
 						// abortSignal
 						onDone() {
-							deferreds.delete(idx);
+							cache.delete(idx);
 						},
 						stream: {
 							[Symbol.asyncIterator]: () => {
-								// console.log("checking next", idx);
+								let index = 0;
 								return {
 									next: async () => {
-										const def = deferreds.get(idx);
+										const idx = index++;
 
-										if (def) {
-											// console.log("waiting for deferred", idx, def.promise);
-
-											const value = await def.promise;
-
-											deferreds.set(idx, createSafeDeferred());
-
+										if (self.values.length > idx) {
 											return {
 												done: false,
-												value,
+												value: self.values[idx],
 											};
 										}
 
+										await self.next.promise;
+
 										return {
-											done: true,
-											value: undefined,
+											done: false,
+											value: self.values[idx],
 										};
 									},
 								};
@@ -150,21 +156,18 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					return;
 				}
 
-				// console.log("got something that looks like a value", str);
-
 				const [index, result] = JSON.parse(str) as TsonAsyncValueTuple;
 
-				const deferred = deferreds.get(index);
-				// console.log("got deferred", index, deferred);
-				// console.log("got value", index, status, result, deferred);
+				const item = cache.get(index);
+
 				const walkedResult = walk(result);
 
-				assert(deferred, `No deferred found for index ${index}`);
+				assert(item, `No deferred found for index ${index}`);
 
 				// resolving deferred
-				deferred.resolve(walkedResult);
-
-				deferreds.delete(index);
+				item.values.push(walkedResult);
+				item.next.resolve(walkedResult);
+				item.next = createSafeDeferred();
 			}
 
 			buffer.forEach(readLine);
@@ -172,16 +175,12 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			let nextValue = await instance.next();
 
 			while (!nextValue.done) {
-				// console.log("got next value", nextValue);
 				nextValue.value.split("\n").forEach(readLine);
 
 				nextValue = await instance.next();
 			}
 
-			assert(
-				!deferreds.size,
-				`Stream ended with ${deferreds.size} pending promises`,
-			);
+			assert(!cache.size, `Stream ended with ${cache.size} pending promises`);
 		}
 
 		async function init() {
@@ -189,14 +188,11 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 			// get the head of the JSON
 
-			// console.log("getting head of JSON");
 			let lastResult: IteratorResult<string>;
 			do {
 				lastResult = await instance.next();
 
 				lines.push(...(lastResult.value as string).split("\n").filter(Boolean));
-
-				// console.log("got line", lines);
 			} while (lines.length < 2);
 
 			const [
@@ -232,11 +228,11 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					);
 
 					// cancel all pending promises
-					for (const deferred of deferreds.values()) {
-						deferred.reject(err);
+					for (const deferred of cache.values()) {
+						deferred.next.reject(err);
 					}
 
-					deferreds.clear();
+					cache.clear();
 
 					opts.onStreamError?.(err);
 				});
@@ -246,7 +242,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 		const result = await init().catch((cause: unknown) => {
 			throw new TsonError("Failed to initialize TSON stream", { cause });
 		});
-		return [result, deferreds] as const;
+		return [result, cache] as const;
 	};
 }
 

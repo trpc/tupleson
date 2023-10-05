@@ -51,7 +51,6 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 			.then((value): SerializedPromiseValue => [PROMISE_RESOLVED, value])
 			.catch((err): SerializedPromiseValue => [PROMISE_REJECTED, err]);
 		return (async function* generator() {
-			// console.log("serializing", opts.value);
 			yield await value;
 		})();
 	},
@@ -100,6 +99,7 @@ export const tsonAsyncIterator: TsonAsyncType<
 					}
 				}
 			} finally {
+				// `onDone` is a hack and shouldn't be needed
 				opts.onDone();
 			}
 		})();

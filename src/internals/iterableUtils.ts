@@ -9,6 +9,7 @@ export async function* readableStreamToAsyncIterable<T>(
 		while (true) {
 			// Read from the stream
 			const result = await reader.read();
+
 			// Exit if we're done
 			if (result.done) {
 				return;
