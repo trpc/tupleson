@@ -1,4 +1,5 @@
 import { TsonAsyncType } from "../async/asyncTypes.js";
+import { TsonPromiseRejectionError } from "../errors.js";
 
 function isPromise(value: unknown): value is Promise<unknown> {
 	return (
@@ -31,7 +32,9 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 
 				const [status, result] = value.value;
 
-				status === PROMISE_RESOLVED ? resolve(result as any) : reject(result);
+				status === PROMISE_RESOLVED
+					? resolve(result as any)
+					: reject(TsonPromiseRejectionError.from(result));
 
 				opts.onDone();
 			}
@@ -84,7 +87,7 @@ export const tsonAsyncIterator: TsonAsyncType<
 						}
 
 						case ITERATOR_ERROR: {
-							throw value[1];
+							throw TsonPromiseRejectionError.from(value[1]);
 						}
 
 						case ITERATOR_VALUE: {

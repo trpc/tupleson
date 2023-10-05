@@ -165,6 +165,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			let nextValue = await instance.next();
 
 			while (!nextValue.done) {
+				console.log("got next value", nextValue);
 				nextValue.value.split("\n").forEach(readLine);
 
 				nextValue = await instance.next();

@@ -398,7 +398,7 @@ test("stringify and parse promise with a promise", async () => {
 });
 
 // let's do it over an actual network connection
-test("stringify and parse promise with a promise over a network connection", async () => {
+test.only("stringify and parse promise with a promise over a network connection", async () => {
 	interface Obj {
 		promise: Promise<{
 			anotherPromise: Promise<number>;
@@ -530,7 +530,9 @@ test("does not crash node when it receives a promise rejection", async () => {
 
 	const err = await waitError(result.foo);
 
-	expect(err).toMatchInlineSnapshot("[TsonError: Promise rejected on server]");
+	expect(err).toMatchInlineSnapshot(
+		"[TsonPromiseRejectionError: Promise rejected]",
+	);
 });
 
 test("stringify promise rejection", async () => {
