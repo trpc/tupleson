@@ -90,7 +90,7 @@ test("stringify async iterable + promise", async () => {
 	expect(result).toEqual([1n, 2n, 3n, 4n]);
 });
 
-test.only("e2e: stringify and parse promise with a promise over a network connection", async () => {
+test("e2e: stringify and parse promise with a promise over a network connection", async () => {
 	function createMockObj() {
 		async function* generator() {
 			await new Promise((resolve) => setTimeout(resolve, 1));
