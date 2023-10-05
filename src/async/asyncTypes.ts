@@ -25,7 +25,7 @@ export interface TsonTransformerSerializeDeserializeAsync<
 		/**
 		 * Abort signal from of the full stream
 		 */
-		abortSignal: Promise<never>;
+		// abortSignal: Promise<never>;
 		/**
 		 * Notify that we don't expect more values
 		 */

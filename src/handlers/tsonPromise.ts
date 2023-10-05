@@ -16,20 +16,22 @@ type SerializedPromiseValue =
 	| [typeof PROMISE_REJECTED, unknown]
 	| [typeof PROMISE_RESOLVED, unknown];
 
-type MyPromise = Promise<SerializedPromiseValue>;
+type MyPromise = Promise<unknown>;
 
 export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 	async: true,
 	deserialize: (opts) => {
 		return new Promise((resolve, reject) => {
 			async function _handle() {
-				const value = await Promise.race([
-					opts.stream[Symbol.asyncIterator]().next(),
-					opts.abortSignal,
-				]);
+				const value = await opts.stream[Symbol.asyncIterator]().next();
 
-				resolve(value.value as SerializedPromiseValue);
-				opts.onDone();
+				if (value.done) {
+					throw new Error("Expected promise value, got done");
+				}
+
+				const [status, result] = value.value;
+
+				status === PROMISE_RESOLVED ? resolve(result as any) : reject(result);
 			}
 
 			void _handle().catch(reject);

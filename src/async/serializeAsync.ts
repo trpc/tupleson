@@ -20,7 +20,7 @@ import {
 
 type WalkFn = (value: unknown) => unknown;
 
-type TsonAsyncValueTuple = [TsonAsyncIndex, unknown];
+export type TsonAsyncValueTuple = [TsonAsyncIndex, unknown];
 
 function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 	// instance variables
@@ -42,12 +42,12 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 				Promise<[TsonAsyncIndex, IteratorResult<unknown>]>
 			>();
 
-			let _tmp = 0;
+			// let _tmp = 0;
 
 			do {
-				if (_tmp++ > 10) {
-					throw new Error("too many iterations");
-				}
+				// if (_tmp++ > 10) {
+				// 	throw new Error("too many iterations");
+				// }
 
 				// set next cursor
 				for (const [idx, iterator] of iterators) {

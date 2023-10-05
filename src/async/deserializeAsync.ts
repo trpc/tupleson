@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { TsonError } from "../errors.js";
 import { assert } from "../internals/assert.js";
 import { isTsonTuple } from "../internals/isTsonTuple.js";
@@ -15,13 +15,13 @@ import {
 	TsonAsyncStringifierIterator,
 	TsonAsyncType,
 } from "./asyncTypes.js";
-import { PROMISE_RESOLVED, TsonAsyncValueTuple } from "./serializeAsync.js";
+import { TsonAsyncValueTuple } from "./serializeAsync.js";
 
 type WalkFn = (value: unknown) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 
 type AnyTsonTransformerSerializeDeserialize =
-	| TsonAsyncType<any>
+	| TsonAsyncType<any, any>
 	| TsonTransformerSerializeDeserialize<any, any>;
 
 type TsonParseAsync = <TValue>(
@@ -67,24 +67,55 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			const walk: WalkFn = (value) => {
 				if (isTsonTuple(value, nonce)) {
 					const [type, serializedValue] = value;
-					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					const transformer = typeByKey[type]!;
-					return transformer.deserialize(
-						walk(serializedValue) as any,
-						(idx) => {
-							const deferred = createDeferred<unknown>();
+					const transformer = typeByKey[type];
 
-							deferreds.set(idx, deferred);
+					assert(transformer, `No transformer found for type ${type}`);
 
-							if (typeof window === "undefined") {
-								deferred.promise.catch(() => {
-									// prevent unhandled promise rejection crashes in Node.js 🤷‍♂️
-								});
-							}
+					const walkedValue = walk(serializedValue);
+					if (!transformer.async) {
+						return transformer.deserialize(walk(walkedValue));
+					}
 
-							return deferred.promise;
+					const idx = serializedValue as TsonAsyncIndex;
+
+					const deferred = createDeferred<unknown>();
+					deferreds.set(idx, deferred);
+					// console.log("creating deferred for", idx, "with value", walkedValue);
+
+					return transformer.deserialize({
+						// abortSignal
+						onDone() {
+							// TODO
 						},
-					);
+						stream: {
+							[Symbol.asyncIterator]: () => {
+								// console.log("checking next", idx);
+								return {
+									next: async () => {
+										const def = deferreds.get(idx);
+
+										if (def) {
+											// console.log("waiting for deferred", idx, def.promise);
+
+											const value = await def.promise;
+											deferreds.delete(idx);
+
+											// console.log("got deferred, deleting", idx, value);
+											return {
+												done: false,
+												value,
+											};
+										}
+
+										return {
+											done: true,
+											value: undefined,
+										};
+									},
+								};
+							},
+						},
+					});
 				}
 
 				return mapOrReturn(value, walk);
@@ -113,26 +144,17 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 				// console.log("got something that looks like a value", str);
 
-				const [index, status, result] = JSON.parse(str) as TsonAsyncValueTuple;
+				const [index, result] = JSON.parse(str) as TsonAsyncValueTuple;
 
 				const deferred = deferreds.get(index);
+				// console.log("got deferred", index, deferred);
 				// console.log("got value", index, status, result, deferred);
 				const walkedResult = walk(result);
 
-				assert(
-					deferred,
-					`No deferred found for index ${index} (status: ${status})`,
-				);
+				assert(deferred, `No deferred found for index ${index}`);
 
-				status === PROMISE_RESOLVED
-					? deferred.resolve(walkedResult)
-					: deferred.reject(
-							walkedResult instanceof Error
-								? walkedResult
-								: new TsonError("Promise rejected on server", {
-										cause: walkedResult,
-								  }),
-					  );
+				// resolving deferred
+				deferred.resolve(walkedResult);
 
 				deferreds.delete(index);
 			}
