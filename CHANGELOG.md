@@ -1,5 +1,17 @@
 
 
+# [0.13.0](https://github.com/KATT/tupleson/compare/0.12.0...0.13.0) (2023-10-05)
+
+
+### Bug Fixes
+
+* rename `AsyncIterator` -> `AsyncIterable` ([#29](https://github.com/KATT/tupleson/issues/29)) ([d8b1c01](https://github.com/KATT/tupleson/commit/d8b1c01e8634148721874b4e7dbe0695577af0f2))
+
+
+### Features
+
+* include `src` files on npm ([#28](https://github.com/KATT/tupleson/issues/28)) ([331802d](https://github.com/KATT/tupleson/commit/331802d1487f873a0e8cde3e224cdc47c29fc9f7))
+
 # [0.12.0](https://github.com/KATT/tupleson/compare/0.11.1...0.12.0) (2023-10-05)
 
 
