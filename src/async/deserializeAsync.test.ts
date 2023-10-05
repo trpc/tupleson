@@ -6,6 +6,13 @@ import {
 	tsonBigint,
 	tsonPromise,
 } from "../index.js";
+import { assert } from "../internals/assert.js";
+import {
+	mapIterable,
+	readableStreamToAsyncIterable,
+} from "../internals/iterableUtils.js";
+import { createTestServer } from "../internals/testUtils.js";
+import { TsonAsyncOptions } from "./asyncTypes.js";
 
 test("deserialize async iterable", async () => {
 	const tson = createTsonAsync({
@@ -75,4 +82,72 @@ test("stringify async iterable + promise", async () => {
 	}
 
 	expect(result).toEqual([1n, 2n]);
+});
+
+test("e2e: stringify and parse promise with a promise over a network connection", async () => {
+	function createMockObj() {
+		async function* generator() {
+			await new Promise((resolve) => setTimeout(resolve, 1));
+			yield 1n;
+
+			await new Promise((resolve) => setTimeout(resolve, 1));
+			yield 2n;
+		}
+
+		return {
+			foo: "bar",
+			iterable: generator(),
+			promise: Promise.resolve(42),
+		};
+	}
+
+	type MockObj = ReturnType<typeof createMockObj>;
+
+	const opts: TsonAsyncOptions = {
+		nonce: () => "__tson",
+		types: [tsonPromise, tsonAsyncIterator, tsonBigint],
+	};
+
+	const server = await createTestServer({
+		handleRequest: async (_req, res) => {
+			const tson = createTsonAsync(opts);
+
+			const obj = createMockObj();
+			const strIterarable = tson.stringify(obj, 4);
+
+			for await (const value of strIterarable) {
+				res.write(value);
+			}
+
+			res.end();
+		},
+	});
+
+	// ------------- client -------------------
+	const tson = createTsonAsync(opts);
+
+	// do a streamed fetch request
+	const response = await fetch(server.url);
+
+	assert(response.body);
+
+	const textDecoder = new TextDecoder();
+	const stringIterator = mapIterable(
+		readableStreamToAsyncIterable(response.body),
+		(v) => textDecoder.decode(v),
+	);
+
+	const parsedRaw = await tson.parse(stringIterator);
+	const parsed = parsedRaw as MockObj;
+
+	expect(await parsed.promise).toEqual(42);
+
+	const results = [];
+
+	for await (const value of parsed.iterable) {
+		results.push(value);
+	}
+
+	expect(results).toEqual([1n, 2n]);
+	server.close();
 });

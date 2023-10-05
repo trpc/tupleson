@@ -1,3 +1,4 @@
+import http from "node:http";
 import { expect } from "vitest";
 
 export const expectError = (fn: () => unknown) => {
@@ -40,3 +41,34 @@ export const waitFor = async (fn: () => unknown) => {
 		}
 	}
 };
+
+export async function createTestServer(opts: {
+	handleRequest: (
+		req: http.IncomingMessage,
+		res: http.ServerResponse,
+	) => Promise<void> | void;
+}) {
+	const server = await new Promise<http.Server>((resolve) => {
+		const server = http.createServer((req, res) => {
+			Promise.resolve(opts.handleRequest(req, res)).catch((err) => {
+				console.error(err);
+				res.statusCode = 500;
+				res.end();
+			});
+		});
+
+		server.listen(0, () => {
+			resolve(server);
+		});
+	});
+
+	const port = (server.address() as any).port as number;
+
+	return {
+		close: () => {
+			server.close();
+		},
+		port,
+		url: `http://localhost:${port}`,
+	};
+}

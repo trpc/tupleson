@@ -1,4 +1,3 @@
-import http from "node:http";
 import { assert, expect, test } from "vitest";
 
 import { TsonAsyncOptions } from "../async/asyncTypes.js";
@@ -12,7 +11,15 @@ import {
 	createAsyncTsonStringify,
 } from "../async/serializeAsync.js";
 import { createTsonAsync, tsonPromise } from "../index.js";
-import { waitError, waitFor } from "../internals/testUtils.js";
+import {
+	mapIterable,
+	readableStreamToAsyncIterable,
+} from "../internals/iterableUtils.js";
+import {
+	createTestServer,
+	waitError,
+	waitFor,
+} from "../internals/testUtils.js";
 import { TsonSerialized, TsonType } from "../types.js";
 
 const createPromise = <T>(result: () => T, wait = 1) => {
@@ -27,39 +34,6 @@ const createPromise = <T>(result: () => T, wait = 1) => {
 		}, wait);
 	});
 };
-
-async function* readableStreamToAsyncIterable<T>(
-	stream: ReadableStream<T>,
-): AsyncIterable<T> {
-	// Get a lock on the stream
-	const reader = stream.getReader();
-
-	try {
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		while (true) {
-			// Read from the stream
-			const result = await reader.read();
-			// Exit if we're done
-			if (result.done) {
-				return;
-			}
-
-			// Else yield the chunk
-			yield result.value;
-		}
-	} finally {
-		reader.releaseLock();
-	}
-}
-
-async function* mapIterator<T, TValue>(
-	iterable: AsyncIterable<T>,
-	fn: (v: T) => TValue,
-): AsyncIterable<TValue> {
-	for await (const value of iterable) {
-		yield fn(value);
-	}
-}
 
 const tsonError: TsonType<
 	Error,
@@ -414,7 +388,6 @@ test("stringify and parse promise with a promise", async () => {
 	expect(secondPromise).toBe(42);
 });
 
-// let's do it over an actual network connection
 test("stringify and parse promise with a promise over a network connection", async () => {
 	interface Obj {
 		promise: Promise<{
@@ -427,55 +400,44 @@ test("stringify and parse promise with a promise over a network connection", asy
 		types: [tsonPromise, tsonError],
 	};
 
-	// ----- server --------
-	const server = await new Promise<http.Server>((resolve) => {
-		const server = http.createServer((_req, res) => {
-			async function handle() {
-				const tson = createTsonAsync(opts);
+	const server = await createTestServer({
+		handleRequest: async (_req, res) => {
+			const tson = createTsonAsync(opts);
 
-				const obj: Obj = {
-					promise: createPromise(() => {
-						return {
-							anotherPromise: createPromise(() => {
-								return 42;
-							}, 8),
-							rejectedPromise: createPromise<number>(() => {
-								throw new Error("foo");
-							}, 1),
-						};
-					}, 3),
-				};
-				const strIterarable = tson.stringify(obj, 4);
+			const obj: Obj = {
+				promise: createPromise(() => {
+					return {
+						anotherPromise: createPromise(() => {
+							return 42;
+						}, 8),
+						rejectedPromise: createPromise<number>(() => {
+							throw new Error("foo");
+						}, 1),
+					};
+				}, 3),
+			};
+			const strIterarable = tson.stringify(obj, 4);
 
-				for await (const value of strIterarable) {
-					res.write(value);
-				}
-
-				res.end();
+			for await (const value of strIterarable) {
+				res.write(value);
 			}
 
-			void handle();
-		});
-
-		server.listen(0, () => {
-			resolve(server);
-		});
+			res.end();
+		},
 	});
-
-	const port = (server.address() as any).port as number;
 
 	// ----- client --------
 	const tson = createTsonAsync(opts);
 
 	// do a streamed fetch request
-	const response = await fetch(`http://localhost:${port}`);
+	const response = await fetch(server.url);
 
 	assert(response.body);
 
 	// make response.body to an async iterator
 
 	const textDecoder = new TextDecoder();
-	const stringIterator = mapIterator(
+	const stringIterator = mapIterable(
 		readableStreamToAsyncIterable(response.body),
 		(v) => textDecoder.decode(v),
 	);
