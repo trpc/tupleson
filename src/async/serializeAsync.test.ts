@@ -117,7 +117,7 @@ test("serialize async iterable", async () => {
 	expect(head).toMatchInlineSnapshot(`
 		{
 		  "json": [
-		    "AsyncIterator",
+		    "AsyncIterable",
 		    0,
 		    "__tson",
 		  ],
@@ -184,7 +184,7 @@ test("stringify async iterable + promise", async () => {
 	expect(buffer).toMatchInlineSnapshot(`
 		[
 		  "[",
-		  "  {\\"json\\":{\\"foo\\":\\"bar\\",\\"iterable\\":[\\"AsyncIterator\\",0,\\"__tson\\"],\\"promise\\":[\\"Promise\\",1,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
+		  "  {\\"json\\":{\\"foo\\":\\"bar\\",\\"iterable\\":[\\"AsyncIterable\\",0,\\"__tson\\"],\\"promise\\":[\\"Promise\\",1,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
 		  "  ,",
 		  "  [",
 		  "    [1,[0,42]]",
@@ -201,7 +201,7 @@ test("stringify async iterable + promise", async () => {
 		  "json": {
 		    "foo": "bar",
 		    "iterable": [
-		      "AsyncIterator",
+		      "AsyncIterable",
 		      0,
 		      "__tson",
 		    ],
@@ -215,6 +215,6 @@ test("stringify async iterable + promise", async () => {
 		}
 	`);
 
-	expect(head.json.iterable[0]).toBe("AsyncIterator");
+	expect(head.json.iterable[0]).toBe("AsyncIterable");
 	expect(head.json.promise[0]).toBe("Promise");
 });
