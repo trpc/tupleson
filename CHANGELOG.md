@@ -1,5 +1,12 @@
 
 
+# [0.12.0](https://github.com/KATT/tupleson/compare/0.11.1...0.12.0) (2023-10-05)
+
+
+### Features
+
+* serializing async iterable ([#26](https://github.com/KATT/tupleson/issues/26)) ([69ff286](https://github.com/KATT/tupleson/commit/69ff2865aafe2bcb856ca6e93415024b3b078d58))
+
 ## [0.11.1](https://github.com/KATT/tupleson/compare/0.11.0...0.11.1) (2023-10-04)
 
 
