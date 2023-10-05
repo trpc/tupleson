@@ -132,9 +132,16 @@ test("e2e: stringify and parse promise with a promise over a network connection"
 	assert(response.body);
 
 	const textDecoder = new TextDecoder();
+
+	const spy = vi.fn();
 	const stringIterator = mapIterable(
-		readableStreamToAsyncIterable(response.body),
-		(v) => textDecoder.decode(v),
+		mapIterable(readableStreamToAsyncIterable(response.body), (v) =>
+			textDecoder.decode(v),
+		),
+		(val) => {
+			spy(val.trimEnd());
+			return val;
+		},
 	);
 
 	const parsedRaw = await tson.parse(stringIterator);
@@ -147,6 +154,22 @@ test("e2e: stringify and parse promise with a promise over a network connection"
 	for await (const value of parsed.iterable) {
 		results.push(value);
 	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+	expect(spy.mock.calls.map((it) => it[0])).toMatchInlineSnapshot(`
+		[
+		  "[
+		    {\\"json\\":{\\"foo\\":\\"bar\\",\\"iterable\\":[\\"AsyncIterator\\",0,\\"__tson\\"],\\"promise\\":[\\"Promise\\",1,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}
+		    ,
+		    [
+		        [1,[0,42]]",
+		  "        ,[0,[0,[\\"bigint\\",\\"1\\",\\"__tson\\"]]]",
+		  "        ,[0,[0,[\\"bigint\\",\\"2\\",\\"__tson\\"]]]
+		        ,[0,[2]]
+		    ]
+		]",
+		]
+	`);
 
 	expect(results).toEqual([1n, 2n]);
 	server.close();
