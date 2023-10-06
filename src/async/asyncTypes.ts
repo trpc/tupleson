@@ -3,6 +3,10 @@ import { TsonType } from "../types.js";
 import { TsonBranded, TsonTypeTesterCustom } from "../types.js";
 import { serialized } from "../types.js";
 
+export type TsonAsyncStringifiedStream<TValue> = ReadableStream<Uint8Array> & {
+	[serialized]: TValue;
+};
+
 export type TsonAsyncStringifierIterable<TValue> = AsyncIterable<string> & {
 	[serialized]: TValue;
 };
