@@ -7,7 +7,7 @@ import {
 	createTsonAsync,
 	tsonPromise,
 } from "./index.js";
-import { expectError, waitError, waitFor } from "./internals/testUtils.js";
+import { expectError, waitError, waitFor, createBodyStream } from "./internals/testUtils.js";
 import { TsonSerialized } from "./types.js";
 
 test("multiple handlers for primitive string found", () => {
@@ -95,7 +95,7 @@ test("async: duplicate keys", async () => {
 		const gen = generator();
 		await createTsonAsync({
 			types: [stringHandler, stringHandler],
-		}).parse(gen);
+		}).parse(createBodyStream(gen));
 	});
 
 	expect(err).toMatchInlineSnapshot(
@@ -136,7 +136,7 @@ test("async: bad init", async () => {
 		const gen = generator();
 		await createTsonAsync({
 			types: [],
-		}).parse(gen);
+		}).parse(createBodyStream(gen));
 	});
 
 	expect(err).toMatchInlineSnapshot(
@@ -171,7 +171,7 @@ test("async: bad values", async () => {
 	await createTsonAsync({
 		onStreamError: onErrorSpy,
 		types: [tsonPromise],
-	}).parse(generator());
+	}).parse(createBodyStream(generator()));
 
 	await waitFor(() => {
 		expect(onErrorSpy).toHaveBeenCalledTimes(1);

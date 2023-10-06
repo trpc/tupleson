@@ -72,3 +72,15 @@ export async function createTestServer(opts: {
 		url: `http://localhost:${port}`,
 	};
 }
+
+export function createBodyStream(iterator: AsyncIterable<string>) {
+	return new ReadableStream<Uint8Array>({
+		async start(controller) {
+			const encoder = new TextEncoder();
+			for await (const chunk of iterator) {
+				controller.enqueue(encoder.encode(chunk));
+			}
+			controller.close();
+		}
+	})
+}

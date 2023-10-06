@@ -12,7 +12,7 @@ import {
 import {
 	TsonAsyncIndex,
 	TsonAsyncOptions,
-	TsonAsyncStringifierIterable,
+	TsonAsyncStringifiedStream,
 	TsonAsyncType,
 } from "./asyncTypes.js";
 import { TsonAsyncValueTuple } from "./serializeAsync.js";
@@ -25,7 +25,7 @@ type AnyTsonTransformerSerializeDeserialize =
 	| TsonTransformerSerializeDeserialize<any, any>;
 
 type TsonParseAsync = <TValue>(
-	string: AsyncIterable<string> | TsonAsyncStringifierIterable<TValue>,
+	string: ReadableStream<Uint8Array> | TsonAsyncStringifiedStream<TValue>,
 ) => Promise<TValue>;
 
 export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
@@ -42,13 +42,22 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 		}
 	}
 
-	return async (iterable: AsyncIterable<string>) => {
+	return async (stream: ReadableStream<Uint8Array>) => {
 		// this is an awful hack to get around making a some sort of pipeline
 		const cache = new Map<
 			TsonAsyncIndex,
 			ReadableStreamDefaultController<unknown>
 		>();
-		const iterator = iterable[Symbol.asyncIterator]();
+
+		const decoder = new TextDecoder();
+		const textStream = stream.pipeThrough(
+			new TransformStream<Uint8Array, string>({
+				async transform(chunk, controller) {
+					controller.enqueue(decoder.decode(chunk));
+				},
+			}),
+		);
+		const reader = textStream.getReader();
 
 		const walker: WalkerFactory = (nonce) => {
 			const walk: WalkFn = (value) => {
@@ -123,7 +132,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			do {
 				lines.forEach(readLine);
 				lines.length = 0;
-				const nextValue = await iterator.next();
+				const nextValue = await reader.read();
 				if (!nextValue.done) {
 					accumulator += nextValue.value;
 					const parts = accumulator.split("\n");
@@ -144,7 +153,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 			const lines: string[] = [];
 			do {
-				const nextValue = await iterator.next();
+				const nextValue = await reader.read();
 				if (nextValue.done) {
 					throw new TsonError("Unexpected end of stream before head");
 				}
