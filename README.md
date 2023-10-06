@@ -25,8 +25,8 @@
 
 ## Introduction
 
-> [!WARNING]  
-> 🔍 **Experimental Alert!** Though well-tested, this package might undergo big changes. Stay tuned!
+> [!IMPORTANT]  
+> 🧪 Though well-tested, this package might undergo big changes. Stay tuned!
 
 Flexible customizable JSON serialization & deserialization. Tweak it, extend it, make it yours. Serialize almost[^1] anything!
 
