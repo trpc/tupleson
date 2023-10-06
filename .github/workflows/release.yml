@@ -54,7 +54,7 @@ jobs:
                 enforce_admins: false,
                 owner: "KATT",
                 repo: "tson",
-                required_conversation_resolution: true,
+                required_conversation_resolution: false,
                 required_linear_history: false,
                 required_pull_request_reviews: null,
                 required_status_checks: {
