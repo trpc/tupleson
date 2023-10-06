@@ -33,8 +33,8 @@ Flexible customizable JSON serialization & deserialization. Tweak it, extend it,
 
 ### 🎯 Project Goals
 
-- 📖 Human-readable output
 - 💡 JSON-compatible output
+- 📖 Human-readable output
 - 🔧 Customizable behavior – tailor it to your exact needs.
 - 🌊 Serialize & stream things like `Promise`s or async iterators.
 
