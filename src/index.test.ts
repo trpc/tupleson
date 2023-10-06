@@ -7,7 +7,7 @@ import {
 	createTsonAsync,
 	tsonPromise,
 } from "./index.js";
-import { expectError, waitError, waitFor } from "./internals/testUtils.js";
+import { expectError, waitError } from "./internals/testUtils.js";
 import { TsonSerialized } from "./types.js";
 
 test("multiple handlers for primitive string found", () => {
