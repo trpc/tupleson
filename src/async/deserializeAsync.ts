@@ -91,7 +91,6 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					assert(controller as any, "No controller found");
 
 					return transformer.deserialize({
-						// abortSignal
 						onDone() {
 							try {
 								controller.close();
