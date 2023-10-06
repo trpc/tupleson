@@ -133,6 +133,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				assert(item, `No stream found for index ${index}`);
 
 				// FIXME: I don't know why this requires array buffer
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 				item.controller.enqueue(walkedResult as any);
 			}
 
