@@ -1,6 +1,6 @@
 import http from "node:http";
 
-import { tsonAsync } from "./shared";
+import { tsonAsync } from "./shared.js";
 
 const randomNumber = (min: number, max: number) => {
 	return Math.floor(Math.random() * (max - min + 1) + min);
@@ -27,8 +27,17 @@ export function getResponseShape() {
 		bigints: bigintGenerator(),
 		foo: "bar",
 		numbers: numberGenerator(),
-		promise: Promise.resolve(42),
-		rejectedPromise: Promise.reject(new Error("rejected promise")),
+		// promise: Promise.resolve(42),
+		promise: new Promise<number>((resolve) =>
+			setTimeout(() => {
+				resolve(42);
+			}, 1),
+		),
+		rejectedPromise: new Promise<number>((_, reject) =>
+			setTimeout(() => {
+				reject(new Error("Rejected promise"));
+			}, 1),
+		),
 	};
 }
 

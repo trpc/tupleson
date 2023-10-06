@@ -10,7 +10,7 @@
 	"scripts": {
 		"build": "tsc",
 		"dev:server": "tsx watch src/server",
-		"dev:client": "wait-port 3000 && tsx watch src/client",
+		"dev:client": "tsx watch src/client",
 		"dev": "run-p dev:* --print-label",
 		"lint": "eslint --ext \".js,.ts,.tsx\" --report-unused-disable-directives */*.ts"
 	},
