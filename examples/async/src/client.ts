@@ -9,7 +9,7 @@ async function main() {
 	// do a streamed fetch request
 	const port = 3000;
 	await waitPort({ port });
-	console.log(`Server started on port ${port}!`);
+
 	const response = await fetch(`http://localhost:${port}`);
 
 	if (!response.body) {
