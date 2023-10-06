@@ -27,9 +27,7 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 				const value = await opts.stream[Symbol.asyncIterator]().next();
 
 				if (value.done) {
-					throw new TsonPromiseRejectionError(
-						"Expected promise value, got done - was the stream interrupted?",
-					);
+					throw new Error("Expected promise value, got done");
 				}
 
 				const [status, result] = value.value;

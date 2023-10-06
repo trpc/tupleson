@@ -488,13 +488,19 @@ test("does not crash node when it receives a promise rejection", async () => {
 		assert(deferreds.size === 1);
 	});
 
+	await waitFor(() => {
+		assert(deferreds.size === 0);
+	});
+
 	expect(result).toMatchInlineSnapshot(`
 		{
 		  "foo": Promise {},
 		}
 	`);
 
-	await expect(result.foo).rejects.toMatchInlineSnapshot(
+	const err = await waitError(result.foo);
+
+	expect(err).toMatchInlineSnapshot(
 		"[TsonPromiseRejectionError: Promise rejected]",
 	);
 });
