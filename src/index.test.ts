@@ -168,16 +168,25 @@ test("async: bad values", async () => {
 	}
 
 	const onErrorSpy = vitest.fn();
-	await createTsonAsync({
+	const value = await createTsonAsync({
 		onStreamError: onErrorSpy,
 		types: [tsonPromise],
 	}).parse(generator());
+
+	const typedValue = value as {
+		foo: Promise<unknown>;
+	};
+
+	expect(typedValue.foo).toBeInstanceOf(Promise);
+	await expect(typedValue.foo).rejects.toMatchInlineSnapshot(
+		"[Error: Expected promise value, got done]",
+	);
 
 	await waitFor(() => {
 		expect(onErrorSpy).toHaveBeenCalledTimes(1);
 	});
 
 	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
-		'[TsonError: Stream interrupted: Not all streams were processed or done at the end of the stream]',
+		'[TsonError: Stream interrupted: 1 streams were not processed at the end]',
 	);
 });
