@@ -25,7 +25,7 @@
 
 ---
 
-Customizable JSON serialization & deserialization.
+Customizable serialization & deserialization.
 Serialize almost[^1] anything!
 
 [^1]:
