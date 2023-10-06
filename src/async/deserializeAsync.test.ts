@@ -14,7 +14,7 @@ import {
 import { createTestServer } from "../internals/testUtils.js";
 import { TsonAsyncOptions } from "./asyncTypes.js";
 
-test("deserialize promise", async () => {
+test("deserialize async iterable", async () => {
 	const tson = createTsonAsync({
 		nonce: () => "__tson",
 		types: [tsonAsyncIterator, tsonPromise, tsonBigint],
