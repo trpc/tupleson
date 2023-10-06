@@ -87,6 +87,8 @@ const myObj = {
 
 const str = tson.stringify(myObj, 2);
 console.log(str);
+// (👀 All non-JSON values are replaced with a tuple, hence the name)
+
 // ->
 // {
 //   "json": {
