@@ -2,6 +2,8 @@
 	"name": "@examples/minimal",
 	"version": "10.38.5",
 	"private": true,
+	"description": "An example project for tupleson",
+	"license": "MIT",
 	"module": "module",
 	"workspaces": [
 		"client",
