@@ -1,5 +1,12 @@
 
 
+## [0.13.1](https://github.com/KATT/tupleson/compare/0.13.0...0.13.1) (2023-10-06)
+
+
+### Bug Fixes
+
+* `deserializeAsync` string chunks can split anywhere ([#30](https://github.com/KATT/tupleson/issues/30)) ([aa19cc4](https://github.com/KATT/tupleson/commit/aa19cc42bf03b5d015623abaaa00a592bff5713d))
+
 # [0.13.0](https://github.com/KATT/tupleson/compare/0.12.0...0.13.0) (2023-10-05)
 
 
