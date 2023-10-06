@@ -7,7 +7,7 @@
 			"project": ["src/**/*.ts!"]
 		},
 		"examples/*": {
-			"entry": ["src/{server,client, index}.ts!"]
+			"entry": ["src/{server,client,index}.ts!"]
 		}
 	}
 }
