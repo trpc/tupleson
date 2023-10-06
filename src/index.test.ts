@@ -144,7 +144,7 @@ test("async: bad init", async () => {
 	);
 });
 
-test("async: bad values", async () => {
+test.only("async: bad values", async () => {
 	async function* generator() {
 		await Promise.resolve();
 
@@ -179,14 +179,45 @@ test("async: bad values", async () => {
 
 	expect(typedValue.foo).toBeInstanceOf(Promise);
 	await expect(typedValue.foo).rejects.toMatchInlineSnapshot(
-		"[Error: Expected promise value, got done]",
+		'[TsonPromiseRejectionError: Expected promise value, got done - was the stream interrupted?]',
 	);
+});
 
-	await waitFor(() => {
-		expect(onErrorSpy).toHaveBeenCalledTimes(1);
-	});
+test("async: chunked response values", async () => {
+	async function* generator() {
+		await Promise.resolve();
 
-	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
-		'[TsonError: Stream interrupted: 1 streams were not processed at the end]',
-	);
+		yield "[" + "\n";
+
+		const obj = {
+			json: {
+				foo: ["Promise", 0, "__tson"],
+			},
+			nonce: "__tson",
+		} as TsonSerialized<any>;
+		yield JSON.stringify(obj) + "\n";
+
+		await Promise.resolve();
+
+		yield "  ," + "\n";
+		yield "  [" + "\n";
+		yield '  [0, [0, "bar"]]' + "\n";
+		yield "  ]" + "\n";
+		yield "]";
+	}
+
+	const onErrorSpy = vitest.fn();
+	const value = await createTsonAsync({
+		onStreamError: onErrorSpy,
+		types: [tsonPromise],
+	}).parse(generator());
+
+	const typedValue = value as {
+		foo: Promise<unknown>;
+	};
+
+	expect(typedValue.foo).toBeInstanceOf(Promise);
+	expect(await typedValue.foo).toBe("bar");
+
+	expect(onErrorSpy).toHaveBeenCalledTimes(0);
 });

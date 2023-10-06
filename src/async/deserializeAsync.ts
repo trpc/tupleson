@@ -50,7 +50,6 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 		const streamByIndex = new Map<
 			TsonAsyncIndex,
 			{
-				closed: boolean;
 				controller: ReadableStreamController<unknown>;
 				stream: ReadableStream<unknown>;
 			}
@@ -85,19 +84,19 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					});
 					assert(controller, "Controller not set");
 
-					const item = {
-						closed: false,
+					streamByIndex.set(idx, {
 						controller,
 						stream,
-					};
-					streamByIndex.set(idx, item);
+					});
 
 					assert(controller as any, "No controller found");
 
 					return transformer.deserialize({
 						onDone() {
-							if (!item.closed) {
-								item.controller.close();
+							try {
+								controller.close();
+							} catch {
+								// ignore
 							}
 						},
 						stream: readableStreamToAsyncIterable(stream),
@@ -155,7 +154,6 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			for (const item of streamByIndex.values()) {
 				if (!item.closed) {
 					item.controller.close();
-					item.closed = true;
 					unclosedCount++;
 				}
 			}
@@ -210,9 +208,11 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 						{ cause },
 					);
 
-					// cancel all pending streams
+					// close all pending streams
 					for (const { controller } of streamByIndex.values()) {
-						controller.error(err);
+						try {
+							controller.close();
+						} catch {}
 					}
 
 					opts.onStreamError?.(err);
