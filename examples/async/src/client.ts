@@ -9,10 +9,10 @@ import { tsonOptions } from "./shared.js";
 const tsonParseAsync = createTsonParseAsync(tsonOptions);
 
 async function main() {
-	// do a streamed fetch request
 	const port = 3000;
 	await waitPort({ port });
 
+	// <request to server>
 	const response = await fetch(`http://localhost:${port}`);
 
 	if (!response.body) {
@@ -26,22 +26,25 @@ async function main() {
 		readableStreamToAsyncIterable(response.body),
 		(v) => textDecoder.decode(v),
 	);
+	// </request to server>
 
 	// ✨ ✨ ✨ ✨  parse the response body stream  ✨ ✨ ✨ ✨ ✨
 	const output = await tsonParseAsync<ResponseShape>(stringIterator);
 
-	// we can now use the output as a normal object
+	// we can now use the output as a normal object 🤯🤯
 	console.log({ output });
+
+	console.log("[output.promise] Promise result:", await output.promise);
 
 	const printBigInts = async () => {
 		for await (const value of output.bigints) {
-			console.log(`Received bigint:`, value);
+			console.log(`[output.bigints] Received bigint:`, value);
 		}
 	};
 
 	const printNumbers = async () => {
 		for await (const value of output.numbers) {
-			console.log(`Received number:`, value);
+			console.log(`[output.numbers] Received number:`, value);
 		}
 	};
 

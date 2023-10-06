@@ -9,11 +9,16 @@ const randomNumber = (min: number, max: number) => {
 	return Math.floor(Math.random() * (max - min + 1) + min);
 };
 
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * This function returns the object we will be sending to the client.
+ */
 export function getResponseShape() {
 	async function* bigintGenerator() {
 		const iterate = new Array(10).fill(0).map((_, i) => BigInt(i));
 		for (const number of iterate) {
-			await new Promise((resolve) => setTimeout(resolve, randomNumber(1, 400)));
+			await wait(randomNumber(1, 400));
 			yield number;
 		}
 	}
@@ -21,7 +26,7 @@ export function getResponseShape() {
 	async function* numberGenerator() {
 		const iterate = new Array(10).fill(0).map((_, i) => i);
 		for (const number of iterate) {
-			await new Promise((resolve) => setTimeout(resolve, randomNumber(1, 400)));
+			await wait(randomNumber(1, 400));
 			yield number;
 		}
 	}
@@ -30,7 +35,6 @@ export function getResponseShape() {
 		bigints: bigintGenerator(),
 		foo: "bar",
 		numbers: numberGenerator(),
-		// promise: Promise.resolve(42),
 		promise: new Promise<number>((resolve) =>
 			setTimeout(() => {
 				resolve(42);
@@ -53,6 +57,7 @@ async function handleRequest(
 
 	const obj = getResponseShape();
 
+	// Stream the response to the client
 	for await (const chunk of tsonStringifyAsync(obj)) {
 		res.write(chunk);
 	}
