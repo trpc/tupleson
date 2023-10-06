@@ -1,5 +1,12 @@
 
 
+# [0.16.0](https://github.com/KATT/tupleson/compare/0.15.0...0.16.0) (2023-10-06)
+
+
+### Features
+
+* align naming on functions ([#37](https://github.com/KATT/tupleson/issues/37)) ([84faf3b](https://github.com/KATT/tupleson/commit/84faf3bc890cbfc1208fe3ea4212c5629fc88426))
+
 # [0.15.0](https://github.com/KATT/tupleson/compare/0.14.0...0.15.0) (2023-10-06)
 
 
