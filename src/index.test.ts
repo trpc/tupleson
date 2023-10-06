@@ -178,6 +178,6 @@ test("async: bad values", async () => {
 	});
 
 	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
-		"[TsonError: Stream interrupted: Stream ended with 1 pending promises]",
+		'[TsonError: Stream interrupted: Not all streams were closed]',
 	);
 });

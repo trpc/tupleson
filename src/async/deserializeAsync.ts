@@ -93,8 +93,12 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					return transformer.deserialize({
 						// abortSignal
 						onDone() {
-							controller.close();
-							// cache.delete(idx);
+							try {
+								controller.close();
+								streamByIndex.delete(idx);
+							} catch {
+								// ignore
+							}
 						},
 						stream: readableStreamToAsyncIterable(stream),
 					});
@@ -146,6 +150,12 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 				nextValue = await instance.next();
 			}
+
+			for (const item of streamByIndex.values()) {
+				item.controller.close();
+			}
+
+			assert(streamByIndex.size === 0, "Not all streams were closed");
 		}
 
 		async function init() {
