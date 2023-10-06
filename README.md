@@ -29,8 +29,8 @@ Customizable JSON serialization & deserialization.
 Serialize almost[^1] anything!
 
 [^1]:
-    🌀 Circular references not your thing? We agree & we don't support it 
-    ... but hey, feel free to make a PR add opt-in support for that if you need it!
+    🌀 Circular references not your thing? We agree & we don't support it.
+    But hey, feel free to make a PR add opt-in support for that if you need it!
 
 ### 🎯 Project Goals
 
