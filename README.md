@@ -34,8 +34,8 @@ Serialize almost[^1] anything!
 
 - 💡 JSON-compatible output
 - 📖 Human-readable output
-- 🔧 Customizable behavior – tailor it to your exact needs.
-- 🌊 Serialize & stream things like `Promise`s or async iterators.
+- 🔧 Customizable behavior – tailor it to your exact needs
+- 🌊 Serialize & stream things like `Promise`s or async iterators
 
 > [!IMPORTANT]  
 > _Though well-tested, this package might undergo big changes, stay tuned!_
