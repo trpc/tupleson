@@ -150,18 +150,13 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				nextValue = await instance.next();
 			}
 
-			let unclosedCount = 0;
 			for (const item of streamByIndex.values()) {
-				if (!item.closed) {
+				try {
 					item.controller.close();
-					unclosedCount++;
+				} catch {
+					// ignore
 				}
 			}
-
-			assert(
-				unclosedCount === 0,
-				`${unclosedCount} streams were not processed at the end`,
-			);
 		}
 
 		async function init() {
