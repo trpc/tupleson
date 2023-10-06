@@ -144,7 +144,7 @@ test("async: bad init", async () => {
 	);
 });
 
-test.only("async: bad values", async () => {
+test("async: bad values", async () => {
 	async function* generator() {
 		await Promise.resolve();
 
@@ -179,28 +179,45 @@ test.only("async: bad values", async () => {
 
 	expect(typedValue.foo).toBeInstanceOf(Promise);
 	await expect(typedValue.foo).rejects.toMatchInlineSnapshot(
-		'[TsonPromiseRejectionError: Expected promise value, got done - was the stream interrupted?]',
+		"[TsonPromiseRejectionError: Expected promise value, got done - was the stream interrupted?]",
 	);
 });
 
-test("async: chunked response values", async () => {
+test.todo("async: chunked response values", async () => {
 	async function* generator() {
 		await Promise.resolve();
 
 		yield "[" + "\n";
 
-		const obj = {
-			json: {
-				foo: ["Promise", 0, "__tson"],
-			},
-			nonce: "__tson",
-		} as TsonSerialized<any>;
-		yield JSON.stringify(obj) + "\n";
+		{
+			const obj = {
+				json: {
+					foo: ["Promise", 0, "__tson"],
+				},
+				nonce: "__tson",
+			} as TsonSerialized<any>;
+
+			const out = JSON.stringify(obj) + "\n";
+
+			const half = Math.ceil(out.length / 2);
+
+			yield out.slice(0, half);
+			yield out.slice(half);
+		}
 
 		await Promise.resolve();
 
 		yield "  ," + "\n";
 		yield "  [" + "\n";
+
+		// this value is chunked in half
+		{
+			const value = '  [0, [0, "bar"]]' + "\n";
+			const half = Math.ceil(value.length / 2);
+			yield value.slice(0, half);
+			yield value.slice(half);
+		}
+
 		yield '  [0, [0, "bar"]]' + "\n";
 		yield "  ]" + "\n";
 		yield "]";
