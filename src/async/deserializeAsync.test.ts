@@ -7,20 +7,9 @@ import {
 	tsonPromise,
 } from "../index.js";
 import { assert } from "../internals/assert.js";
-import { createTestServer } from "../internals/testUtils.js";
+import { createTestServer, createBodyStream } from "../internals/testUtils.js";
 import { TsonAsyncOptions } from "./asyncTypes.js";
 
-function createBodyStream(iterator: AsyncIterable<string>) {
-	return new ReadableStream<Uint8Array>({
-		async start(controller) {
-			const encoder = new TextEncoder();
-			for await (const chunk of iterator) {
-				controller.enqueue(encoder.encode(chunk));
-			}
-			controller.close();
-		}
-	})
-}
 
 test("deserialize variable chunk length", async () => {
 	const tson = createTsonAsync({

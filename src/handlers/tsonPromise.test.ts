@@ -19,6 +19,7 @@ import {
 	createTestServer,
 	waitError,
 	waitFor,
+	createBodyStream,
 } from "../internals/testUtils.js";
 import { TsonSerialized, TsonType } from "../types.js";
 
@@ -354,7 +355,8 @@ test("pipe stringifier to parser", async () => {
 
 	const strIterarable = tson.stringify(obj, 4);
 
-	const value = await tson.parse(strIterarable);
+	const valueRaw = await tson.parse(createBodyStream(strIterarable));
+	const value = valueRaw as typeof obj;
 
 	expect(value).toHaveProperty("foo");
 	expect(await value.foo).toBe("bar");
@@ -377,7 +379,8 @@ test("stringify and parse promise with a promise", async () => {
 
 	const strIterarable = tson.stringify(obj, 4);
 
-	const value = await tson.parse(strIterarable);
+	const valueRaw = await tson.parse(createBodyStream(strIterarable));
+	const value = valueRaw as typeof obj;
 
 	const firstPromise = await value.promise;
 
@@ -442,7 +445,7 @@ test("stringify and parse promise with a promise over a network connection", asy
 		(v) => textDecoder.decode(v),
 	);
 
-	const value = await tson.parse(stringIterator);
+	const value = await tson.parse(createBodyStream(stringIterator));
 	const asObj = value as Obj;
 
 	const firstPromise = await asObj.promise;
@@ -481,7 +484,7 @@ test("does not crash node when it receives a promise rejection", async () => {
 	};
 	const iterator = stringify(original);
 
-	const [_result, deferreds] = await parse(iterator);
+	const [_result, deferreds] = await parse(createBodyStream(iterator));
 
 	const result = _result as typeof original;
 	await waitFor(() => {
@@ -549,7 +552,8 @@ test("stringify promise rejection", async () => {
 		// parse
 		const iterator = stringify(original, 2);
 
-		const result = await parse(iterator);
+		const resultRaw = await parse(createBodyStream(iterator));
+		const result = resultRaw as typeof original;
 
 		expect(result).toMatchInlineSnapshot(`
 			{
