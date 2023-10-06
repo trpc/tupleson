@@ -203,3 +203,98 @@ test("e2e: stringify async iterable and promise over the network", async () => {
 
 	server.close();
 });
+
+test("e2e: server crash", async () => {
+	function createMockObj() {
+		async function* generator() {
+			const values = [1n, 2n, 3n, 4n, 5n];
+			for (let i = 0; i < values.length; i++) {
+				await new Promise((resolve) => setTimeout(resolve, i === 2 ? 200 : 0));
+				yield values[i];
+			}
+		}
+
+		return {
+			foo: "bar",
+			iterable: generator(),
+			promise: Promise.resolve(42),
+			rejectedPromise: Promise.reject(new Error("rejected promise")),
+		};
+	}
+
+	type MockObj = ReturnType<typeof createMockObj>;
+
+	// ------------- server -------------------
+	const opts: TsonAsyncOptions = {
+		types: [tsonPromise, tsonAsyncIterator, tsonBigint],
+	};
+
+	const server = await createTestServer({
+		handleRequest: async (_req, res) => {
+			const tson = createTsonAsync(opts);
+
+			const obj = createMockObj();
+			const strIterarable = tson.stringify(obj, 4);
+
+			let closed = false;
+			setTimeout(() => {
+				closed = true;
+				server.close();
+			}, 50);
+
+			for await (const value of strIterarable) {
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- what are you on about?
+				if (closed) {
+					continue;
+				}
+				res.write(value);
+			}
+
+			res.end();
+		},
+	});
+
+	// ------------- client -------------------
+	const tson = createTsonAsync(opts);
+
+	// do a streamed fetch request
+	const response = await fetch(server.url);
+
+	assert(response.body);
+
+	const textDecoder = new TextDecoder();
+	const stringIterator = mapIterable(
+		readableStreamToAsyncIterable(response.body),
+		(v) => textDecoder.decode(v),
+	);
+
+	let parsed: MockObj | null = null;
+	const results = [];
+	let error: Error | null = null;
+	try {
+		parsed = await tson.parse<MockObj>(stringIterator);
+		for await (const value of parsed.iterable) {
+			results.push(value);
+		}
+	} catch (err) {
+		error = err as Error;
+	} finally {
+		server.close();
+	}
+
+	// 🔺🔺🔺🔺
+	// WARNING: this probably shouldn't be "3 pending promises" if things are done correctly, because by the time is crashes, everything but the iterator is resolved
+	// 🔺🔺🔺🔺
+	assert(error);
+	expect(error.message).toMatchInlineSnapshot(
+		`"Stream interrupted: Stream ended with 3 pending promises"`,
+	);
+
+	assert(parsed);
+	expect(parsed.foo).toEqual("bar");
+	expect(await parsed.promise).toEqual(42);
+	await expect(
+		parsed.rejectedPromise,
+	).rejects.toThrowErrorMatchingInlineSnapshot('"Promise rejected"');
+	expect(results).toEqual([1n, 2n]);
+});
