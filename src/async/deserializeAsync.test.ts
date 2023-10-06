@@ -183,8 +183,7 @@ test("e2e: stringify async iterable and promise over the network", async () => {
 		(v) => textDecoder.decode(v),
 	);
 
-	const parsedRaw = await tson.parse(stringIterator);
-	const parsed = parsedRaw as MockObj;
+	const parsed = await tson.parse<MockObj>(stringIterator);
 
 	expect(parsed.foo).toEqual("bar");
 
