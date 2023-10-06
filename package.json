@@ -24,6 +24,7 @@
 		"fix": "pnpm lint --fix && pnpm format:write",
 		"format": "prettier \"**/*\" --ignore-unknown",
 		"format:write": "pnpm format --write",
+		"postinstall": "pnpm run build",
 		"lint": "eslint . .*js --max-warnings 0 --report-unused-disable-directives",
 		"lint:knip": "knip",
 		"lint:md": "markdownlint \"**/*.md\" \".github/**/*.md\" --rules sentences-per-line",
@@ -32,8 +33,7 @@
 		"lint:spelling": "cspell \"**\" \".github/**/*\"",
 		"should-semantic-release": "should-semantic-release --verbose",
 		"test": "vitest",
-		"tsc": "tsc",
-		"postinstall": "pnpm run build"
+		"tsc": "tsc"
 	},
 	"dependencies": {},
 	"devDependencies": {
