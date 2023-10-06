@@ -12,14 +12,12 @@
 		"dev:server": "tsx watch src/server",
 		"dev:client": "wait-port 3000 && tsx watch src/client",
 		"dev": "run-p dev:* --print-label",
-		"lint": "eslint --ext \".js,.ts,.tsx\" --report-unused-disable-directives */*.ts",
-		"test-dev": "start-server-and-test 'tsx src/server' 3000 'tsx src/client'"
+		"lint": "eslint --ext \".js,.ts,.tsx\" --report-unused-disable-directives */*.ts"
 	},
 	"devDependencies": {
 		"@types/node": "^18.16.16",
 		"eslint": "^8.40.0",
 		"npm-run-all": "^4.1.5",
-		"start-server-and-test": "^1.12.0",
 		"tsx": "^3.12.7",
 		"tupleson": "latest",
 		"typescript": "^5.1.3",
