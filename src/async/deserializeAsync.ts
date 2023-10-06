@@ -3,6 +3,7 @@
 import { TsonError } from "../errors.js";
 import { assert } from "../internals/assert.js";
 import { isTsonTuple } from "../internals/isTsonTuple.js";
+import { readableStreamToAsyncIterable } from "../internals/iterableUtils.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
 	TsonNonce,
@@ -28,32 +29,6 @@ type TsonParseAsync = <TValue>(
 	string: AsyncIterable<string> | TsonAsyncStringifierIterator<TValue>,
 ) => Promise<TValue>;
 
-function createDeferred<T>() {
-	type PromiseResolve = (value: T) => void;
-	type PromiseReject = (reason: unknown) => void;
-	const deferred = {} as {
-		promise: Promise<T>;
-		reject: PromiseReject;
-		resolve: PromiseResolve;
-	};
-	deferred.promise = new Promise<T>((resolve, reject) => {
-		deferred.resolve = resolve;
-		deferred.reject = reject;
-	});
-	return deferred;
-}
-
-type Deferred<T> = ReturnType<typeof createDeferred<T>>;
-
-function createSafeDeferred<T>() {
-	const deferred = createDeferred();
-
-	deferred.promise.catch(() => {
-		// prevent unhandled promise rejection
-	});
-	return deferred as Deferred<T>;
-}
-
 export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
@@ -70,14 +45,15 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 	return async (iterator: AsyncIterable<string>) => {
 		// this is an awful hack to get around making a some sort of pipeline
-		const cache = new Map<
+		const instance = iterator[Symbol.asyncIterator]();
+
+		const streamByIndex = new Map<
 			TsonAsyncIndex,
 			{
-				next: Deferred<unknown>;
-				values: unknown[];
+				controller: ReadableStreamController<unknown>;
+				stream: ReadableStream<unknown>;
 			}
 		>();
-		const instance = iterator[Symbol.asyncIterator]();
 
 		const walker: WalkerFactory = (nonce) => {
 			const walk: WalkFn = (value) => {
@@ -94,41 +70,36 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					const idx = serializedValue as TsonAsyncIndex;
 
-					const self = {
-						next: createSafeDeferred(),
-						values: [],
-					};
-					cache.set(idx, self);
+					// create a new stream for this index if one doesn't exist
+					assert(
+						!streamByIndex.has(idx),
+						`Stream already exists for index ${idx}`,
+					);
+					let controller: ReadableStreamDefaultController<unknown> =
+						null as unknown as ReadableStreamDefaultController<unknown>;
+					const stream = new ReadableStream({
+						start(c) {
+							controller = c;
+						},
+					});
+					assert(controller, "Controller not set");
+
+					streamByIndex.set(idx, {
+						controller,
+						stream,
+					});
+
+					assert(controller as any, "No controller found");
 
 					return transformer.deserialize({
-						// abortSignal
 						onDone() {
-							cache.delete(idx);
+							try {
+								controller.close();
+							} catch {
+								// ignore
+							}
 						},
-						stream: {
-							[Symbol.asyncIterator]: () => {
-								let index = 0;
-								return {
-									next: async () => {
-										const idx = index++;
-
-										if (self.values.length > idx) {
-											return {
-												done: false,
-												value: self.values[idx],
-											};
-										}
-
-										await self.next.promise;
-
-										return {
-											done: false,
-											value: self.values[idx],
-										};
-									},
-								};
-							},
-						},
+						stream: readableStreamToAsyncIterable(stream),
 					});
 				}
 
@@ -158,16 +129,15 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 				const [index, result] = JSON.parse(str) as TsonAsyncValueTuple;
 
-				const item = cache.get(index);
+				const item = streamByIndex.get(index);
 
 				const walkedResult = walk(result);
 
-				assert(item, `No deferred found for index ${index}`);
+				assert(item, `No stream found for index ${index}`);
 
-				// resolving deferred
-				item.values.push(walkedResult);
-				item.next.resolve(walkedResult);
-				item.next = createSafeDeferred();
+				// FIXME: I don't know why this requires array buffer
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+				item.controller.enqueue(walkedResult as any);
 			}
 
 			buffer.forEach(readLine);
@@ -180,7 +150,13 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				nextValue = await instance.next();
 			}
 
-			assert(!cache.size, `Stream ended with ${cache.size} pending promises`);
+			for (const item of streamByIndex.values()) {
+				try {
+					item.controller.close();
+				} catch {
+					// ignore
+				}
+			}
 		}
 
 		async function init() {
@@ -227,12 +203,14 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 						{ cause },
 					);
 
-					// cancel all pending promises
-					for (const deferred of cache.values()) {
-						deferred.next.reject(err);
+					// close all pending streams
+					for (const item of streamByIndex.values()) {
+						try {
+							item.controller.close();
+						} catch {
+							// ignore
+						}
 					}
-
-					cache.clear();
 
 					opts.onStreamError?.(err);
 				});
@@ -242,7 +220,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 		const result = await init().catch((cause: unknown) => {
 			throw new TsonError("Failed to initialize TSON stream", { cause });
 		});
-		return [result, cache] as const;
+		return [result, streamByIndex] as const;
 	};
 }
 

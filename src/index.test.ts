@@ -7,7 +7,7 @@ import {
 	createTsonAsync,
 	tsonPromise,
 } from "./index.js";
-import { expectError, waitError, waitFor } from "./internals/testUtils.js";
+import { expectError, waitError } from "./internals/testUtils.js";
 import { TsonSerialized } from "./types.js";
 
 test("multiple handlers for primitive string found", () => {
@@ -168,16 +168,73 @@ test("async: bad values", async () => {
 	}
 
 	const onErrorSpy = vitest.fn();
-	await createTsonAsync({
+	const value = await createTsonAsync({
 		onStreamError: onErrorSpy,
 		types: [tsonPromise],
 	}).parse(generator());
 
-	await waitFor(() => {
-		expect(onErrorSpy).toHaveBeenCalledTimes(1);
-	});
+	const typedValue = value as {
+		foo: Promise<unknown>;
+	};
 
-	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
-		"[TsonError: Stream interrupted: Stream ended with 1 pending promises]",
+	expect(typedValue.foo).toBeInstanceOf(Promise);
+	await expect(typedValue.foo).rejects.toMatchInlineSnapshot(
+		"[TsonPromiseRejectionError: Expected promise value, got done - was the stream interrupted?]",
 	);
+});
+
+test.todo("async: chunked response values", async () => {
+	async function* generator() {
+		await Promise.resolve();
+
+		yield "[" + "\n";
+
+		{
+			const obj = {
+				json: {
+					foo: ["Promise", 0, "__tson"],
+				},
+				nonce: "__tson",
+			} as TsonSerialized<any>;
+
+			const out = JSON.stringify(obj) + "\n";
+
+			const half = Math.ceil(out.length / 2);
+
+			yield out.slice(0, half);
+			yield out.slice(half);
+		}
+
+		await Promise.resolve();
+
+		yield "  ," + "\n";
+		yield "  [" + "\n";
+
+		// this value is chunked in half
+		{
+			const value = '  [0, [0, "bar"]]' + "\n";
+			const half = Math.ceil(value.length / 2);
+			yield value.slice(0, half);
+			yield value.slice(half);
+		}
+
+		yield '  [0, [0, "bar"]]' + "\n";
+		yield "  ]" + "\n";
+		yield "]";
+	}
+
+	const onErrorSpy = vitest.fn();
+	const value = await createTsonAsync({
+		onStreamError: onErrorSpy,
+		types: [tsonPromise],
+	}).parse(generator());
+
+	const typedValue = value as {
+		foo: Promise<unknown>;
+	};
+
+	expect(typedValue.foo).toBeInstanceOf(Promise);
+	expect(await typedValue.foo).toBe("bar");
+
+	expect(onErrorSpy).toHaveBeenCalledTimes(0);
 });
