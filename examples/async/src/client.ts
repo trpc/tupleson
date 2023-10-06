@@ -6,13 +6,14 @@ import type { ResponseShape } from "./server.js";
 import { mapIterable, readableStreamToAsyncIterable } from "./iteratorUtils.js";
 import { tsonOptions } from "./shared.js";
 
+// create the async parser
 const tsonParseAsync = createTsonParseAsync(tsonOptions);
 
 async function main() {
 	const port = 3000;
 	await waitPort({ port });
 
-	// <request to server>
+	// <request to server - boring, you can skip this>
 	const response = await fetch(`http://localhost:${port}`);
 
 	if (!response.body) {
@@ -31,17 +32,19 @@ async function main() {
 	// ✨ ✨ ✨ ✨  parse the response body stream  ✨ ✨ ✨ ✨ ✨
 	const output = await tsonParseAsync<ResponseShape>(stringIterator);
 
-	// we can now use the output as a normal object 🤯🤯
+	// .... we can now use the output as a normal object 🤯🤯
 	console.log({ output });
 
 	console.log("[output.promise] Promise result:", await output.promise);
 
+	// Iterate over the async iterators
 	const printBigInts = async () => {
 		for await (const value of output.bigints) {
 			console.log(`[output.bigints] Received bigint:`, value);
 		}
 	};
 
+	// Iterate over the async iterators
 	const printNumbers = async () => {
 		for await (const value of output.numbers) {
 			console.log(`[output.numbers] Received number:`, value);
@@ -50,7 +53,9 @@ async function main() {
 
 	await Promise.all([printBigInts(), printNumbers()]);
 
-	console.log("✅ Output ended");
+	console.log(
+		`✅ Output ended - visit http://localhost:${port} to see the raw server output`,
+	);
 }
 
 main().catch((err) => {
