@@ -24,9 +24,11 @@ async function main() {
 		(v) => textDecoder.decode(v),
 	);
 
+	// ✨ ✨ ✨ ✨  parse the response body stream  ✨ ✨ ✨ ✨ ✨
 	const parsedUntyped = await tsonAsync.parse(stringIterator);
 	const output = parsedUntyped as ResponseShape;
 
+	// we can now use the output as a normal object
 	console.log({ output });
 
 	const printBigInts = async () => {
