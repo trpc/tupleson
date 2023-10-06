@@ -494,7 +494,9 @@ test("does not crash node when it receives a promise rejection", async () => {
 		}
 	`);
 
-	await expect(result.foo).rejects.toMatchInlineSnapshot('[TsonPromiseRejectionError: Promise rejected]');
+	await expect(result.foo).rejects.toMatchInlineSnapshot(
+		"[TsonPromiseRejectionError: Promise rejected]",
+	);
 });
 
 test("stringify promise rejection", async () => {
