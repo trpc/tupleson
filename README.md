@@ -23,7 +23,7 @@
 	<img alt="TypeScript: Strict" src="https://img.shields.io/badge/typescript-strict-21bb42.svg" />
 </p>
 
-## Introduction
+## 🌟 Introduction
 
 > [!IMPORTANT]  
 > _🧪 Though well-tested, this package might undergo big changes. Stay tuned!_
