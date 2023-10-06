@@ -1,5 +1,5 @@
 import { TsonAsyncType } from "../async/asyncTypes.js";
-import { TsonError, TsonPromiseRejectionError } from "../errors.js";
+import { TsonPromiseRejectionError } from "../errors.js";
 
 function isPromise(value: unknown): value is Promise<unknown> {
 	return (
