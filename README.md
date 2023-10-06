@@ -108,7 +108,7 @@ type Obj = typeof obj;
 
 ### Streaming `Promise`s and `AsyncIterable`s
 
-> See test files called `deserializeAsync.test.ts`
+> See example in [`./examples/async`](./examples/async)
 
 ## Extend with a custom serializer
 
