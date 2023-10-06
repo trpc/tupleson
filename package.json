@@ -1,6 +1,6 @@
 {
 	"name": "tupleson",
-	"version": "0.14.0",
+	"version": "0.16.0",
 	"description": "A hackable JSON serializer/deserializer",
 	"repository": {
 		"type": "git",
@@ -24,8 +24,8 @@
 		"fix": "pnpm lint --fix && pnpm format:write",
 		"format": "prettier \"**/*\" --ignore-unknown",
 		"format:write": "pnpm format --write",
+		"postinstall": "pnpm run build",
 		"lint": "eslint . .*js --max-warnings 0 --report-unused-disable-directives",
-		"lint:knip": "knip",
 		"lint:md": "markdownlint \"**/*.md\" \".github/**/*.md\" --rules sentences-per-line",
 		"lint:package-json": "npmPkgJsonLint .",
 		"lint:packages": "pnpm dedupe --check",
@@ -59,7 +59,6 @@
 		"eslint-plugin-vitest": "^0.3.1",
 		"eslint-plugin-yml": "^1.9.0",
 		"jsonc-eslint-parser": "^2.3.0",
-		"knip": "^2.30.0",
 		"markdownlint": "^0.31.1",
 		"markdownlint-cli": "^0.37.0",
 		"npm-package-json-lint": "^7.0.0",
@@ -81,5 +80,10 @@
 	},
 	"publishConfig": {
 		"provenance": true
+	},
+	"pnpm": {
+		"overrides": {
+			"@trpc/server": "link:./"
+		}
 	}
 }

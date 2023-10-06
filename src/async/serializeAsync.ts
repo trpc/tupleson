@@ -209,7 +209,7 @@ export function createAsyncTsonSerialize(
 	};
 }
 
-export function createAsyncTsonStringify(
+export function createTsonStringifyAsync(
 	opts: TsonAsyncOptions,
 ): TsonAsyncStringifier {
 	const indent = (length: number) => " ".repeat(length);

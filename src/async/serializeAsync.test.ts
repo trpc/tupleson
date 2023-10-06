@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import { tsonAsyncIterator, tsonBigint, tsonPromise } from "../index.js";
 import {
 	createAsyncTsonSerialize,
-	createAsyncTsonStringify,
+	createTsonStringifyAsync,
 } from "./serializeAsync.js";
 
 test("serialize promise", async () => {
@@ -157,7 +157,7 @@ test("serialize async iterable", async () => {
 });
 
 test("stringify async iterable + promise", async () => {
-	const stringify = createAsyncTsonStringify({
+	const stringify = createTsonStringifyAsync({
 		nonce: () => "__tson",
 		types: [tsonAsyncIterator, tsonPromise, tsonBigint],
 	});
