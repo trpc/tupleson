@@ -25,8 +25,7 @@ async function main() {
 	);
 
 	// ✨ ✨ ✨ ✨  parse the response body stream  ✨ ✨ ✨ ✨ ✨
-	const parsedUntyped = await tsonAsync.parse(stringIterator);
-	const output = parsedUntyped as ResponseShape;
+	const output = await tsonAsync.parse<ResponseShape>(stringIterator);
 
 	// we can now use the output as a normal object
 	console.log({ output });
