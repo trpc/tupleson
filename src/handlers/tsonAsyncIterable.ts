@@ -23,26 +23,24 @@ export const tsonAsyncIterator: TsonAsyncType<
 	async: true,
 	deserialize: (opts) => {
 		return (async function* generator() {
-			try {
-				for await (const value of opts.stream) {
-					switch (value[0]) {
-						case ITERATOR_DONE: {
-							return;
-						}
+			let next: ReadableStreamReadResult<SerializedIteratorResult>;
+			while (((next = await opts.reader.read()), !next.done)) {
+				switch (next.value[0]) {
+					case ITERATOR_DONE: {
+						opts.controller.close();
+						return;
+					}
 
-						case ITERATOR_ERROR: {
-							throw TsonPromiseRejectionError.from(value[1]);
-						}
+					case ITERATOR_ERROR: {
+						opts.controller.close();
+						throw TsonPromiseRejectionError.from(next.value[1]);
+					}
 
-						case ITERATOR_VALUE: {
-							yield value[1];
-							break;
-						}
+					case ITERATOR_VALUE: {
+						yield next.value[1];
+						break;
 					}
 				}
-			} finally {
-				// `onDone` is a hack and shouldn't be needed
-				opts.onDone();
 			}
 		})();
 	},

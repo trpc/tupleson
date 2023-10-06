@@ -24,7 +24,7 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 	deserialize: (opts) => {
 		const promise = new Promise((resolve, reject) => {
 			async function _handle() {
-				const value = await opts.stream[Symbol.asyncIterator]().next();
+				const value = await opts.reader.read();
 
 				if (value.done) {
 					throw new Error("Expected promise value, got done");
@@ -37,7 +37,11 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 					: reject(TsonPromiseRejectionError.from(result));
 			}
 
-			void _handle().catch(reject).finally(opts.onDone);
+			void _handle()
+				.catch(reject)
+				.finally(() => {
+					opts.controller.close();
+				});
 		});
 
 		promise.catch(() => {
