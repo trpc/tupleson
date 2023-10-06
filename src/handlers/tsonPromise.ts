@@ -25,6 +25,7 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 		const promise = new Promise((resolve, reject) => {
 			async function _handle() {
 				const value = await opts.reader.read();
+				opts.controller.close();
 
 				if (value.done) {
 					throw new Error("Expected promise value, got done");
@@ -37,11 +38,7 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 					: reject(TsonPromiseRejectionError.from(result));
 			}
 
-			void _handle()
-				.catch(reject)
-				.finally(() => {
-					opts.controller.close();
-				});
+			void _handle().catch(reject);
 		});
 
 		promise.catch(() => {
