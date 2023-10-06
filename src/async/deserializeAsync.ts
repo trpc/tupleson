@@ -204,10 +204,12 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					);
 
 					// close all pending streams
-					for (const { controller } of streamByIndex.values()) {
+					for (const item of streamByIndex.values()) {
 						try {
-							controller.close();
-						} catch {}
+							item.controller.close();
+						} catch {
+							// ignore
+						}
 					}
 
 					opts.onStreamError?.(err);
