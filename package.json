@@ -24,7 +24,6 @@
 		"fix": "pnpm lint --fix && pnpm format:write",
 		"format": "prettier \"**/*\" --ignore-unknown",
 		"format:write": "pnpm format --write",
-		"postinstall": "pnpm run build",
 		"lint": "eslint . .*js --max-warnings 0 --report-unused-disable-directives",
 		"lint:md": "markdownlint \"**/*.md\" \".github/**/*.md\" --rules sentences-per-line",
 		"lint:package-json": "npmPkgJsonLint .",
