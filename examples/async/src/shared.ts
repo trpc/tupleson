@@ -1,10 +1,10 @@
 import {
-	createTsonAsync,
+	TsonAsyncOptions,
 	tsonAsyncIterator,
 	tsonBigint,
 	tsonPromise,
 } from "tupleson";
 
-export const tsonAsync = createTsonAsync({
+export const tsonOptions: TsonAsyncOptions = {
 	types: [tsonPromise, tsonAsyncIterator, tsonBigint],
-});
+};

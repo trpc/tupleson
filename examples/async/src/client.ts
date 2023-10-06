@@ -1,9 +1,12 @@
+import { createTsonParseAsync } from "tupleson";
 import waitPort from "wait-port";
 
 import type { ResponseShape } from "./server.js";
 
 import { mapIterable, readableStreamToAsyncIterable } from "./iteratorUtils.js";
-import { tsonAsync } from "./shared.js";
+import { tsonOptions } from "./shared.js";
+
+const tsonParseAsync = createTsonParseAsync(tsonOptions);
 
 async function main() {
 	// do a streamed fetch request
@@ -25,7 +28,7 @@ async function main() {
 	);
 
 	// ✨ ✨ ✨ ✨  parse the response body stream  ✨ ✨ ✨ ✨ ✨
-	const output = await tsonAsync.parse<ResponseShape>(stringIterator);
+	const output = await tsonParseAsync<ResponseShape>(stringIterator);
 
 	// we can now use the output as a normal object
 	console.log({ output });
