@@ -95,9 +95,10 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 						onDone() {
 							try {
 								controller.close();
-								streamByIndex.delete(idx);
 							} catch {
 								// ignore
+							} finally {
+								streamByIndex.delete(idx);
 							}
 						},
 						stream: readableStreamToAsyncIterable(stream),
