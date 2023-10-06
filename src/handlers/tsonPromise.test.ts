@@ -8,7 +8,7 @@ import {
 import {
 	TsonAsyncValueTuple,
 	createAsyncTsonSerialize,
-	createAsyncTsonStringify,
+	createTsonStringifyAsync,
 } from "../async/serializeAsync.js";
 import { createTsonAsync, tsonPromise } from "../index.js";
 import {
@@ -470,7 +470,7 @@ test("does not crash node when it receives a promise rejection", async () => {
 		nonce: () => "__tson",
 		types: [tsonPromise],
 	};
-	const stringify = createAsyncTsonStringify(opts);
+	const stringify = createTsonStringifyAsync(opts);
 
 	const parse = createTsonParseAsyncInner(opts);
 
@@ -510,7 +510,7 @@ test("stringify promise rejection", async () => {
 		nonce: () => "__tson",
 		types: [tsonPromise, tsonError],
 	};
-	const stringify = createAsyncTsonStringify(opts);
+	const stringify = createTsonStringifyAsync(opts);
 
 	const parse = createTsonParseAsync(opts);
 
