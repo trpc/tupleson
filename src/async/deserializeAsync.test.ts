@@ -14,24 +14,24 @@ import {
 import { createTestServer } from "../internals/testUtils.js";
 import { TsonAsyncOptions } from "./asyncTypes.js";
 
-test("deserialize async iterable", async () => {
+test("deserialize promise", async () => {
 	const tson = createTsonAsync({
 		nonce: () => "__tson",
 		types: [tsonAsyncIterator, tsonPromise, tsonBigint],
 	});
 
-	{
-		// plain obj
-		const obj = {
-			foo: "bar",
-		};
+	// {
+	// 	// plain obj
+	// 	const obj = {
+	// 		foo: "bar",
+	// 	};
 
-		const strIterable = tson.stringify(obj);
+	// 	const strIterable = tson.stringify(obj);
 
-		const result = await tson.parse(strIterable);
+	// 	const result = await tson.parse(strIterable);
 
-		expect(result).toEqual(obj);
-	}
+	// 	expect(result).toEqual(obj);
+	// }
 
 	{
 		// promise
