@@ -108,7 +108,8 @@ type Obj = typeof obj;
 
 ### Streaming `Promise`s and `AsyncIterable`s
 
-> See test files called `deserializeAsync.test.ts`
+- See example in [`./examples/async`](./examples/async)
+- [Test it on StackBlitz](https://stackblitz.com/github/KATT/tupleson/tree/main/examples/async?file=src/server.ts&file=src/client.ts&view=editor)
 
 ## Extend with a custom serializer
 
