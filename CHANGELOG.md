@@ -1,5 +1,12 @@
 
 
+# [0.14.0](https://github.com/KATT/tupleson/compare/0.13.1...0.14.0) (2023-10-06)
+
+
+### Features
+
+* `deserializeAsync` uses streams to pipe values ([#32](https://github.com/KATT/tupleson/issues/32)) ([0363707](https://github.com/KATT/tupleson/commit/03637070756d29d5cb5df512a10c845d7c8b2089))
+
 ## [0.13.1](https://github.com/KATT/tupleson/compare/0.13.0...0.13.1) (2023-10-06)
 
 
