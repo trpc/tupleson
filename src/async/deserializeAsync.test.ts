@@ -14,6 +14,44 @@ import {
 import { createTestServer } from "../internals/testUtils.js";
 import { TsonAsyncOptions } from "./asyncTypes.js";
 
+test("deserialize variable chunk length", async () => {
+	const tson = createTsonAsync({
+		nonce: () => "__tson",
+		types: [tsonAsyncIterator, tsonPromise, tsonBigint],
+	});
+	{
+		const iterable = (async function* () {
+			await new Promise((resolve) => setTimeout(resolve, 1));
+			yield '[\n{"json":{"foo":"bar"},"nonce":"__tson"}';
+			yield "\n,\n[\n]\n]";
+		})();
+		const result = await tson.parse(iterable);
+		expect(result).toEqual({ foo: "bar" });
+	}
+
+	{
+		const iterable = (async function* () {
+			await new Promise((resolve) => setTimeout(resolve, 1));
+			yield '[\n{"json":{"foo":"bar"},"nonce":"__tson"}\n,\n[\n]\n]';
+		})();
+		const result = await tson.parse(iterable);
+		expect(result).toEqual({ foo: "bar" });
+	}
+
+	{
+		const iterable = (async function* () {
+			await new Promise((resolve) => setTimeout(resolve, 1));
+			yield '[\n{"json"';
+			yield ':{"foo":"b';
+			yield 'ar"},"nonce":"__tson"}\n,\n';
+			yield "[\n]\n";
+			yield "]";
+		})();
+		const result = await tson.parse(iterable);
+		expect(result).toEqual({ foo: "bar" });
+	}
+});
+
 test("deserialize async iterable", async () => {
 	const tson = createTsonAsync({
 		nonce: () => "__tson",

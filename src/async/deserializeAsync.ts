@@ -12,7 +12,7 @@ import {
 import {
 	TsonAsyncIndex,
 	TsonAsyncOptions,
-	TsonAsyncStringifierIterator,
+	TsonAsyncStringifierIterable,
 	TsonAsyncType,
 } from "./asyncTypes.js";
 import { TsonAsyncValueTuple } from "./serializeAsync.js";
@@ -25,7 +25,7 @@ type AnyTsonTransformerSerializeDeserialize =
 	| TsonTransformerSerializeDeserialize<any, any>;
 
 type TsonParseAsync = <TValue>(
-	string: AsyncIterable<string> | TsonAsyncStringifierIterator<TValue>,
+	string: AsyncIterable<string> | TsonAsyncStringifierIterable<TValue>,
 ) => Promise<TValue>;
 
 function createDeferred<T>() {
@@ -68,7 +68,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 		}
 	}
 
-	return async (iterator: AsyncIterable<string>) => {
+	return async (iterable: AsyncIterable<string>) => {
 		// this is an awful hack to get around making a some sort of pipeline
 		const cache = new Map<
 			TsonAsyncIndex,
@@ -77,7 +77,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				values: unknown[];
 			}
 		>();
-		const instance = iterator[Symbol.asyncIterator]();
+		const iterator = iterable[Symbol.asyncIterator]();
 
 		const walker: WalkerFactory = (nonce) => {
 			const walk: WalkFn = (value) => {
@@ -139,8 +139,8 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 		};
 
 		async function getStreamedValues(
-			buffer: string[],
-
+			lines: string[],
+			accumulator: string,
 			walk: WalkFn,
 		) {
 			function readLine(str: string) {
@@ -170,29 +170,40 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				item.next = createSafeDeferred();
 			}
 
-			buffer.forEach(readLine);
-
-			let nextValue = await instance.next();
-
-			while (!nextValue.done) {
-				nextValue.value.split("\n").forEach(readLine);
-
-				nextValue = await instance.next();
-			}
+			do {
+				lines.forEach(readLine);
+				lines.length = 0;
+				const nextValue = await iterator.next();
+				if (!nextValue.done) {
+					accumulator += nextValue.value;
+					const parts = accumulator.split("\n");
+					accumulator = parts.pop() ?? "";
+					lines.push(...parts);
+				} else if (accumulator) {
+					readLine(accumulator);
+				}
+			} while (lines.length);
 
 			assert(!cache.size, `Stream ended with ${cache.size} pending promises`);
 		}
 
 		async function init() {
-			const lines: string[] = [];
+			let accumulator = "";
 
 			// get the head of the JSON
 
-			let lastResult: IteratorResult<string>;
+			const lines: string[] = [];
 			do {
-				lastResult = await instance.next();
+				const nextValue = await iterator.next();
+				if (nextValue.done) {
+					throw new TsonError("Unexpected end of stream before head");
+				}
 
-				lines.push(...(lastResult.value as string).split("\n").filter(Boolean));
+				accumulator += nextValue.value;
+
+				const parts = accumulator.split("\n");
+				accumulator = parts.pop() ?? "";
+				lines.push(...parts);
 			} while (lines.length < 2);
 
 			const [
@@ -218,7 +229,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			try {
 				return walk(head.json);
 			} finally {
-				getStreamedValues(buffer, walk).catch((cause) => {
+				getStreamedValues(buffer, accumulator, walk).catch((cause) => {
 					// Something went wrong while getting the streamed values
 
 					const err = new TsonError(
@@ -249,8 +260,8 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 	const instance = createTsonParseAsyncInner(opts);
 
-	return (async (iterator) => {
-		const [result] = await instance(iterator);
+	return (async (iterable) => {
+		const [result] = await instance(iterable);
 
 		return result;
 	}) as TsonParseAsync;
