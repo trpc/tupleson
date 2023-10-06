@@ -108,14 +108,14 @@ type Obj = typeof obj;
 
 ### Streaming `Promise`s and `AsyncIterable`s
 
-> See example in [`./examples/async`](./examples/async)
+- See example in [`./examples/async`](./examples/async)
+- [Test it on StackBlitz](https://stackblitz.com/github/KATT/tupleson/tree/main/examples/async?file=src/server.ts&file=src/client.ts&view=editor)
 
 ## Extend with a custom serializer
 
 ### [Temporal](https://www.npmjs.com/package/@js-temporal/polyfill)
 
-- See test reference in [`./src/extend/temporal.test.ts`](./src/extend/temporal.test.ts)
-- [Test it on StackBlitz](https://stackblitz.com/github/KATT/tupleson/tree/main/examples/async?file=src/server.ts&file=src/client.ts&view=editor)
+> See test reference in [`./src/extend/temporal.test.ts`](./src/extend/temporal.test.ts)
 
 ```ts
 /* eslint-disable @typescript-eslint/no-unused-vars, n/no-missing-import, n/no-unpublished-import */
