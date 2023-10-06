@@ -1,6 +1,6 @@
 <h1 align="center">tupleSON</h1>
 
-<p align="center">A hackable JSON serializer/deserializer</p>
+<p align="center">Your hackable JSON serializer/deserializer</p>
 
 <p align="center">
 	<a href="#contributors" target="_blank">
@@ -25,13 +25,18 @@
 
 ## Introduction
 
-> ⚠️ This package is still experimental (although it's pretty well tested) & is subject to big changes
+> ⚠️🔍 **Experimental Alert!** Though well-tested, this package might undergo big changes. Stay tuned!
 
-A hackable JSON serializer/deserializer that allows you to serialize/deserialize almost[^1] anything.
+🧪 Dive into the world of customizable JSON serialization & deserialization. Tweak it, extend it, make it yours. Serialize almost[^1] anything!
 
-Serialize exactly what you want; no more, no less.
+[^1]: 🌀 Circular references not your thing? We agree & we don't support it. But hey, feel free to make a PR add opt-in support for that if you need it!
 
-[^1]: We don't support circular references as we don't think it's very desireable, but if you wanna contribute with adding opt-in support for that, you are very welcome!
+### 🎯 Project Goals
+
+- 📖 Human-readable output
+- 💡 JSON-compatible output
+- 🔧 Customizable behavior – tailor it to your exact needs.
+- 🌊 Serialize & stream things like `Promise`s or async iterators.
 
 ### Example
 
