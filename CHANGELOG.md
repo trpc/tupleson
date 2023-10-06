@@ -1,5 +1,12 @@
 
 
+## [0.16.3](https://github.com/KATT/tupleson/compare/0.16.2...0.16.3) (2023-10-06)
+
+
+### Bug Fixes
+
+* update readme more ([#44](https://github.com/KATT/tupleson/issues/44)) ([fbbec98](https://github.com/KATT/tupleson/commit/fbbec9850986730708e14667cb788390673e2c5d))
+
 ## [0.16.2](https://github.com/KATT/tupleson/compare/0.16.1...0.16.2) (2023-10-06)
 
 
