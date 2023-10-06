@@ -39,7 +39,7 @@ Flexible customizable JSON serialization & deserialization. Tweak it, extend it,
 - 🔧 Customizable behavior – tailor it to your exact needs.
 - 🌊 Serialize & stream things like `Promise`s or async iterators.
 
-### Example
+### 👀 Example
 
 ```ts
 /* eslint-disable @typescript-eslint/no-unused-vars, n/no-missing-import */
@@ -112,14 +112,14 @@ type Obj = typeof obj;
 // -> type Obj = { foo: string; set: Set<number>; }
 ```
 
-### Streaming `Promise`s and `AsyncIterable`s
+### 🤯 Streaming `Promise`s and `AsyncIterable`s
 
 - See example in [`./examples/async`](./examples/async)
 - [Test it on StackBlitz](https://stackblitz.com/github/KATT/tupleson/tree/main/examples/async?file=src/server.ts&file=src/client.ts&view=editor)
 
-## Extend with a custom serializer
+## 🧩 Extend with a custom serializer
 
-### [Temporal](https://www.npmjs.com/package/@js-temporal/polyfill)
+### ⌚️ [Temporal](https://www.npmjs.com/package/@js-temporal/polyfill)
 
 > See test reference in [`./src/extend/temporal.test.ts`](./src/extend/temporal.test.ts)
 
@@ -147,7 +147,7 @@ const tson = createTson({
 });
 ```
 
-### [Decimal.js](https://github.com/MikeMcl/decimal.js)
+### 🧮 [Decimal.js](https://github.com/MikeMcl/decimal.js)
 
 > See test reference in [`./src/extend/decimal.test.ts`](./src/extend/decimal.test.ts)
 
