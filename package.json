@@ -32,7 +32,8 @@
 		"lint:spelling": "cspell \"**\" \".github/**/*\"",
 		"should-semantic-release": "should-semantic-release --verbose",
 		"test": "vitest",
-		"tsc": "tsc"
+		"tsc": "tsc",
+		"postinstall": "pnpm run build"
 	},
 	"dependencies": {},
 	"devDependencies": {
