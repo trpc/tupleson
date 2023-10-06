@@ -6,7 +6,7 @@ import type { ResponseShape } from "./server.js";
 import { mapIterable, readableStreamToAsyncIterable } from "./iteratorUtils.js";
 import { tsonOptions } from "./shared.js";
 
-const parseAsync = createTsonParseAsync(tsonOptions);
+const tsonParseAsync = createTsonParseAsync(tsonOptions);
 
 async function main() {
 	// do a streamed fetch request
@@ -28,7 +28,7 @@ async function main() {
 	);
 
 	// ✨ ✨ ✨ ✨  parse the response body stream  ✨ ✨ ✨ ✨ ✨
-	const output = await parseAsync<ResponseShape>(stringIterator);
+	const output = await tsonParseAsync<ResponseShape>(stringIterator);
 
 	// we can now use the output as a normal object
 	console.log({ output });

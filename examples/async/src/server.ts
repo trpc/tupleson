@@ -3,7 +3,7 @@ import { createTsonStringifyAsync } from "tupleson";
 
 import { tsonOptions } from "./shared.js";
 
-const stringify = createTsonStringifyAsync(tsonOptions);
+const tsonStringifyAsync = createTsonStringifyAsync(tsonOptions);
 
 const randomNumber = (min: number, max: number) => {
 	return Math.floor(Math.random() * (max - min + 1) + min);
@@ -53,7 +53,7 @@ async function handleRequest(
 
 	const obj = getResponseShape();
 
-	for await (const chunk of stringify(obj)) {
+	for await (const chunk of tsonStringifyAsync(obj)) {
 		res.write(chunk);
 	}
 }
