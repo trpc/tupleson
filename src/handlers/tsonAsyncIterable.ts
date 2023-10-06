@@ -36,7 +36,6 @@ export const tsonAsyncIterator: TsonAsyncType<
 
 						case ITERATOR_VALUE: {
 							yield value[1];
-							break;
 						}
 					}
 				}

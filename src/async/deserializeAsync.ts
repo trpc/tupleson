@@ -155,7 +155,10 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				item.controller.close();
 			}
 
-			assert(streamByIndex.size === 0, "Not all streams were closed");
+			assert(
+				streamByIndex.size === 0,
+				"Not all streams were processed or done at the end of the stream",
+			);
 		}
 
 		async function init() {

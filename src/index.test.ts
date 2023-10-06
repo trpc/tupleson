@@ -178,6 +178,6 @@ test("async: bad values", async () => {
 	});
 
 	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
-		'[TsonError: Stream interrupted: Not all streams were closed]',
+		'[TsonError: Stream interrupted: Not all streams were processed or done at the end of the stream]',
 	);
 });
