@@ -1,5 +1,12 @@
 
 
+## [0.16.1](https://github.com/KATT/tupleson/compare/0.16.0...0.16.1) (2023-10-06)
+
+
+### Bug Fixes
+
+* remove `postinstall` as it breaks npm usage ([#42](https://github.com/KATT/tupleson/issues/42)) ([c924637](https://github.com/KATT/tupleson/commit/c924637e3c69398ff97384768c45d57eec3c7aa9))
+
 # [0.16.0](https://github.com/KATT/tupleson/compare/0.15.0...0.16.0) (2023-10-06)
 
 
