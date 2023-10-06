@@ -25,9 +25,10 @@
 
 ---
 
-Flexible customizable JSON serialization & deserialization. Tweak it, extend it, make it yours. Serialize almost[^1] anything!
+Flexible customizable JSON serialization & deserialization.
+Serialize almost[^1] anything!
 
-[^1]: 🌀 Circular references not your thing? We agree & we don't support it. But hey, feel free to make a PR add opt-in support for that if you need it!
+[^1]: 🌀 Circular references not your thing? We agree & we don't support it.\nBut hey, feel free to make a PR add opt-in support for that if you need it!
 
 ### 🎯 Project Goals
 
@@ -37,7 +38,7 @@ Flexible customizable JSON serialization & deserialization. Tweak it, extend it,
 - 🌊 Serialize & stream things like `Promise`s or async iterators.
 
 > [!IMPORTANT]  
-> _Though well-tested, this package might undergo big changes. Stay tuned!_
+> _Though well-tested, this package might undergo big changes, stay tuned!_
 
 ### 👀 Example
 
