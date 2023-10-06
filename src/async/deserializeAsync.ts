@@ -28,32 +28,6 @@ type TsonParseAsync = <TValue>(
 	string: AsyncIterable<string> | TsonAsyncStringifierIterable<TValue>,
 ) => Promise<TValue>;
 
-function createDeferred<T>() {
-	type PromiseResolve = (value: T) => void;
-	type PromiseReject = (reason: unknown) => void;
-	const deferred = {} as {
-		promise: Promise<T>;
-		reject: PromiseReject;
-		resolve: PromiseResolve;
-	};
-	deferred.promise = new Promise<T>((resolve, reject) => {
-		deferred.resolve = resolve;
-		deferred.reject = reject;
-	});
-	return deferred;
-}
-
-type Deferred<T> = ReturnType<typeof createDeferred<T>>;
-
-function createSafeDeferred<T>() {
-	const deferred = createDeferred();
-
-	deferred.promise.catch(() => {
-		// prevent unhandled promise rejection
-	});
-	return deferred as Deferred<T>;
-}
-
 export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
@@ -72,10 +46,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 		// this is an awful hack to get around making a some sort of pipeline
 		const cache = new Map<
 			TsonAsyncIndex,
-			{
-				next: Deferred<unknown>;
-				values: unknown[];
-			}
+			ReadableStreamDefaultController<unknown>
 		>();
 		const iterator = iterable[Symbol.asyncIterator]();
 
@@ -94,41 +65,22 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					const idx = serializedValue as TsonAsyncIndex;
 
-					const self = {
-						next: createSafeDeferred(),
-						values: [],
-					};
-					cache.set(idx, self);
+					const readable = new ReadableStream<unknown>({
+						start(c) {
+							cache.set(idx, c);
+						},
+					});
 
 					return transformer.deserialize({
 						// abortSignal
-						onDone() {
-							cache.delete(idx);
+						get controller() {
+							// the `start` method is called "immediately when the object is constructed"
+							// [MDN](http://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream)
+							// so we're guaranteed that the controller is set in the cache
+							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							return cache.get(idx)!;
 						},
-						stream: {
-							[Symbol.asyncIterator]: () => {
-								let index = 0;
-								return {
-									next: async () => {
-										const idx = index++;
-
-										if (self.values.length > idx) {
-											return {
-												done: false,
-												value: self.values[idx],
-											};
-										}
-
-										await self.next.promise;
-
-										return {
-											done: false,
-											value: self.values[idx],
-										};
-									},
-								};
-							},
-						},
+						reader: readable.getReader(),
 					});
 				}
 
@@ -158,16 +110,14 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 				const [index, result] = JSON.parse(str) as TsonAsyncValueTuple;
 
-				const item = cache.get(index);
+				const controller = cache.get(index);
 
 				const walkedResult = walk(result);
 
-				assert(item, `No deferred found for index ${index}`);
+				assert(controller, `No stream found for index ${index}`);
 
 				// resolving deferred
-				item.values.push(walkedResult);
-				item.next.resolve(walkedResult);
-				item.next = createSafeDeferred();
+				controller.enqueue(walkedResult);
 			}
 
 			do {
@@ -239,8 +189,8 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					);
 
 					// cancel all pending promises
-					for (const deferred of cache.values()) {
-						deferred.next.reject(err);
+					for (const controller of cache.values()) {
+						controller.error(err);
 					}
 
 					cache.clear();

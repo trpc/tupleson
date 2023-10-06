@@ -27,13 +27,13 @@ export interface TsonTransformerSerializeDeserializeAsync<
 		 */
 		// abortSignal: Promise<never>;
 		/**
-		 * Notify that we don't expect more values
+		 * The controller for the ReadableStream, to close when we're done
 		 */
-		onDone: () => void;
+		controller: ReadableStreamDefaultController<TSerializedValue>;
 		/**
-		 * Stream of values
+		 * Reader for the ReadableStream of values
 		 */
-		stream: AsyncIterable<TSerializedValue>;
+		reader: ReadableStreamDefaultReader<TSerializedValue>;
 	}) => TValue;
 
 	/**
