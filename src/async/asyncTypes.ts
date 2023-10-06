@@ -3,14 +3,14 @@ import { TsonType } from "../types.js";
 import { TsonBranded, TsonTypeTesterCustom } from "../types.js";
 import { serialized } from "../types.js";
 
-export type TsonAsyncStringifierIterator<TValue> = AsyncIterable<string> & {
+export type TsonAsyncStringifierIterable<TValue> = AsyncIterable<string> & {
 	[serialized]: TValue;
 };
 
 export type TsonAsyncStringifier = <TValue>(
 	value: TValue,
 	space?: number,
-) => TsonAsyncStringifierIterator<TValue>;
+) => TsonAsyncStringifierIterable<TValue>;
 export type TsonAsyncIndex = TsonBranded<number, "AsyncRegistered">;
 
 export interface TsonTransformerSerializeDeserializeAsync<
