@@ -1,5 +1,6 @@
 {
 	"$schema": "https://unpkg.com/knip@latest/schema.json",
+	"ignoreExportsUsedInFile": { "interface": true, "type": true },
 	"workspaces": {
 		".": {
 			"entry": ["src/index.ts!"],
@@ -8,6 +9,5 @@
 		"examples/*": {
 			"entry": ["src/{server,client, index}.ts!"]
 		}
-	},
-	"ignoreExportsUsedInFile": { "interface": true, "type": true }
+	}
 }
