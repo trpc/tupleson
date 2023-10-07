@@ -66,19 +66,24 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					const idx = serializedValue as TsonAsyncIndex;
 
+					let controller: ReadableStreamDefaultController<unknown> =
+						null as unknown as ReadableStreamDefaultController<unknown>;
 					const readable = new ReadableStream<unknown>({
 						start(c) {
-							cache.set(idx, c);
+							controller = c;
 						},
 					});
+					// the `start` method is called "immediately when the object is constructed"
+					// [MDN](http://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream)
+					// so we're guaranteed that the controller is set in the cache
+					assert(controller, "Controller not set - this is a bug");
+
+					cache.set(idx, controller);
 
 					return transformer.deserialize({
-						get controller() {
-							// the `start` method is called "immediately when the object is constructed"
-							// [MDN](http://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream)
-							// so we're guaranteed that the controller is set in the cache
-							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-							return cache.get(idx)!;
+						close() {
+							controller.close();
+							cache.delete(idx);
 						},
 						reader: readable.getReader(),
 					});
@@ -197,11 +202,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					// enqueue the error to all the streams
 					for (const controller of cache.values()) {
-						try {
-							controller.enqueue(err);
-						} catch {
-							// ignore if the controller is closed
-						}
+						controller.enqueue(err);
 					}
 
 					opts.onStreamError?.(err);

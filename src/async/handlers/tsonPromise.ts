@@ -28,7 +28,7 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 		const promise = new Promise((resolve, reject) => {
 			async function _handle() {
 				const next = await opts.reader.read();
-				opts.controller.close();
+				opts.close();
 
 				if (next.done) {
 					throw new TsonPromiseRejectionError(

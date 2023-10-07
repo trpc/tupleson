@@ -17,7 +17,6 @@ export type TsonAsyncStringifier = <TValue>(
 ) => TsonAsyncStringifierIterable<TValue>;
 export type TsonAsyncIndex = TsonBranded<number, "AsyncRegistered">;
 
-type ReaderValue<T> = T | TsonStreamInterruptedError;
 export interface TsonTransformerSerializeDeserializeAsync<
 	TValue,
 	TSerializedValue,
@@ -28,13 +27,15 @@ export interface TsonTransformerSerializeDeserializeAsync<
 	 */
 	deserialize: (opts: {
 		/**
-		 * The controller for the ReadableStream, to close when we're done
+		 * Close the controller for the ReadableStream of values
 		 */
-		controller: ReadableStreamDefaultController<ReaderValue<TSerializedValue>>;
+		close: () => void;
 		/**
 		 * Reader for the ReadableStream of values
 		 */
-		reader: ReadableStreamDefaultReader<ReaderValue<TSerializedValue>>;
+		reader: ReadableStreamDefaultReader<
+			TSerializedValue | TsonStreamInterruptedError
+		>;
 	}) => TValue;
 
 	/**
