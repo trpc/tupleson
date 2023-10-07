@@ -27,7 +27,7 @@ test("deserialize variable chunk length", async () => {
 	});
 	{
 		const iterable = (async function* () {
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			await sleep(1);
 			yield '[\n{"json":{"foo":"bar"},"nonce":"__tson"}';
 			yield "\n,\n[\n]\n]";
 		})();
@@ -37,7 +37,7 @@ test("deserialize variable chunk length", async () => {
 
 	{
 		const iterable = (async function* () {
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			await sleep(1);
 			yield '[\n{"json":{"foo":"bar"},"nonce":"__tson"}\n,\n[\n]\n]';
 		})();
 		const result = await tson.parse(iterable);
@@ -46,7 +46,7 @@ test("deserialize variable chunk length", async () => {
 
 	{
 		const iterable = (async function* () {
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			await sleep(1);
 			yield '[\n{"json"';
 			yield ':{"foo":"b';
 			yield 'ar"},"nonce":"__tson"}\n,\n';
@@ -100,13 +100,13 @@ test("stringify async iterable + promise", async () => {
 	});
 
 	async function* iterable() {
-		await new Promise((resolve) => setTimeout(resolve, 1));
+		await sleep(1);
 		yield 1n;
-		await new Promise((resolve) => setTimeout(resolve, 1));
+		await sleep(1);
 		yield 2n;
 		yield 3n;
 
-		await new Promise((resolve) => setTimeout(resolve, 2));
+		await sleep(1);
 		yield 4n;
 		yield 5n;
 	}
@@ -138,7 +138,7 @@ test("e2e: stringify async iterable and promise over the network", async () => {
 	function createMockObj() {
 		async function* generator() {
 			for (const number of [1n, 2n, 3n, 4n, 5n]) {
-				await new Promise((resolve) => setTimeout(resolve, 1));
+				await sleep(1);
 				yield number;
 			}
 		}
@@ -234,7 +234,7 @@ test("iterator error", async () => {
 			for (let index = 0; index < 3; index++) {
 				yield `item: ${index}`;
 
-				await new Promise((resolve) => setTimeout(resolve, 1));
+				await sleep(1);
 			}
 
 			// resolve the deferred after crash

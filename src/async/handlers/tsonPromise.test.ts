@@ -14,25 +14,13 @@ import {
 	sleep,
 	waitError,
 } from "../../internals/testUtils.js";
+import { createPromise } from "../../internals/testUtils.js";
 import { createTsonParseAsyncInner } from "../deserializeAsync.js";
 import {
 	mapIterable,
 	readableStreamToAsyncIterable,
 } from "../iterableUtils.js";
 import { TsonAsyncValueTuple } from "../serializeAsync.js";
-
-const createPromise = <T>(result: () => T, wait = 1) => {
-	return new Promise<T>((resolve, reject) => {
-		setTimeout(() => {
-			try {
-				const res = result();
-				resolve(res);
-			} catch (err) {
-				reject(err);
-			}
-		}, wait);
-	});
-};
 
 const tsonError: TsonType<
 	Error,

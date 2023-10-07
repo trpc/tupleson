@@ -5,11 +5,10 @@ import { tsonOptions } from "./shared.js";
 
 const tsonStringifyAsync = createTsonStringifyAsync(tsonOptions);
 
-const randomNumber = (min: number, max: number) => {
-	return Math.floor(Math.random() * (max - min + 1) + min);
-};
+const randomNumber = (min: number, max: number) =>
+	Math.floor(Math.random() * (max - min + 1) + min);
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * This function returns the object we will be sending to the client.
@@ -18,7 +17,7 @@ export function getResponseShape() {
 	async function* bigintGenerator() {
 		const iterate = new Array(10).fill(0).map((_, i) => BigInt(i));
 		for (const number of iterate) {
-			await wait(randomNumber(1, 400));
+			await sleep(randomNumber(1, 400));
 			yield number;
 		}
 	}
@@ -26,7 +25,7 @@ export function getResponseShape() {
 	async function* numberGenerator() {
 		const iterate = new Array(10).fill(0).map((_, i) => i);
 		for (const number of iterate) {
-			await wait(randomNumber(1, 400));
+			await sleep(randomNumber(1, 400));
 			yield number;
 		}
 	}
