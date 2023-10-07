@@ -14,6 +14,7 @@ import {
 	createTestServer,
 	wait as sleep,
 	waitError,
+	waitFor,
 } from "../internals/testUtils.js";
 import { TsonSerialized } from "../sync/syncTypes.js";
 import { TsonAsyncOptions } from "./asyncTypes.js";
@@ -396,4 +397,41 @@ test("values missing when stream ends", async () => {
 		  ],
 		]
 	`);
+});
+
+test("async: missing values of promise", async () => {
+	async function* generator() {
+		await Promise.resolve();
+
+		yield "[" + "\n";
+
+		const obj = {
+			json: {
+				foo: ["Promise", 0, "__tson"],
+			},
+			nonce: "__tson",
+		} as TsonSerialized<any>;
+		yield JSON.stringify(obj) + "\n";
+
+		await Promise.resolve();
+
+		yield "  ," + "\n";
+		yield "  [" + "\n";
+		// [....... values should be here .......]
+		// yield "]]\n"; // <-- stream and values ended symbol
+	}
+
+	const onErrorSpy = vitest.fn();
+	await createTsonAsync({
+		onStreamError: onErrorSpy,
+		types: [tsonPromise],
+	}).parse(generator());
+
+	await waitFor(() => {
+		expect(onErrorSpy).toHaveBeenCalledTimes(1);
+	});
+
+	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
+		"[TsonError: Stream interrupted: Stream ended unexpectedly]",
+	);
 });

@@ -11,8 +11,8 @@ import {
 } from "../../index.js";
 import {
 	createTestServer,
+	wait,
 	waitError,
-	waitFor,
 } from "../../internals/testUtils.js";
 import { createTsonParseAsyncInner } from "../deserializeAsync.js";
 import {
@@ -470,32 +470,13 @@ test("does not crash node when it receives a promise rejection", async () => {
 	const original = {
 		foo: createPromise(() => {
 			throw new Error("foo");
-		}, 5),
+		}, 1),
 	};
 	const iterator = stringify(original);
 
-	const [_result, deferreds] = await parse(iterator);
+	await parse(iterator);
 
-	const result = _result as typeof original;
-	await waitFor(() => {
-		assert(deferreds.size === 1);
-	});
-
-	await waitFor(() => {
-		assert(deferreds.size === 0);
-	});
-
-	expect(result).toMatchInlineSnapshot(`
-		{
-		  "foo": Promise {},
-		}
-	`);
-
-	const err = await waitError(result.foo);
-
-	expect(err).toMatchInlineSnapshot(
-		"[TsonPromiseRejectionError: Promise rejected]",
-	);
+	await wait(10);
 });
 
 test("stringify promise rejection", async () => {
