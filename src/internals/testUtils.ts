@@ -72,3 +72,20 @@ export async function createTestServer(opts: {
 		url: `http://localhost:${port}`,
 	};
 }
+
+export function createDeferred<T>() {
+	type PromiseResolve = (value: T) => void;
+	type PromiseReject = (reason: unknown) => void;
+	const deferred = {} as {
+		promise: Promise<T>;
+		reject: PromiseReject;
+		resolve: PromiseResolve;
+	};
+	deferred.promise = new Promise<T>((resolve, reject) => {
+		deferred.resolve = resolve;
+		deferred.reject = reject;
+	});
+	return deferred;
+}
+
+export type Deferred<T> = ReturnType<typeof createDeferred<T>>;

@@ -1,13 +1,14 @@
 import { expect, test, vi } from "vitest";
 
 import {
+	TsonType,
 	createTsonAsync,
 	tsonAsyncIterator,
 	tsonBigint,
 	tsonPromise,
 } from "../index.js";
 import { assert } from "../internals/assert.js";
-import { createTestServer } from "../internals/testUtils.js";
+import { createDeferred, createTestServer } from "../internals/testUtils.js";
 import { TsonAsyncOptions } from "./asyncTypes.js";
 import { mapIterable, readableStreamToAsyncIterable } from "./iterableUtils.js";
 
@@ -201,7 +202,113 @@ test("e2e: stringify async iterable and promise over the network", async () => {
 	server.close();
 });
 
-test("e2e: server crash", async () => {
+class CustomError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = "CustomError";
+	}
+}
+
+const tsonCustomError: TsonType<CustomError, { message: string }> = {
+	deserialize: (value) => new Error(value.message),
+	key: "CustomError",
+	serialize: (value) => ({
+		message: value.message,
+	}),
+	test: (value) => value instanceof CustomError,
+};
+
+test.only("iterator error", async () => {
+	function createMockObj() {
+		const deferred = createDeferred<string>();
+
+		async function* generator() {
+			for (let index = 0; index < 3; index++) {
+				yield `item: ${index}`;
+
+				await new Promise((resolve) => setTimeout(resolve, 1));
+			}
+
+			// resolve the deferred after crash
+			setTimeout(() => {
+				deferred.resolve("deferred resolved");
+			}, 10);
+
+			throw new CustomError("server iterator error");
+		}
+
+		return {
+			deferred: deferred.promise,
+			iterable: generator(),
+			promise: Promise.resolve(42),
+		};
+	}
+
+	type MockObj = ReturnType<typeof createMockObj>;
+
+	// ------------- server -------------------
+	const opts: TsonAsyncOptions = {
+		types: [tsonPromise, tsonAsyncIterator, tsonCustomError],
+	};
+
+	const server = await createTestServer({
+		handleRequest: async (_req, res) => {
+			const tson = createTsonAsync(opts);
+
+			const obj = createMockObj();
+			const strIterarable = tson.stringify(obj, 4);
+
+			for await (const value of strIterarable) {
+				res.write(value);
+			}
+
+			res.end();
+		},
+	});
+
+	// ------------- client -------------------
+	const tson = createTsonAsync(opts);
+
+	// do a streamed fetch request
+	const response = await fetch(server.url);
+
+	assert(response.body);
+
+	const textDecoder = new TextDecoder();
+	const stringIterator = mapIterable(
+		readableStreamToAsyncIterable(response.body),
+		(v) => textDecoder.decode(v),
+	);
+
+	const parsed = await tson.parse<MockObj>(stringIterator);
+	expect(await parsed.promise).toEqual(42);
+
+	const results = [];
+	let iteratorError: Error | null = null;
+	try {
+		for await (const value of parsed.iterable) {
+			results.push(value);
+		}
+	} catch (err) {
+		iteratorError = err as Error;
+	} finally {
+		server.close();
+	}
+
+	expect(iteratorError).toMatchInlineSnapshot("[Error: server iterator error]");
+
+	expect(await parsed.deferred).toEqual("deferred resolved");
+	expect(await parsed.promise).toEqual(42);
+	expect(results).toMatchInlineSnapshot(`
+		[
+		  "item: 0",
+		  "item: 1",
+		  "item: 2",
+		]
+	`);
+});
+
+test.only("e2e: server crash", async () => {
 	function createMockObj() {
 		async function* generator() {
 			const values = [1n, 2n, 3n, 4n, 5n];
@@ -244,6 +351,7 @@ test("e2e: server crash", async () => {
 				if (closed) {
 					continue;
 				}
+
 				res.write(value);
 			}
 
