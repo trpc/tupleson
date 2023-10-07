@@ -6,9 +6,9 @@ test("with crypto", async () => {
 	global.crypto = {
 		randomUUID: () => "test",
 	} as any;
-	const { getNonce } = await import("./getNonce.js");
+	const { getDefaultNonce } = await import("./getNonce.js");
 
-	expect(getNonce()).toBe("test");
+	expect(getDefaultNonce()).toBe("test");
 
 	global.crypto = before;
 });

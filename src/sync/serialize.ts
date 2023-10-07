@@ -1,5 +1,5 @@
 import { TsonCircularReferenceError } from "../errors.js";
-import { GetNonce, getNonce } from "../internals/getNonce.js";
+import { GetNonce, getDefaultNonce } from "../internals/getNonce.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
 	TsonAllTypes,
@@ -38,9 +38,11 @@ function getHandlers(opts: TsonOptions) {
 		}
 	}
 
-	const nonceFn: GetNonce = opts.nonce ? (opts.nonce as GetNonce) : getNonce;
+	const getNonce: GetNonce = opts.nonce
+		? (opts.nonce as GetNonce)
+		: getDefaultNonce;
 
-	return [nonceFn, nonPrimitives, byPrimitive] as const;
+	return [getNonce, nonPrimitives, byPrimitive] as const;
 }
 
 export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
