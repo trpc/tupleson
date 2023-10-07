@@ -1,17 +1,14 @@
 {
+	"type": "module",
+	"scripts": {
+		"postinstall": "cd ../ && pnpm run build"
+	},
 	"dependencies": {
 		"arson": "^0.2.6",
 		"devalue": "^4.0.0",
 		"kleur": "^4.0.2",
 		"superjson": "^1.9.1",
-		"tupleson": "^0.16.1"
+		"tupleson": "latest"
 	},
-	"devDependencies": {
-		"@rollup/plugin-node-resolve": "^13.3.0",
-		"rollup": "^2"
-	},
-	"scripts": {
-		"build": "rollup -c"
-	},
-	"type": "module"
+	"devDependencies": {}
 }
