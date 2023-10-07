@@ -1,10 +1,12 @@
 import { expect, test } from "vitest";
 
-import { tsonBigint } from "./handlers/tsonBigint.js";
-import { tsonMap } from "./handlers/tsonMap.js";
-import { tsonSet } from "./handlers/tsonSet.js";
-import { tsonUndefined } from "./handlers/tsonUndefined.js";
-import { createTson } from "./sync/createTson.js";
+import {
+	createTson,
+	tsonBigint,
+	tsonMap,
+	tsonSet,
+	tsonUndefined,
+} from "../index.js";
 
 test("lets have a look at the stringified output", () => {
 	const t = createTson({

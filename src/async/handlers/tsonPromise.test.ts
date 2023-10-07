@@ -1,26 +1,25 @@
 import { assert, expect, test } from "vitest";
 
-import { TsonAsyncOptions } from "../async/asyncTypes.js";
 import {
-	createTsonParseAsync,
-	createTsonParseAsyncInner,
-} from "../async/deserializeAsync.js";
-import {
-	TsonAsyncValueTuple,
+	TsonAsyncOptions,
+	TsonType,
 	createAsyncTsonSerialize,
+	createTsonAsync,
+	createTsonParseAsync,
 	createTsonStringifyAsync,
-} from "../async/serializeAsync.js";
-import { createTsonAsync, tsonPromise } from "../index.js";
-import {
-	mapIterable,
-	readableStreamToAsyncIterable,
-} from "../internals/iterableUtils.js";
+	tsonPromise,
+} from "../../index.js";
 import {
 	createTestServer,
 	waitError,
 	waitFor,
-} from "../internals/testUtils.js";
-import { TsonSerialized, TsonType } from "../types.js";
+} from "../../internals/testUtils.js";
+import { createTsonParseAsyncInner } from "../deserializeAsync.js";
+import {
+	mapIterable,
+	readableStreamToAsyncIterable,
+} from "../iterableUtils.js";
+import { TsonAsyncValueTuple } from "../serializeAsync.js";
 
 const createPromise = <T>(result: () => T, wait = 1) => {
 	return new Promise<T>((resolve, reject) => {
@@ -284,10 +283,7 @@ test("stringifier - promise in promise", async () => {
 		buffer.push(value.trimEnd());
 	}
 
-	const full = JSON.parse(buffer.join("")) as [
-		TsonSerialized,
-		TsonAsyncValueTuple[],
-	];
+	const full = JSON.parse(buffer.join("")) as [unknown, TsonAsyncValueTuple[]];
 
 	const [head, values] = full;
 	expect(head).toMatchInlineSnapshot(`

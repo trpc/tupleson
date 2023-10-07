@@ -13,7 +13,7 @@ import {
 	TsonTypeHandlerKey,
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
-} from "../types.js";
+} from "./syncTypes.js";
 
 type WalkFn = (value: unknown) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;

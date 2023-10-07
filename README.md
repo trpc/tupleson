@@ -52,6 +52,8 @@ import {
 	createTson,
 	// Serialize `bigint`
 	tsonBigint,
+	// Serialize `Date`
+	tsonDate,
 	// Serialize `Map`s
 	tsonMap,
 	// **throws** when encountering Infinity or NaN

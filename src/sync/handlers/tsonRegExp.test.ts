@@ -1,7 +1,6 @@
 import { expect, test } from "vitest";
 
-import { createTson } from "../index.js";
-import { tsonRegExp } from "./index.js";
+import { createTson, tsonRegExp } from "../../index.js";
 
 test("regex", () => {
 	const t = createTson({

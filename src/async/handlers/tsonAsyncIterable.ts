@@ -1,5 +1,5 @@
-import { TsonAsyncType } from "../async/asyncTypes.js";
-import { TsonPromiseRejectionError } from "../errors.js";
+import { TsonPromiseRejectionError } from "../../errors.js";
+import { TsonAsyncType } from "../asyncTypes.js";
 
 const ITERATOR_VALUE = 0;
 const ITERATOR_ERROR = 1;
