@@ -1,5 +1,19 @@
 
 
+## [0.16.7](https://github.com/KATT/tupleson/compare/0.16.6...0.16.7) (2023-10-07)
+
+
+### Bug Fixes
+
+* we should call `.close()` in async iterable ([#50](https://github.com/KATT/tupleson/issues/50)) ([b9a82f4](https://github.com/KATT/tupleson/commit/b9a82f41b9361360856f9141fd56b7ad49301c08))
+
+## [0.16.6](https://github.com/KATT/tupleson/compare/0.16.5...0.16.6) (2023-10-07)
+
+
+### Bug Fixes
+
+* remove `try/catch` on controller enqueue ([#49](https://github.com/KATT/tupleson/issues/49)) ([c12034d](https://github.com/KATT/tupleson/commit/c12034dec0515195dd7ba4d64694cc0fd34d6156))
+
 ## [0.16.5](https://github.com/KATT/tupleson/compare/0.16.4...0.16.5) (2023-10-07)
 
 
