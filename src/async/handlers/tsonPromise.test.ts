@@ -11,7 +11,7 @@ import {
 } from "../../index.js";
 import {
 	createTestServer,
-	wait,
+	sleep,
 	waitError,
 } from "../../internals/testUtils.js";
 import { createTsonParseAsyncInner } from "../deserializeAsync.js";
@@ -476,7 +476,7 @@ test("does not crash node when it receives a promise rejection", async () => {
 
 	await parse(iterator);
 
-	await wait(10);
+	await sleep(10);
 });
 
 test("stringify promise rejection", async () => {

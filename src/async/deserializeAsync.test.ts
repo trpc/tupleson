@@ -12,7 +12,7 @@ import { assert } from "../internals/assert.js";
 import {
 	createDeferred,
 	createTestServer,
-	wait as sleep,
+	sleep,
 	waitError,
 	waitFor,
 } from "../internals/testUtils.js";
