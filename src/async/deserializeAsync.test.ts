@@ -375,7 +375,9 @@ test("values missing when stream ends", async () => {
 
 		assert(err);
 
-		expect(err.message).toMatchInlineSnapshot('"Stream interrupted: Stream ended unexpectedly"');
+		expect(err.message).toMatchInlineSnapshot(
+			'"Stream interrupted: Stream ended unexpectedly"',
+		);
 	}
 
 	{
