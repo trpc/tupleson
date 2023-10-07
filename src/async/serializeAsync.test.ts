@@ -191,8 +191,7 @@ test("stringify async iterable + promise", async () => {
 		  "    ,[0,[0,[\\"bigint\\",\\"1\\",\\"__tson\\"]]]",
 		  "    ,[0,[0,[\\"bigint\\",\\"2\\",\\"__tson\\"]]]",
 		  "    ,[0,[2]]",
-		  "  ]",
-		  "]",
+		  "]]",
 		]
 	`);
 

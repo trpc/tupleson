@@ -243,8 +243,7 @@ export function createTsonStringifyAsync(
 				isFirstStreamedValue = false;
 			}
 
-			yield indent(space * 1) + "]" + "\n"; // end value array
-			yield "]" + "\n"; // end response
+			yield "]]" + "\n"; // end response and value array
 		};
 
 	return stringifier as TsonAsyncStringifier;

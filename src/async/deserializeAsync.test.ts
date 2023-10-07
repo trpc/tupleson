@@ -1,14 +1,21 @@
-import { expect, test, vi } from "vitest";
+import { expect, test, vi, vitest } from "vitest";
 
 import {
 	TsonType,
 	createTsonAsync,
+	createTsonParseAsync,
 	tsonAsyncIterator,
 	tsonBigint,
 	tsonPromise,
 } from "../index.js";
 import { assert } from "../internals/assert.js";
-import { createDeferred, createTestServer } from "../internals/testUtils.js";
+import {
+	createDeferred,
+	createTestServer,
+	wait as sleep,
+	waitError,
+} from "../internals/testUtils.js";
+import { TsonSerialized } from "../sync/syncTypes.js";
 import { TsonAsyncOptions } from "./asyncTypes.js";
 import { mapIterable, readableStreamToAsyncIterable } from "./iterableUtils.js";
 
@@ -218,7 +225,7 @@ const tsonCustomError: TsonType<CustomError, { message: string }> = {
 	test: (value) => value instanceof CustomError,
 };
 
-test.only("iterator error", async () => {
+test("iterator error", async () => {
 	function createMockObj() {
 		const deferred = createDeferred<string>();
 
@@ -308,98 +315,85 @@ test.only("iterator error", async () => {
 	`);
 });
 
-test.only("e2e: server crash", async () => {
-	function createMockObj() {
-		async function* generator() {
-			const values = [1n, 2n, 3n, 4n, 5n];
-			for (let i = 0; i < values.length; i++) {
-				await new Promise((resolve) => setTimeout(resolve, i === 2 ? 200 : 0));
-				yield values[i];
-			}
-		}
+test("values missing when stream ends", async () => {
+	async function* generator() {
+		await Promise.resolve();
 
-		return {
-			foo: "bar",
-			iterable: generator(),
-			promise: Promise.resolve(42),
-			rejectedPromise: Promise.reject(new Error("rejected promise")),
-		};
+		yield "[" + "\n";
+
+		const obj = {
+			json: {
+				iterable: ["AsyncIterable", 1, "__tson"],
+				promise: ["Promise", 0, "__tson"],
+			},
+			nonce: "__tson",
+		} as TsonSerialized<any>;
+		yield JSON.stringify(obj) + "\n";
+
+		await sleep(1);
+
+		yield "  ," + "\n";
+		yield "  [" + "\n";
+		// <values>
+		// - promise is never resolved
+
+		// - iterator is never closed
+		yield `    [1, [0, "value 1"]]`;
+		yield `    [1, [0, "value 2"]]`;
+		// yield `    [1, [2]]`; // iterator done
+
+		// </values>
+		// yield "  ]" + "\n";
+		// yield "]";
 	}
 
-	type MockObj = ReturnType<typeof createMockObj>;
+	const opts = {
+		onStreamError: vitest.fn(),
+		types: [tsonPromise, tsonAsyncIterator],
+	} satisfies TsonAsyncOptions;
 
-	// ------------- server -------------------
-	const opts: TsonAsyncOptions = {
-		types: [tsonPromise, tsonAsyncIterator, tsonBigint],
-	};
+	const parse = createTsonParseAsync(opts);
 
-	const server = await createTestServer({
-		handleRequest: async (_req, res) => {
-			const tson = createTsonAsync(opts);
+	const result = await parse<{
+		iterable: AsyncIterable<string>;
+		promise: Promise<unknown>;
+	}>(generator());
 
-			const obj = createMockObj();
-			const strIterarable = tson.stringify(obj, 4);
+	{
+		// iterator should error
+		const results = [];
 
-			let closed = false;
-			setTimeout(() => {
-				closed = true;
-				server.close();
-			}, 50);
-
-			for await (const value of strIterarable) {
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- what are you on about?
-				if (closed) {
-					continue;
-				}
-
-				res.write(value);
+		let err: Error | null = null;
+		try {
+			for await (const value of result.iterable) {
+				results.push(value);
 			}
-
-			res.end();
-		},
-	});
-
-	// ------------- client -------------------
-	const tson = createTsonAsync(opts);
-
-	// do a streamed fetch request
-	const response = await fetch(server.url);
-
-	assert(response.body);
-
-	const textDecoder = new TextDecoder();
-	const stringIterator = mapIterable(
-		readableStreamToAsyncIterable(response.body),
-		(v) => textDecoder.decode(v),
-	);
-
-	let parsed: MockObj | null = null;
-	const results = [];
-	let error: Error | null = null;
-	try {
-		parsed = await tson.parse<MockObj>(stringIterator);
-		for await (const value of parsed.iterable) {
-			results.push(value);
+		} catch (cause) {
+			err = cause as Error;
 		}
-	} catch (err) {
-		error = err as Error;
-	} finally {
-		server.close();
+
+		assert(err);
+
+		expect(err.message).toMatchInlineSnapshot(
+			'"Stream interrupted: Stream ended unexpectedly"',
+		);
 	}
 
-	// 🔺🔺🔺🔺
-	// WARNING: this probably shouldn't be "3 pending promises" if things are done correctly, because by the time is crashes, everything but the iterator is resolved
-	// 🔺🔺🔺🔺
-	assert(error);
-	expect(error.message).toMatchInlineSnapshot(
-		`"Stream interrupted: Stream ended with 3 pending promises"`,
-	);
+	{
+		// promise was never resolved and should error
+		const err = await waitError(result.promise);
 
-	assert(parsed);
-	expect(parsed.foo).toEqual("bar");
-	expect(await parsed.promise).toEqual(42);
-	await expect(
-		parsed.rejectedPromise,
-	).rejects.toThrowErrorMatchingInlineSnapshot('"Promise rejected"');
-	expect(results).toEqual([1n, 2n]);
+		expect(err).toMatchInlineSnapshot(
+			"[TsonError: Stream interrupted: Stream ended unexpectedly]",
+		);
+	}
+
+	expect(opts.onStreamError).toHaveBeenCalledTimes(1);
+	expect(opts.onStreamError.mock.calls).toMatchInlineSnapshot(`
+		[
+		  [
+		    [TsonError: Stream interrupted: Stream ended unexpectedly],
+		  ],
+		]
+	`);
 });

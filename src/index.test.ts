@@ -163,8 +163,7 @@ test("async: bad values", async () => {
 		yield "  ," + "\n";
 		yield "  [" + "\n";
 		// [....... values should be here .......]
-		yield "  ]" + "\n";
-		yield "]";
+		yield "]]\n"; // <-- stream and values ended symbol
 	}
 
 	const onErrorSpy = vitest.fn();

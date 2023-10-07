@@ -89,3 +89,6 @@ export function createDeferred<T>() {
 }
 
 export type Deferred<T> = ReturnType<typeof createDeferred<T>>;
+
+export const wait = (ms: number) =>
+	new Promise((resolve) => setTimeout(resolve, ms));

@@ -216,8 +216,7 @@ test("stringifier - no promises", async () => {
 		  "    {\\"json\\":{\\"foo\\":\\"bar\\"},\\"nonce\\":\\"__tson\\"}",
 		  "    ,",
 		  "    [",
-		  "    ]",
-		  "]",
+		  "]]",
 		]
 	`);
 
@@ -255,8 +254,7 @@ test("stringifier - with promise", async () => {
 		  "    ,",
 		  "    [",
 		  "        [0,[0,\\"bar\\"]]",
-		  "    ]",
-		  "]",
+		  "]]",
 		]
 	`);
 });
@@ -332,8 +330,7 @@ test("stringifier - promise in promise", async () => {
 		  "  [",
 		  "    [0,[0,{\\"anotherPromise\\":[\\"Promise\\",1,\\"__tson\\"]}]]",
 		  "    ,[1,[0,42]]",
-		  "  ]",
-		  "]",
+		  "]]",
 		]
 	`);
 });
@@ -528,17 +525,16 @@ test("stringify promise rejection", async () => {
 		}
 
 		expect(buffer).toMatchInlineSnapshot(`
-		[
-		  "[",
-		  "  {\\"json\\":{\\"foo\\":[\\"Promise\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
-		  "  ,",
-		  "  [",
-		  "    [0,[0,{\\"err\\":[\\"Promise\\",1,\\"__tson\\"]}]]",
-		  "    ,[1,[1,[\\"Error\\",{\\"message\\":\\"foo\\"},\\"__tson\\"]]]",
-		  "  ]",
-		  "]",
-		]
-	`);
+			[
+			  "[",
+			  "  {\\"json\\":{\\"foo\\":[\\"Promise\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
+			  "  ,",
+			  "  [",
+			  "    [0,[0,{\\"err\\":[\\"Promise\\",1,\\"__tson\\"]}]]",
+			  "    ,[1,[1,[\\"Error\\",{\\"message\\":\\"foo\\"},\\"__tson\\"]]]",
+			  "]]",
+			]
+		`);
 	}
 
 	{

@@ -95,6 +95,10 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			accumulator: string,
 			walk: WalkFn,
 		) {
+			// <stream state>
+			let streamEnded = false;
+			// </stream state>
+
 			function readLine(str: string) {
 				str = str.trimStart();
 
@@ -103,8 +107,14 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					str = str.slice(1);
 				}
 
-				if (str.length < 2) {
-					// minimum length is 2: '[]'
+				if (str === "" || str === "[" || str === ",") {
+					// beginning of values array or empty string
+					return;
+				}
+
+				if (str === "]]") {
+					// end of values and stream
+					streamEnded = true;
 					return;
 				}
 
@@ -134,7 +144,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				}
 			} while (lines.length);
 
-			assert(!cache.size, `Stream ended with ${cache.size} pending promises`);
+			assert(streamEnded, "Stream ended unexpectedly");
 		}
 
 		async function init() {
