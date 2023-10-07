@@ -17,6 +17,7 @@ export type TsonAsyncStringifier = <TValue>(
 ) => TsonAsyncStringifierIterable<TValue>;
 export type TsonAsyncIndex = TsonBranded<number, "AsyncRegistered">;
 
+type ReaderValue<T> = T | TsonStreamInterruptedError;
 export interface TsonTransformerSerializeDeserializeAsync<
 	TValue,
 	TSerializedValue,
@@ -27,19 +28,13 @@ export interface TsonTransformerSerializeDeserializeAsync<
 	 */
 	deserialize: (opts: {
 		/**
-		 * Abort signal from of the full stream
-		 */
-		// abortSignal: Promise<never>;
-		/**
 		 * The controller for the ReadableStream, to close when we're done
 		 */
-		controller: ReadableStreamDefaultController<TSerializedValue>;
+		controller: ReadableStreamDefaultController<ReaderValue<TSerializedValue>>;
 		/**
 		 * Reader for the ReadableStream of values
 		 */
-		reader: ReadableStreamDefaultReader<
-			TSerializedValue | TsonStreamInterruptedError
-		>;
+		reader: ReadableStreamDefaultReader<ReaderValue<TSerializedValue>>;
 	}) => TValue;
 
 	/**
@@ -50,10 +45,6 @@ export interface TsonTransformerSerializeDeserializeAsync<
 	 * JSON-serializable value
 	 */
 	serializeIterator: (opts: {
-		/**
-		 * Abort signal from of the full stream
-		 */
-		// abortSignal?: AbortSignal;
 		/**
 		 * The value we're serializing
 		 */

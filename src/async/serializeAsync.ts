@@ -96,7 +96,6 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 						const idx = asyncIndex++ as TsonAsyncIndex;
 
 						const iterator = handler.serializeIterator({
-							// abortSignal: new AbortSignal(),
 							value,
 						});
 						iterators.set(idx, iterator[Symbol.asyncIterator]());
