@@ -344,8 +344,7 @@ test("values missing when stream ends", async () => {
 		// yield `    [1, [2]]`; // iterator done
 
 		// </values>
-		// yield "  ]" + "\n";
-		// yield "]";
+		// yield "  ]]" + "\n";
 	}
 
 	const opts = {
@@ -466,8 +465,7 @@ test("1 iterator completed but another never finishes", async () => {
 		yield `    [1, [2]]\n`; // iterator done
 
 		// </values>
-		// yield "  ]" + "\n";
-		// yield "]";
+		// yield "  ]]" + "\n";
 	}
 
 	const opts = {
