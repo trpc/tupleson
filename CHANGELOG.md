@@ -1,5 +1,12 @@
 
 
+## [0.16.4](https://github.com/KATT/tupleson/compare/0.16.3...0.16.4) (2023-10-07)
+
+
+### Bug Fixes
+
+* handle unexpected end of stream  ([#46](https://github.com/KATT/tupleson/issues/46)) ([1efce87](https://github.com/KATT/tupleson/commit/1efce872ed0b1714b165ddef7db18a3a05ad6b60))
+
 ## [0.16.3](https://github.com/KATT/tupleson/compare/0.16.2...0.16.3) (2023-10-06)
 
 
