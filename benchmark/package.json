@@ -1,4 +1,9 @@
 {
+	"name": "@tupleson/benchmark",
+	"version": "0.0.0",
+	"private": true,
+	"description": "benchmark",
+	"license": "MIT",
 	"type": "module",
 	"scripts": {
 		"postinstall": "cd ../ && pnpm run build",
