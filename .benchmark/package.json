@@ -1,7 +1,8 @@
 {
 	"type": "module",
 	"scripts": {
-		"postinstall": "cd ../ && pnpm run build"
+		"postinstall": "cd ../ && pnpm run build",
+		"start": "node index.js"
 	},
 	"dependencies": {
 		"arson": "^0.2.6",
