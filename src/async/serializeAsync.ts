@@ -1,6 +1,6 @@
 import { TsonCircularReferenceError } from "../errors.js";
 import { assert } from "../internals/assert.js";
-import { GetNonce, getNonceDefault } from "../internals/getNonce.js";
+import { GetNonce, getDefaultNonce } from "../internals/getNonce.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
 	TsonAllTypes,
@@ -192,7 +192,7 @@ type TsonAsyncSerializer = <T>(
 export function createAsyncTsonSerialize(
 	opts: TsonAsyncOptions,
 ): TsonAsyncSerializer {
-	const getNonce: GetNonce = (opts.nonce ?? getNonceDefault) as GetNonce;
+	const getNonce: GetNonce = (opts.nonce ?? getDefaultNonce) as GetNonce;
 	return (value) => {
 		const nonce = getNonce();
 		const [walk, iterator] = walkerFactory(nonce, opts.types);
