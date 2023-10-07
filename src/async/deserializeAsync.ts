@@ -198,11 +198,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					// enqueue the error to all the streams
 					for (const controller of cache.values()) {
-						try {
-							controller.enqueue(err);
-						} catch {
-							// ignore if the controller is closed
-						}
+						controller.enqueue(err);
 					}
 
 					opts.onStreamError?.(err);
