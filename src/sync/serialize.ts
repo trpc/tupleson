@@ -16,13 +16,13 @@ import {
 type WalkFn = (value: unknown) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 
-function createTsonSerializeInner(opts: TsonOptions) {
+function getHandlers(opts: TsonOptions) {
 	type Handler = (typeof opts.types)[number];
 
 	const byPrimitive: Partial<
 		Record<TsonAllTypes, Extract<Handler, TsonTypeTesterPrimitive>>
 	> = {};
-	const byKey: Extract<Handler, TsonTypeTesterCustom>[] = [];
+	const nonPrimitives: Extract<Handler, TsonTypeTesterCustom>[] = [];
 
 	for (const handler of opts.types) {
 		if (handler.primitive) {
@@ -34,11 +34,13 @@ function createTsonSerializeInner(opts: TsonOptions) {
 
 			byPrimitive[handler.primitive] = handler;
 		} else {
-			byKey.push(handler);
+			nonPrimitives.push(handler);
 		}
 	}
 
-	return [byKey, byPrimitive] as const;
+	const nonceFn: GetNonce = opts.nonce ? (opts.nonce as GetNonce) : getNonce;
+
+	return [nonceFn, nonPrimitives, byPrimitive] as const;
 }
 
 export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
@@ -49,7 +51,7 @@ export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
 }
 
 export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
-	const [nonPrimitive, byPrimitive] = createTsonSerializeInner(opts);
+	const [getNonce, nonPrimitive, byPrimitive] = getHandlers(opts);
 
 	const walker: WalkerFactory = (nonce) => {
 		const seen = new WeakSet();
@@ -110,11 +112,8 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 		return walk;
 	};
 
-	const nonceFn: GetNonce = opts.nonce ? (opts.nonce as GetNonce) : getNonce;
-
 	return ((obj): TsonSerialized => {
-		const nonce = nonceFn();
-
+		const nonce = getNonce();
 		const json = walker(nonce)(obj);
 
 		return {
