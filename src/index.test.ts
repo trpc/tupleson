@@ -1,14 +1,7 @@
-import { expect, test, vitest } from "vitest";
+import { expect, test } from "vitest";
 
-import {
-	TsonOptions,
-	TsonType,
-	createTson,
-	createTsonAsync,
-	tsonPromise,
-} from "./index.js";
-import { expectError, waitError, waitFor } from "./internals/testUtils.js";
-import { TsonSerialized } from "./sync/syncTypes.js";
+import { TsonOptions, TsonType, createTson, createTsonAsync } from "./index.js";
+import { expectError, waitError } from "./internals/testUtils.js";
 
 test("multiple handlers for primitive string found", () => {
 	const stringHandler: TsonType<string, never> = {
