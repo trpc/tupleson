@@ -81,8 +81,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       knip:
-        specifier: ^2.30.0
-        version: 2.30.1
+        specifier: ^2.31.0
+        version: 2.31.0
       markdownlint:
         specifier: ^0.31.1
         version: 0.31.1
@@ -139,7 +139,7 @@ importers:
         version: 3.13.0
       tupleson:
         specifier: latest
-        version: link:../..
+        version: 0.16.3
       typescript:
         specifier: ^5.1.3
         version: 5.2.2
@@ -4260,8 +4260,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /knip@2.30.1:
-    resolution: {integrity: sha512-wiJkdflTL61lu37LLCNhZORkyvVM5ScW/50CjnbeeXvNEZI+Z9dYRKwK0w4sVtfo/vQ9rBruKJa1sR+Wo3rC6g==}
+  /knip@2.31.0:
+    resolution: {integrity: sha512-Axy7cLkKbD4IWMzhw1I6HaZMGRFbVY9zhr5AdM4TZuS93RdqxbdPJQcLInw8RSF+uymfwYHdjFpPsOMa4di1HA==}
     engines: {node: '>=16.17.0 <17 || >=18.6.0'}
     hasBin: true
     dependencies:
@@ -6366,6 +6366,11 @@ packages:
       source-map-support: 0.5.21
     optionalDependencies:
       fsevents: 2.3.3
+    dev: true
+
+  /tupleson@0.16.3:
+    resolution: {integrity: sha512-ugofG0XcGUrCchQe5waD3nItVY8DvrpHO8D08K507jsc9E0ptdKQZGe/155zCAIs/KHu+H6ixTK6Huu23JwkRQ==}
+    engines: {node: '>=18'}
     dev: true
 
   /type-check@0.4.0:

@@ -35,7 +35,6 @@
 		"test": "vitest",
 		"tsc": "tsc"
 	},
-	"dependencies": {},
 	"devDependencies": {
 		"@js-temporal/polyfill": "^0.4.4",
 		"@release-it/conventional-changelog": "^7.0.2",
@@ -60,7 +59,7 @@
 		"eslint-plugin-vitest": "^0.3.1",
 		"eslint-plugin-yml": "^1.9.0",
 		"jsonc-eslint-parser": "^2.3.0",
-		"knip": "^2.30.0",
+		"knip": "^2.31.0",
 		"markdownlint": "^0.31.1",
 		"markdownlint-cli": "^0.37.0",
 		"npm-package-json-lint": "^7.0.0",
