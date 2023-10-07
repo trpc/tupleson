@@ -1,26 +1,28 @@
 import { assert, expect, test } from "vitest";
 
-import { TsonAsyncOptions } from "../async/asyncTypes.js";
 import {
+	TsonAsyncOptions,
+	TsonType,
+	createTsonAsync,
 	createTsonParseAsync,
-	createTsonParseAsyncInner,
-} from "../async/deserializeAsync.js";
-import {
-	TsonAsyncValueTuple,
-	createAsyncTsonSerialize,
-	createTsonStringifyAsync,
-} from "../async/serializeAsync.js";
-import { createTsonAsync, tsonPromise } from "../index.js";
+	tsonPromise,
+} from "../../index.js";
 import {
 	mapIterable,
 	readableStreamToAsyncIterable,
-} from "../internals/iterableUtils.js";
+} from "../../internals/iterableUtils.js";
 import {
 	createTestServer,
 	waitError,
 	waitFor,
-} from "../internals/testUtils.js";
-import { TsonSerialized, TsonType } from "../sync/syncTypes.js";
+} from "../../internals/testUtils.js";
+import { TsonSerialized } from "../../sync/syncTypes.js";
+import { createTsonParseAsyncInner } from "../deserializeAsync.js";
+import {
+	TsonAsyncValueTuple,
+	createAsyncTsonSerialize,
+	createTsonStringifyAsync,
+} from "../serializeAsync.js";
 
 const createPromise = <T>(result: () => T, wait = 1) => {
 	return new Promise<T>((resolve, reject) => {

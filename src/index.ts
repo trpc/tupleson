@@ -8,7 +8,7 @@ export * from "./sync/handlers/index.js";
 export { createTsonAsync } from "./async/createTsonAsync.js";
 export { createTsonParseAsync } from "./async/deserializeAsync.js";
 export { createTsonStringifyAsync } from "./async/serializeAsync.js";
-export * from "./handlers/index.js";
+export * from "./async/handlers/index.js";
 
 // types
 export type { TsonAsyncOptions } from "./async/asyncTypes.js";
