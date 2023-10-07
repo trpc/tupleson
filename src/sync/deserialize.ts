@@ -63,12 +63,15 @@ export function createTsonParser(opts: TsonOptions): TsonParseFn {
 	}
 
 	return ((str: string) => {
+		let firstKey = true;
 		let nonce = "";
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-		return JSON.parse(str, (key, value) => {
-			if (!nonce && key === "_nonce") {
+		return JSON.parse(str, (_key, value) => {
+			if (firstKey) {
+				firstKey = false;
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				nonce = value;
+				return nonce;
 			}
 
 			if (!nonce) {
