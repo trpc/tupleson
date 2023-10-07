@@ -27,10 +27,6 @@ export interface TsonTransformerSerializeDeserializeAsync<
 	 */
 	deserialize: (opts: {
 		/**
-		 * Abort signal from of the full stream
-		 */
-		// abortSignal: Promise<never>;
-		/**
 		 * The controller for the ReadableStream, to close when we're done
 		 */
 		controller: ReadableStreamDefaultController<TSerializedValue>;
@@ -50,10 +46,6 @@ export interface TsonTransformerSerializeDeserializeAsync<
 	 * JSON-serializable value
 	 */
 	serializeIterator: (opts: {
-		/**
-		 * Abort signal from of the full stream
-		 */
-		// abortSignal?: AbortSignal;
 		/**
 		 * The value we're serializing
 		 */

@@ -73,7 +73,6 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					});
 
 					return transformer.deserialize({
-						// abortSignal
 						get controller() {
 							// the `start` method is called "immediately when the object is constructed"
 							// [MDN](http://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream)
