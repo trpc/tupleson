@@ -47,7 +47,7 @@ export const tsonAsyncIterator: TsonAsyncType<
 
 					case ITERATOR_VALUE: {
 						yield value[1];
-						break;
+						break; // <-- breaks the switch, not the loop
 					}
 				}
 			}
