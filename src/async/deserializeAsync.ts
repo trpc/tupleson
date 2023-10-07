@@ -74,12 +74,14 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					return transformer.deserialize({
 						// abortSignal
-						get controller() {
+						close() {
 							// the `start` method is called "immediately when the object is constructed"
 							// [MDN](http://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream)
 							// so we're guaranteed that the controller is set in the cache
 							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-							return cache.get(idx)!;
+							const controller = cache.get(idx)!;
+							controller.close();
+							cache.delete(idx);
 						},
 						reader: readable.getReader(),
 					});

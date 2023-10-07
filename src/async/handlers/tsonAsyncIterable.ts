@@ -50,7 +50,7 @@ export const tsonAsyncIterator: TsonAsyncType<
 				}
 			}
 
-			opts.controller.close();
+			opts.close();
 		})();
 	},
 	key: "AsyncIterable",
