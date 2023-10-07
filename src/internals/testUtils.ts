@@ -37,7 +37,7 @@ export const waitFor = async (fn: () => unknown) => {
 			return;
 		} catch {
 			// wait 5ms
-			await new Promise((resolve) => setTimeout(resolve, 5));
+			await sleep(5);
 		}
 	}
 };
@@ -90,3 +90,15 @@ export function createDeferred<T>() {
 
 export const sleep = (ms: number) =>
 	new Promise((resolve) => setTimeout(resolve, ms));
+export const createPromise = <T>(result: () => T, wait = 1) => {
+	return new Promise<T>((resolve, reject) => {
+		setTimeout(() => {
+			try {
+				const res = result();
+				resolve(res);
+			} catch (err) {
+				reject(err);
+			}
+		}, wait);
+	});
+};
