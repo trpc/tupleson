@@ -1,6 +1,6 @@
 {
 	"name": "tupleson",
-	"version": "0.16.0",
+	"version": "0.16.3",
 	"description": "A hackable JSON serializer/deserializer",
 	"repository": {
 		"type": "git",
@@ -24,7 +24,6 @@
 		"fix": "pnpm lint --fix && pnpm format:write",
 		"format": "prettier \"**/*\" --ignore-unknown",
 		"format:write": "pnpm format --write",
-		"postinstall": "pnpm run build",
 		"lint": "eslint . .*js --max-warnings 0 --report-unused-disable-directives",
 		"lint:knip": "knip",
 		"lint:md": "markdownlint \"**/*.md\" \".github/**/*.md\" --rules sentences-per-line",

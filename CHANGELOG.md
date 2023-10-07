@@ -1,5 +1,26 @@
 
 
+## [0.16.3](https://github.com/KATT/tupleson/compare/0.16.2...0.16.3) (2023-10-06)
+
+
+### Bug Fixes
+
+* update readme more ([#44](https://github.com/KATT/tupleson/issues/44)) ([fbbec98](https://github.com/KATT/tupleson/commit/fbbec9850986730708e14667cb788390673e2c5d))
+
+## [0.16.2](https://github.com/KATT/tupleson/compare/0.16.1...0.16.2) (2023-10-06)
+
+
+### Bug Fixes
+
+* update readme ([#43](https://github.com/KATT/tupleson/issues/43)) ([c47b80a](https://github.com/KATT/tupleson/commit/c47b80ad42ab8a9e175ef3c7d19b7039f1f5060e))
+
+## [0.16.1](https://github.com/KATT/tupleson/compare/0.16.0...0.16.1) (2023-10-06)
+
+
+### Bug Fixes
+
+* remove `postinstall` as it breaks npm usage ([#42](https://github.com/KATT/tupleson/issues/42)) ([c924637](https://github.com/KATT/tupleson/commit/c924637e3c69398ff97384768c45d57eec3c7aa9))
+
 # [0.16.0](https://github.com/KATT/tupleson/compare/0.15.0...0.16.0) (2023-10-06)
 
 
