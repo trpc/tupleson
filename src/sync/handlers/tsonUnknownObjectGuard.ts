@@ -1,6 +1,6 @@
-import { TsonError } from "../errors.js";
-import { isPlainObject } from "../internals/isPlainObject.js";
-import { TsonType } from "../sync/syncTypes.js";
+import { TsonError } from "../../errors.js";
+import { isPlainObject } from "../../internals/isPlainObject.js";
+import { TsonType } from "../syncTypes.js";
 
 export class TsonUnknownObjectGuardError extends TsonError {
 	/**

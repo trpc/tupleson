@@ -1,7 +1,6 @@
 import { expectTypeOf, test } from "vitest";
 
-import { tsonBigint } from "../handlers/tsonBigint.js";
-import { createTson } from "./createTson.js";
+import { createTson, tsonBigint } from "../index.js";
 import "./syncTypes.js";
 
 test("types", () => {

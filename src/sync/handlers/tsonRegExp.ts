@@ -1,4 +1,4 @@
-import { TsonType } from "../sync/syncTypes.js";
+import { TsonType } from "../syncTypes.js";
 
 export const tsonRegExp: TsonType<RegExp, string> = {
 	deserialize: (str) => {

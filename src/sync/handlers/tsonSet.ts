@@ -1,4 +1,4 @@
-import { TsonType } from "../sync/syncTypes.js";
+import { TsonType } from "../syncTypes.js";
 
 export const tsonSet: TsonType<Set<unknown>, unknown[]> = {
 	deserialize: (v) => new Set(v),
