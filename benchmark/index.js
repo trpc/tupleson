@@ -67,17 +67,17 @@ function test(fn, label = fn.toString()) {
 }
 
 // serialization
-test(() => superjson.stringify(obj));
-test(() => tson.stringify(obj));
-test(() => uneval(obj));
-test(() => stringify(obj));
-test(() => ARSON.stringify(obj));
+// test(() => superjson.stringify(obj));
+// test(() => tson.stringify(obj));
+// test(() => uneval(obj));
+// test(() => stringify(obj));
+// test(() => ARSON.stringify(obj));
 
-// deserialization
-test(() => superjson.parse(superjson_serialized));
+// // deserialization
+// test(() => superjson.parse(superjson_serialized));
 test(() => tson.parse(tson_serialized));
-test(() => eval(`(${devalue_unevaled})`));
-test(() => ARSON.parse(arson_stringified));
-test(() => parse(devalue_stringified));
+// test(() => eval(`(${devalue_unevaled})`));
+// test(() => ARSON.parse(arson_stringified));
+// test(() => parse(devalue_stringified));
 
 console.log();
