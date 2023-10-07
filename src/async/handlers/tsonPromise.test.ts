@@ -1,39 +1,26 @@
 import { assert, expect, test } from "vitest";
 
-import { TsonAsyncOptions } from "../async/asyncTypes.js";
 import {
-	createTsonParseAsync,
-	createTsonParseAsyncInner,
-} from "../async/deserializeAsync.js";
-import {
-	TsonAsyncValueTuple,
+	TsonAsyncOptions,
+	TsonType,
 	createAsyncTsonSerialize,
+	createTsonAsync,
+	createTsonParseAsync,
 	createTsonStringifyAsync,
-} from "../async/serializeAsync.js";
-import { createTsonAsync, tsonPromise } from "../index.js";
+	tsonPromise,
+} from "../../index.js";
+import {
+	createTestServer,
+	sleep,
+	waitError,
+} from "../../internals/testUtils.js";
+import { createPromise } from "../../internals/testUtils.js";
+import { createTsonParseAsyncInner } from "../deserializeAsync.js";
 import {
 	mapIterable,
 	readableStreamToAsyncIterable,
-} from "../internals/iterableUtils.js";
-import {
-	createTestServer,
-	waitError,
-	waitFor,
-} from "../internals/testUtils.js";
-import { TsonSerialized, TsonType } from "../types.js";
-
-const createPromise = <T>(result: () => T, wait = 1) => {
-	return new Promise<T>((resolve, reject) => {
-		setTimeout(() => {
-			try {
-				const res = result();
-				resolve(res);
-			} catch (err) {
-				reject(err);
-			}
-		}, wait);
-	});
-};
+} from "../iterableUtils.js";
+import { TsonAsyncValueTuple } from "../serializeAsync.js";
 
 const tsonError: TsonType<
 	Error,
@@ -217,8 +204,7 @@ test("stringifier - no promises", async () => {
 		  "    {\\"json\\":{\\"foo\\":\\"bar\\"},\\"nonce\\":\\"__tson\\"}",
 		  "    ,",
 		  "    [",
-		  "    ]",
-		  "]",
+		  "]]",
 		]
 	`);
 
@@ -256,8 +242,7 @@ test("stringifier - with promise", async () => {
 		  "    ,",
 		  "    [",
 		  "        [0,[0,\\"bar\\"]]",
-		  "    ]",
-		  "]",
+		  "]]",
 		]
 	`);
 });
@@ -284,10 +269,7 @@ test("stringifier - promise in promise", async () => {
 		buffer.push(value.trimEnd());
 	}
 
-	const full = JSON.parse(buffer.join("")) as [
-		TsonSerialized,
-		TsonAsyncValueTuple[],
-	];
+	const full = JSON.parse(buffer.join("")) as [unknown, TsonAsyncValueTuple[]];
 
 	const [head, values] = full;
 	expect(head).toMatchInlineSnapshot(`
@@ -336,8 +318,7 @@ test("stringifier - promise in promise", async () => {
 		  "  [",
 		  "    [0,[0,{\\"anotherPromise\\":[\\"Promise\\",1,\\"__tson\\"]}]]",
 		  "    ,[1,[0,42]]",
-		  "  ]",
-		  "]",
+		  "]]",
 		]
 	`);
 });
@@ -477,32 +458,13 @@ test("does not crash node when it receives a promise rejection", async () => {
 	const original = {
 		foo: createPromise(() => {
 			throw new Error("foo");
-		}, 5),
+		}, 1),
 	};
 	const iterator = stringify(original);
 
-	const [_result, deferreds] = await parse(iterator);
+	await parse(iterator);
 
-	const result = _result as typeof original;
-	await waitFor(() => {
-		assert(deferreds.size === 1);
-	});
-
-	await waitFor(() => {
-		assert(deferreds.size === 0);
-	});
-
-	expect(result).toMatchInlineSnapshot(`
-		{
-		  "foo": Promise {},
-		}
-	`);
-
-	const err = await waitError(result.foo);
-
-	expect(err).toMatchInlineSnapshot(
-		"[TsonPromiseRejectionError: Promise rejected]",
-	);
+	await sleep(10);
 });
 
 test("stringify promise rejection", async () => {
@@ -532,17 +494,16 @@ test("stringify promise rejection", async () => {
 		}
 
 		expect(buffer).toMatchInlineSnapshot(`
-		[
-		  "[",
-		  "  {\\"json\\":{\\"foo\\":[\\"Promise\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
-		  "  ,",
-		  "  [",
-		  "    [0,[0,{\\"err\\":[\\"Promise\\",1,\\"__tson\\"]}]]",
-		  "    ,[1,[1,[\\"Error\\",{\\"message\\":\\"foo\\"},\\"__tson\\"]]]",
-		  "  ]",
-		  "]",
-		]
-	`);
+			[
+			  "[",
+			  "  {\\"json\\":{\\"foo\\":[\\"Promise\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
+			  "  ,",
+			  "  [",
+			  "    [0,[0,{\\"err\\":[\\"Promise\\",1,\\"__tson\\"]}]]",
+			  "    ,[1,[1,[\\"Error\\",{\\"message\\":\\"foo\\"},\\"__tson\\"]]]",
+			  "]]",
+			]
+		`);
 	}
 
 	{

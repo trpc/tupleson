@@ -1,8 +1,6 @@
 import { expect, test } from "vitest";
 
-import { createTson } from "../index.js";
-import { tsonMap, tsonSet } from "./index.js";
-import { tsonBigint } from "./tsonBigint.js";
+import { createTson, tsonBigint, tsonMap, tsonSet } from "../../index.js";
 
 test("bigint", () => {
 	const t = createTson({
@@ -10,7 +8,7 @@ test("bigint", () => {
 	});
 
 	{
-		// bigint
+		// bigint`
 		const expected = 1n;
 
 		const stringified = t.stringify(expected);

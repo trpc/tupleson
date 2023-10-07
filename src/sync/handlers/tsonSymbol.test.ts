@@ -1,7 +1,6 @@
 import { expect, test } from "vitest";
 
-import { createTson } from "../index.js";
-import { tsonSymbol } from "./index.js";
+import { createTson, tsonSymbol } from "../../index.js";
 
 test("symbol", () => {
 	const symbol1 = Symbol("foo");

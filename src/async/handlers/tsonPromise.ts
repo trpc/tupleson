@@ -1,5 +1,8 @@
-import { TsonAsyncType } from "../async/asyncTypes.js";
-import { TsonPromiseRejectionError } from "../errors.js";
+import {
+	TsonPromiseRejectionError,
+	TsonStreamInterruptedError,
+} from "../asyncErrors.js";
+import { TsonAsyncType } from "../asyncTypes.js";
 
 function isPromise(value: unknown): value is Promise<unknown> {
 	return (
@@ -24,14 +27,23 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 	deserialize: (opts) => {
 		const promise = new Promise((resolve, reject) => {
 			async function _handle() {
-				const value = await opts.reader.read();
-				opts.controller.close();
+				const next = await opts.reader.read();
+				opts.close();
 
-				if (value.done) {
-					throw new Error("Expected promise value, got done");
+				if (next.done) {
+					throw new TsonPromiseRejectionError(
+						"Expected promise value, got done",
+					);
 				}
 
-				const [status, result] = value.value;
+				const { value } = next;
+
+				if (value instanceof TsonStreamInterruptedError) {
+					reject(TsonPromiseRejectionError.from(value));
+					return;
+				}
+
+				const [status, result] = value;
 
 				status === PROMISE_RESOLVED
 					? resolve(result)

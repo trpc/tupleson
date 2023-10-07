@@ -1,18 +1,24 @@
-import { expect, test, vi } from "vitest";
+import { expect, test, vi, vitest } from "vitest";
 
 import {
+	TsonType,
 	createTsonAsync,
+	createTsonParseAsync,
 	tsonAsyncIterator,
 	tsonBigint,
 	tsonPromise,
 } from "../index.js";
 import { assert } from "../internals/assert.js";
 import {
-	mapIterable,
-	readableStreamToAsyncIterable,
-} from "../internals/iterableUtils.js";
-import { createTestServer } from "../internals/testUtils.js";
+	createDeferred,
+	createTestServer,
+	sleep,
+	waitError,
+	waitFor,
+} from "../internals/testUtils.js";
+import { TsonSerialized } from "../sync/syncTypes.js";
 import { TsonAsyncOptions } from "./asyncTypes.js";
+import { mapIterable, readableStreamToAsyncIterable } from "./iterableUtils.js";
 
 test("deserialize variable chunk length", async () => {
 	const tson = createTsonAsync({
@@ -21,7 +27,7 @@ test("deserialize variable chunk length", async () => {
 	});
 	{
 		const iterable = (async function* () {
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			await sleep(1);
 			yield '[\n{"json":{"foo":"bar"},"nonce":"__tson"}';
 			yield "\n,\n[\n]\n]";
 		})();
@@ -31,7 +37,7 @@ test("deserialize variable chunk length", async () => {
 
 	{
 		const iterable = (async function* () {
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			await sleep(1);
 			yield '[\n{"json":{"foo":"bar"},"nonce":"__tson"}\n,\n[\n]\n]';
 		})();
 		const result = await tson.parse(iterable);
@@ -40,7 +46,7 @@ test("deserialize variable chunk length", async () => {
 
 	{
 		const iterable = (async function* () {
-			await new Promise((resolve) => setTimeout(resolve, 1));
+			await sleep(1);
 			yield '[\n{"json"';
 			yield ':{"foo":"b';
 			yield 'ar"},"nonce":"__tson"}\n,\n';
@@ -94,13 +100,13 @@ test("stringify async iterable + promise", async () => {
 	});
 
 	async function* iterable() {
-		await new Promise((resolve) => setTimeout(resolve, 1));
+		await sleep(1);
 		yield 1n;
-		await new Promise((resolve) => setTimeout(resolve, 1));
+		await sleep(1);
 		yield 2n;
 		yield 3n;
 
-		await new Promise((resolve) => setTimeout(resolve, 2));
+		await sleep(1);
 		yield 4n;
 		yield 5n;
 	}
@@ -132,7 +138,7 @@ test("e2e: stringify async iterable and promise over the network", async () => {
 	function createMockObj() {
 		async function* generator() {
 			for (const number of [1n, 2n, 3n, 4n, 5n]) {
-				await new Promise((resolve) => setTimeout(resolve, 1));
+				await sleep(1);
 				yield number;
 			}
 		}
@@ -203,6 +209,325 @@ test("e2e: stringify async iterable and promise over the network", async () => {
 
 	server.close();
 });
+
+class CustomError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = "CustomError";
+	}
+}
+
+const tsonCustomError: TsonType<CustomError, { message: string }> = {
+	deserialize: (value) => new Error(value.message),
+	key: "CustomError",
+	serialize: (value) => ({
+		message: value.message,
+	}),
+	test: (value) => value instanceof CustomError,
+};
+
+test("iterator error", async () => {
+	function createMockObj() {
+		const deferred = createDeferred<string>();
+
+		async function* generator() {
+			for (let index = 0; index < 3; index++) {
+				yield `item: ${index}`;
+
+				await sleep(1);
+			}
+
+			// resolve the deferred after crash
+			setTimeout(() => {
+				deferred.resolve("deferred resolved");
+			}, 10);
+
+			throw new CustomError("server iterator error");
+		}
+
+		return {
+			deferred: deferred.promise,
+			iterable: generator(),
+			promise: Promise.resolve(42),
+		};
+	}
+
+	type MockObj = ReturnType<typeof createMockObj>;
+
+	// ------------- server -------------------
+	const opts: TsonAsyncOptions = {
+		types: [tsonPromise, tsonAsyncIterator, tsonCustomError],
+	};
+
+	const server = await createTestServer({
+		handleRequest: async (_req, res) => {
+			const tson = createTsonAsync(opts);
+
+			const obj = createMockObj();
+			const strIterarable = tson.stringify(obj, 4);
+
+			for await (const value of strIterarable) {
+				res.write(value);
+			}
+
+			res.end();
+		},
+	});
+
+	// ------------- client -------------------
+	const tson = createTsonAsync(opts);
+
+	// do a streamed fetch request
+	const response = await fetch(server.url);
+
+	assert(response.body);
+
+	const textDecoder = new TextDecoder();
+	const stringIterator = mapIterable(
+		readableStreamToAsyncIterable(response.body),
+		(v) => textDecoder.decode(v),
+	);
+
+	const parsed = await tson.parse<MockObj>(stringIterator);
+	expect(await parsed.promise).toEqual(42);
+
+	const results = [];
+	let iteratorError: Error | null = null;
+	try {
+		for await (const value of parsed.iterable) {
+			results.push(value);
+		}
+	} catch (err) {
+		iteratorError = err as Error;
+	} finally {
+		server.close();
+	}
+
+	expect(iteratorError).toMatchInlineSnapshot("[Error: server iterator error]");
+
+	expect(await parsed.deferred).toEqual("deferred resolved");
+	expect(await parsed.promise).toEqual(42);
+	expect(results).toMatchInlineSnapshot(`
+		[
+		  "item: 0",
+		  "item: 1",
+		  "item: 2",
+		]
+	`);
+});
+
+test("values missing when stream ends", async () => {
+	async function* generator() {
+		await Promise.resolve();
+
+		yield "[" + "\n";
+
+		const obj = {
+			json: {
+				iterable: ["AsyncIterable", 1, "__tson"],
+				promise: ["Promise", 0, "__tson"],
+			},
+			nonce: "__tson",
+		} as TsonSerialized<any>;
+		yield JSON.stringify(obj) + "\n";
+
+		await sleep(1);
+
+		yield "  ," + "\n";
+		yield "  [" + "\n";
+		// <values>
+		// - promise is never resolved
+
+		// - iterator is never closed
+		yield `    [1, [0, "value 1"]]`;
+		yield `    [1, [0, "value 2"]]`;
+		// yield `    [1, [2]]`; // iterator done
+
+		// </values>
+		// yield "  ]]" + "\n";
+	}
+
+	const opts = {
+		onStreamError: vitest.fn(),
+		types: [tsonPromise, tsonAsyncIterator],
+	} satisfies TsonAsyncOptions;
+
+	const parse = createTsonParseAsync(opts);
+
+	const result = await parse<{
+		iterable: AsyncIterable<string>;
+		promise: Promise<unknown>;
+	}>(generator());
+
+	{
+		// iterator should error
+		const results = [];
+
+		let err: Error | null = null;
+		try {
+			for await (const value of result.iterable) {
+				results.push(value);
+			}
+		} catch (cause) {
+			err = cause as Error;
+		}
+
+		assert(err);
+
+		expect(err.message).toMatchInlineSnapshot(
+			'"Stream interrupted: Stream ended unexpectedly"',
+		);
+	}
+
+	{
+		// promise was never resolved and should error
+		const err = await waitError(result.promise);
+
+		expect(err).toMatchInlineSnapshot(
+			"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly]",
+		);
+	}
+
+	expect(opts.onStreamError).toHaveBeenCalledTimes(1);
+	expect(opts.onStreamError.mock.calls).toMatchInlineSnapshot(`
+		[
+		  [
+		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly],
+		  ],
+		]
+	`);
+});
+
+test("async: missing values of promise", async () => {
+	async function* generator() {
+		await Promise.resolve();
+
+		yield "[" + "\n";
+
+		const obj = {
+			json: {
+				foo: ["Promise", 0, "__tson"],
+			},
+			nonce: "__tson",
+		} as TsonSerialized<any>;
+		yield JSON.stringify(obj) + "\n";
+
+		await Promise.resolve();
+
+		yield "  ," + "\n";
+		yield "  [" + "\n";
+		// [....... values should be here .......]
+		// yield "]]\n"; // <-- stream and values ended symbol
+	}
+
+	const onErrorSpy = vitest.fn();
+	await createTsonAsync({
+		onStreamError: onErrorSpy,
+		types: [tsonPromise],
+	}).parse(generator());
+
+	await waitFor(() => {
+		expect(onErrorSpy).toHaveBeenCalledTimes(1);
+	});
+
+	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
+		"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly]",
+	);
+});
+
+test("1 iterator completed but another never finishes", async () => {
+	async function* generator() {
+		await Promise.resolve();
+
+		yield "[" + "\n";
+
+		const obj = {
+			json: {
+				iterable1: ["AsyncIterable", 1, "__tson"],
+				iterable2: ["AsyncIterable", 2, "__tson"],
+			},
+			nonce: "__tson",
+		} as TsonSerialized<any>;
+		yield JSON.stringify(obj) + "\n";
+
+		await sleep(1);
+
+		yield "  ," + "\n";
+		yield "  [" + "\n";
+		// <values>
+
+		// iterator 2 never finishes
+		yield `    [2, [0, "value"]]\n`;
+		// yield `    [2, [2]]`; // iterator done
+
+		// iterator 1 finishes
+		yield `    [1, [0, "value"]]\n`;
+		yield `    [1, [2]]\n`; // iterator done
+
+		// </values>
+		// yield "  ]]" + "\n";
+	}
+
+	const opts = {
+		onStreamError: vitest.fn(),
+		types: [tsonPromise, tsonAsyncIterator],
+	} satisfies TsonAsyncOptions;
+
+	const parse = createTsonParseAsync(opts);
+
+	const result = await parse<{
+		iterable1: AsyncIterable<string>;
+		iterable2: AsyncIterable<string>;
+	}>(generator());
+
+	{
+		// iterator 1 should complete
+		const results = [];
+
+		for await (const value of result.iterable1) {
+			results.push(value);
+		}
+
+		expect(results).toEqual(["value"]);
+	}
+
+	{
+		// iterator 2 should error
+		const results = [];
+
+		let err: Error | null = null;
+		try {
+			for await (const value of result.iterable2) {
+				results.push(value);
+			}
+		} catch (cause) {
+			err = cause as Error;
+		}
+
+		assert(err);
+
+		expect(results).toMatchInlineSnapshot(`
+			[
+			  "value",
+			]
+		`);
+
+		expect(err.message).toMatchInlineSnapshot(
+			'"Stream interrupted: Stream ended unexpectedly"',
+		);
+	}
+
+	expect(opts.onStreamError).toHaveBeenCalledTimes(1);
+
+	expect(opts.onStreamError.mock.calls).toMatchInlineSnapshot(`
+		[
+		  [
+		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly],
+		  ],
+		]
+	`);
+});
+
 
 test("e2e: server crash", async () => {
 	function createMockObj() {

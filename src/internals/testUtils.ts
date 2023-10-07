@@ -36,8 +36,7 @@ export const waitFor = async (fn: () => unknown) => {
 			await fn();
 			return;
 		} catch {
-			// wait 5ms
-			await new Promise((resolve) => setTimeout(resolve, 5));
+			await sleep(5);
 		}
 	}
 };
@@ -72,3 +71,33 @@ export async function createTestServer(opts: {
 		url: `http://localhost:${port}`,
 	};
 }
+
+export function createDeferred<T>() {
+	type PromiseResolve = (value: T) => void;
+	type PromiseReject = (reason: unknown) => void;
+	const deferred = {} as {
+		promise: Promise<T>;
+		reject: PromiseReject;
+		resolve: PromiseResolve;
+	};
+	deferred.promise = new Promise<T>((resolve, reject) => {
+		deferred.resolve = resolve;
+		deferred.reject = reject;
+	});
+	return deferred;
+}
+
+export const sleep = (ms: number) =>
+	new Promise((resolve) => setTimeout(resolve, ms));
+export const createPromise = <T>(result: () => T, wait = 1) => {
+	return new Promise<T>((resolve, reject) => {
+		setTimeout(() => {
+			try {
+				const res = result();
+				resolve(res);
+			} catch (err) {
+				reject(err);
+			}
+		}, wait);
+	});
+};

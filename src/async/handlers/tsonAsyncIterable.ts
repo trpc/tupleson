@@ -1,5 +1,8 @@
-import { TsonAsyncType } from "../async/asyncTypes.js";
-import { TsonPromiseRejectionError } from "../errors.js";
+import {
+	TsonPromiseRejectionError,
+	TsonStreamInterruptedError,
+} from "../asyncErrors.js";
+import { TsonAsyncType } from "../asyncTypes.js";
 
 const ITERATOR_VALUE = 0;
 const ITERATOR_ERROR = 1;
@@ -23,22 +26,28 @@ export const tsonAsyncIterator: TsonAsyncType<
 	async: true,
 	deserialize: (opts) => {
 		return (async function* generator() {
-			let next: ReadableStreamReadResult<SerializedIteratorResult>;
+			let next: Awaited<ReturnType<(typeof opts.reader)["read"]>>;
+
 			while (((next = await opts.reader.read()), !next.done)) {
-				switch (next.value[0]) {
+				const { value } = next;
+				if (value instanceof TsonStreamInterruptedError) {
+					throw value;
+				}
+
+				switch (value[0]) {
 					case ITERATOR_DONE: {
-						opts.controller.close();
+						opts.close();
 						return;
 					}
 
 					case ITERATOR_ERROR: {
-						opts.controller.close();
-						throw TsonPromiseRejectionError.from(next.value[1]);
+						opts.close();
+						throw TsonPromiseRejectionError.from(value[1]);
 					}
 
 					case ITERATOR_VALUE: {
-						yield next.value[1];
-						break;
+						yield value[1];
+						break; // <-- breaks the switch, not the loop
 					}
 				}
 			}

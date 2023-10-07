@@ -1,4 +1,4 @@
-import { TsonType } from "../types.js";
+import { TsonType } from "../syncTypes.js";
 
 export const tsonDate: TsonType<Date, string> = {
 	deserialize: (value) => new Date(value),

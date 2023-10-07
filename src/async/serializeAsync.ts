@@ -1,6 +1,6 @@
 import { TsonCircularReferenceError } from "../errors.js";
 import { assert } from "../internals/assert.js";
-import { getNonce } from "../internals/getNonce.js";
+import { GetNonce, getDefaultNonce } from "../internals/getNonce.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
 	TsonAllTypes,
@@ -11,7 +11,7 @@ import {
 	TsonTypeHandlerKey,
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
-} from "../types.js";
+} from "../sync/syncTypes.js";
 import {
 	TsonAsyncIndex,
 	TsonAsyncOptions,
@@ -96,7 +96,6 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 						const idx = asyncIndex++ as TsonAsyncIndex;
 
 						const iterator = handler.serializeIterator({
-							// abortSignal: new AbortSignal(),
 							value,
 						});
 						iterators.set(idx, iterator[Symbol.asyncIterator]());
@@ -193,10 +192,9 @@ type TsonAsyncSerializer = <T>(
 export function createAsyncTsonSerialize(
 	opts: TsonAsyncOptions,
 ): TsonAsyncSerializer {
+	const getNonce: GetNonce = (opts.nonce ?? getDefaultNonce) as GetNonce;
 	return (value) => {
-		const nonce: TsonNonce = opts.nonce
-			? (opts.nonce() as TsonNonce)
-			: getNonce();
+		const nonce = getNonce();
 		const [walk, iterator] = walkerFactory(nonce, opts.types);
 
 		return [
@@ -243,8 +241,7 @@ export function createTsonStringifyAsync(
 				isFirstStreamedValue = false;
 			}
 
-			yield indent(space * 1) + "]" + "\n"; // end value array
-			yield "]" + "\n"; // end response
+			yield "]]" + "\n"; // end response and value array
 		};
 
 	return stringifier as TsonAsyncStringifier;

@@ -1,5 +1,54 @@
 
 
+## [0.16.7](https://github.com/KATT/tupleson/compare/0.16.6...0.16.7) (2023-10-07)
+
+
+### Bug Fixes
+
+* we should call `.close()` in async iterable ([#50](https://github.com/KATT/tupleson/issues/50)) ([b9a82f4](https://github.com/KATT/tupleson/commit/b9a82f41b9361360856f9141fd56b7ad49301c08))
+
+## [0.16.6](https://github.com/KATT/tupleson/compare/0.16.5...0.16.6) (2023-10-07)
+
+
+### Bug Fixes
+
+* remove `try/catch` on controller enqueue ([#49](https://github.com/KATT/tupleson/issues/49)) ([c12034d](https://github.com/KATT/tupleson/commit/c12034dec0515195dd7ba4d64694cc0fd34d6156))
+
+## [0.16.5](https://github.com/KATT/tupleson/compare/0.16.4...0.16.5) (2023-10-07)
+
+
+### Bug Fixes
+
+* fix type of `ReadableStreamDefaultController` ([#48](https://github.com/KATT/tupleson/issues/48)) ([33d0adb](https://github.com/KATT/tupleson/commit/33d0adb14a327fde2ed921f99f2ef6e967841442))
+
+## [0.16.4](https://github.com/KATT/tupleson/compare/0.16.3...0.16.4) (2023-10-07)
+
+
+### Bug Fixes
+
+* handle unexpected end of stream  ([#46](https://github.com/KATT/tupleson/issues/46)) ([1efce87](https://github.com/KATT/tupleson/commit/1efce872ed0b1714b165ddef7db18a3a05ad6b60))
+
+## [0.16.3](https://github.com/KATT/tupleson/compare/0.16.2...0.16.3) (2023-10-06)
+
+
+### Bug Fixes
+
+* update readme more ([#44](https://github.com/KATT/tupleson/issues/44)) ([fbbec98](https://github.com/KATT/tupleson/commit/fbbec9850986730708e14667cb788390673e2c5d))
+
+## [0.16.2](https://github.com/KATT/tupleson/compare/0.16.1...0.16.2) (2023-10-06)
+
+
+### Bug Fixes
+
+* update readme ([#43](https://github.com/KATT/tupleson/issues/43)) ([c47b80a](https://github.com/KATT/tupleson/commit/c47b80ad42ab8a9e175ef3c7d19b7039f1f5060e))
+
+## [0.16.1](https://github.com/KATT/tupleson/compare/0.16.0...0.16.1) (2023-10-06)
+
+
+### Bug Fixes
+
+* remove `postinstall` as it breaks npm usage ([#42](https://github.com/KATT/tupleson/issues/42)) ([c924637](https://github.com/KATT/tupleson/commit/c924637e3c69398ff97384768c45d57eec3c7aa9))
+
 # [0.16.0](https://github.com/KATT/tupleson/compare/0.15.0...0.16.0) (2023-10-06)
 
 

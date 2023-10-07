@@ -8,7 +8,8 @@ import {
 	TsonNonce,
 	TsonSerialized,
 	TsonTransformerSerializeDeserialize,
-} from "../types.js";
+} from "../sync/syncTypes.js";
+import { TsonStreamInterruptedError } from "./asyncErrors.js";
 import {
 	TsonAsyncIndex,
 	TsonAsyncOptions,
@@ -65,20 +66,24 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					const idx = serializedValue as TsonAsyncIndex;
 
+					let controller: ReadableStreamDefaultController<unknown> =
+						null as unknown as ReadableStreamDefaultController<unknown>;
 					const readable = new ReadableStream<unknown>({
 						start(c) {
-							cache.set(idx, c);
+							controller = c;
 						},
 					});
+					// the `start` method is called "immediately when the object is constructed"
+					// [MDN](http://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream)
+					// so we're guaranteed that the controller is set in the cache
+					assert(controller, "Controller not set - this is a bug");
+
+					cache.set(idx, controller);
 
 					return transformer.deserialize({
-						// abortSignal
-						get controller() {
-							// the `start` method is called "immediately when the object is constructed"
-							// [MDN](http://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream)
-							// so we're guaranteed that the controller is set in the cache
-							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-							return cache.get(idx)!;
+						close() {
+							controller.close();
+							cache.delete(idx);
 						},
 						reader: readable.getReader(),
 					});
@@ -95,7 +100,12 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			accumulator: string,
 			walk: WalkFn,
 		) {
+			// <stream state>
+			let streamEnded = false;
+			// </stream state>
+
 			function readLine(str: string) {
+				// console.log("got str", str);
 				str = str.trimStart();
 
 				if (str.startsWith(",")) {
@@ -103,8 +113,14 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 					str = str.slice(1);
 				}
 
-				if (str.length < 2) {
-					// minimum length is 2: '[]'
+				if (str === "" || str === "[" || str === ",") {
+					// beginning of values array or empty string
+					return;
+				}
+
+				if (str === "]]") {
+					// end of values and stream
+					streamEnded = true;
 					return;
 				}
 
@@ -134,7 +150,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				}
 			} while (lines.length);
 
-			assert(!cache.size, `Stream ended with ${cache.size} pending promises`);
+			assert(streamEnded, "Stream ended unexpectedly");
 		}
 
 		async function init() {
@@ -182,18 +198,12 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				getStreamedValues(buffer, accumulator, walk).catch((cause) => {
 					// Something went wrong while getting the streamed values
 
-					const err = new TsonError(
-						`Stream interrupted: ${(cause as Error).message}`,
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-						{ cause },
-					);
+					const err = new TsonStreamInterruptedError(cause);
 
-					// cancel all pending promises
+					// enqueue the error to all the streams
 					for (const controller of cache.values()) {
-						controller.error(err);
+						controller.enqueue(err);
 					}
-
-					cache.clear();
 
 					opts.onStreamError?.(err);
 				});

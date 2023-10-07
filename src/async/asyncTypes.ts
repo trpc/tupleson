@@ -1,7 +1,11 @@
 import { TsonError } from "../errors.js";
-import { TsonType } from "../types.js";
-import { TsonBranded, TsonTypeTesterCustom } from "../types.js";
-import { serialized } from "../types.js";
+import {
+	TsonBranded,
+	TsonType,
+	TsonTypeTesterCustom,
+	serialized,
+} from "../sync/syncTypes.js";
+import { TsonStreamInterruptedError } from "./asyncErrors.js";
 
 export type TsonAsyncStringifierIterable<TValue> = AsyncIterable<string> & {
 	[serialized]: TValue;
@@ -23,17 +27,15 @@ export interface TsonTransformerSerializeDeserializeAsync<
 	 */
 	deserialize: (opts: {
 		/**
-		 * Abort signal from of the full stream
+		 * Close the controller for the ReadableStream of values
 		 */
-		// abortSignal: Promise<never>;
-		/**
-		 * The controller for the ReadableStream, to close when we're done
-		 */
-		controller: ReadableStreamDefaultController<TSerializedValue>;
+		close: () => void;
 		/**
 		 * Reader for the ReadableStream of values
 		 */
-		reader: ReadableStreamDefaultReader<TSerializedValue>;
+		reader: ReadableStreamDefaultReader<
+			TSerializedValue | TsonStreamInterruptedError
+		>;
 	}) => TValue;
 
 	/**
@@ -44,10 +46,6 @@ export interface TsonTransformerSerializeDeserializeAsync<
 	 * JSON-serializable value
 	 */
 	serializeIterator: (opts: {
-		/**
-		 * Abort signal from of the full stream
-		 */
-		// abortSignal?: AbortSignal;
 		/**
 		 * The value we're serializing
 		 */

@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 
 import { tsonAsyncIterator, tsonBigint, tsonPromise } from "../index.js";
+import { sleep } from "../internals/testUtils.js";
 import {
 	createAsyncTsonSerialize,
 	createTsonStringifyAsync,
@@ -106,9 +107,9 @@ test("serialize async iterable", async () => {
 	});
 
 	async function* iterable() {
-		await new Promise((resolve) => setTimeout(resolve, 1));
+		await sleep(1);
 		yield 42;
-		await new Promise((resolve) => setTimeout(resolve, 1));
+		await sleep(1);
 		yield 43;
 	}
 
@@ -163,7 +164,7 @@ test("stringify async iterable + promise", async () => {
 	});
 
 	async function* iterable() {
-		await new Promise((resolve) => setTimeout(resolve, 1));
+		await sleep(1);
 		yield 1n;
 		yield 2n;
 	}
@@ -191,8 +192,7 @@ test("stringify async iterable + promise", async () => {
 		  "    ,[0,[0,[\\"bigint\\",\\"1\\",\\"__tson\\"]]]",
 		  "    ,[0,[0,[\\"bigint\\",\\"2\\",\\"__tson\\"]]]",
 		  "    ,[0,[2]]",
-		  "  ]",
-		  "]",
+		  "]]",
 		]
 	`);
 
