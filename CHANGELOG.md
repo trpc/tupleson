@@ -1,5 +1,12 @@
 
 
+## [0.16.6](https://github.com/KATT/tupleson/compare/0.16.5...0.16.6) (2023-10-07)
+
+
+### Bug Fixes
+
+* remove `try/catch` on controller enqueue ([#49](https://github.com/KATT/tupleson/issues/49)) ([c12034d](https://github.com/KATT/tupleson/commit/c12034dec0515195dd7ba4d64694cc0fd34d6156))
+
 ## [0.16.5](https://github.com/KATT/tupleson/compare/0.16.4...0.16.5) (2023-10-07)
 
 
