@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { TsonError, TsonStreamInterruptedError } from "../errors.js";
+import { TsonError } from "../errors.js";
 import { assert } from "../internals/assert.js";
 import { isTsonTuple } from "../internals/isTsonTuple.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
@@ -9,6 +9,7 @@ import {
 	TsonSerialized,
 	TsonTransformerSerializeDeserialize,
 } from "../sync/syncTypes.js";
+import { TsonStreamInterruptedError } from "./asyncErrors.js";
 import {
 	TsonAsyncIndex,
 	TsonAsyncOptions,

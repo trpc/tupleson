@@ -1,7 +1,7 @@
 import {
 	TsonPromiseRejectionError,
 	TsonStreamInterruptedError,
-} from "../../errors.js";
+} from "../asyncErrors.js";
 import { TsonAsyncType } from "../asyncTypes.js";
 
 function isPromise(value: unknown): value is Promise<unknown> {

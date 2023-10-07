@@ -1,7 +1,7 @@
 import {
 	TsonPromiseRejectionError,
 	TsonStreamInterruptedError,
-} from "../../errors.js";
+} from "../asyncErrors.js";
 import { TsonAsyncType } from "../asyncTypes.js";
 
 const ITERATOR_VALUE = 0;
