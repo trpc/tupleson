@@ -1,5 +1,7 @@
 {
-	"dictionaries": ["typescript"],
+	"dictionaries": [
+		"typescript"
+	],
 	"ignorePaths": [
 		".github",
 		"CHANGELOG.md",
@@ -14,8 +16,10 @@
 		"commitlint",
 		"contributorsrc",
 		"conventionalcommits",
+		"deferreds",
 		"Iterarable",
 		"KATT",
+		"kleur",
 		"knip",
 		"lcov",
 		"markdownlintignore",
@@ -24,10 +28,11 @@
 		"packagejson",
 		"quickstart",
 		"stringifier",
+		"superjson",
 		"tson",
 		"tsup",
 		"tupleson",
-		"wontfix",
-		"deferreds"
+		"unevaled",
+		"wontfix"
 	]
 }
