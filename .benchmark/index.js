@@ -4,13 +4,14 @@ import ARSON from "arson";
 import { parse, stringify, uneval } from "devalue";
 import c from "kleur";
 import * as superjson from "superjson";
-import { createTson, tsonDate, tsonRegExp } from "tupleson";
+import { createTson, tsonDate, tsonRegExp, tsonSet } from "tupleson";
 
 const obj = {
 	array: [{ foo: 1 }, { bar: 2 }, { baz: 3 }],
 	date: new Date(),
 	number: 42,
 	regex: /the quick brown fox/,
+	set: new Set([1, 2, 3]),
 	xss: '</script><script>alert("XSS")</script>',
 };
 
@@ -18,7 +19,7 @@ const obj = {
 // obj.self = obj;
 
 const tson = createTson({
-	types: [tsonDate, tsonRegExp],
+	types: [tsonDate, tsonRegExp, tsonSet],
 });
 
 const superjson_serialized = superjson.stringify(obj);
