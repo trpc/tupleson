@@ -8,16 +8,16 @@ import {
 	tsonPromise,
 } from "../../index.js";
 import {
-	mapIterable,
-	readableStreamToAsyncIterable,
-} from "../../internals/iterableUtils.js";
-import {
 	createTestServer,
 	waitError,
 	waitFor,
 } from "../../internals/testUtils.js";
 import { TsonSerialized } from "../../sync/syncTypes.js";
 import { createTsonParseAsyncInner } from "../deserializeAsync.js";
+import {
+	mapIterable,
+	readableStreamToAsyncIterable,
+} from "../iterableUtils.js";
 import {
 	TsonAsyncValueTuple,
 	createAsyncTsonSerialize,
