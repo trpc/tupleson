@@ -1,4 +1,7 @@
-import { TsonPromiseRejectionError } from "../../errors.js";
+import {
+	TsonPromiseRejectionError,
+	TsonStreamInterruptedError,
+} from "../../errors.js";
 import { TsonAsyncType } from "../asyncTypes.js";
 
 const ITERATOR_VALUE = 0;
@@ -23,8 +26,13 @@ export const tsonAsyncIterator: TsonAsyncType<
 	async: true,
 	deserialize: (opts) => {
 		return (async function* generator() {
-			let next: ReadableStreamReadResult<SerializedIteratorResult>;
+			let next: Awaited<ReturnType<(typeof opts.reader)["read"]>>;
+
 			while (((next = await opts.reader.read()), !next.done)) {
+				if (next.value instanceof TsonStreamInterruptedError) {
+					throw TsonPromiseRejectionError.from(next);
+				}
+
 				switch (next.value[0]) {
 					case ITERATOR_DONE: {
 						opts.controller.close();

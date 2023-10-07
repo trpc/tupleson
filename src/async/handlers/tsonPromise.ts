@@ -1,4 +1,7 @@
-import { TsonPromiseRejectionError } from "../../errors.js";
+import {
+	TsonPromiseRejectionError,
+	TsonStreamInterruptedError,
+} from "../../errors.js";
 import { TsonAsyncType } from "../asyncTypes.js";
 
 function isPromise(value: unknown): value is Promise<unknown> {
@@ -28,7 +31,14 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 				opts.controller.close();
 
 				if (value.done) {
-					throw new Error("Expected promise value, got done");
+					throw new TsonPromiseRejectionError(
+						"Expected promise value, got done",
+					);
+				}
+
+				if (value.value instanceof TsonStreamInterruptedError) {
+					reject(TsonPromiseRejectionError.from(value.value));
+					return;
 				}
 
 				const [status, result] = value.value;

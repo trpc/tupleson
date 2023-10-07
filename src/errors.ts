@@ -53,3 +53,14 @@ export class TsonPromiseRejectionError extends TsonError {
 			: new TsonPromiseRejectionError(cause);
 	}
 }
+
+export class TsonStreamInterruptedError extends TsonError {
+	constructor(cause: unknown) {
+		super(
+			"Stream interrupted: " +
+				(getErrorMessageFromUnknown(cause) ?? "unknown reason"),
+			{ cause },
+		);
+		this.name = "TsonStreamInterruptedError";
+	}
+}

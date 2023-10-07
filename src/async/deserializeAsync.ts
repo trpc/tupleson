@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { TsonError } from "../errors.js";
+import { TsonError, TsonStreamInterruptedError } from "../errors.js";
 import { assert } from "../internals/assert.js";
 import { isTsonTuple } from "../internals/isTsonTuple.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
@@ -192,18 +192,12 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				getStreamedValues(buffer, accumulator, walk).catch((cause) => {
 					// Something went wrong while getting the streamed values
 
-					const err = new TsonError(
-						`Stream interrupted: ${(cause as Error).message}`,
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-						{ cause },
-					);
+					const err = new TsonStreamInterruptedError(cause);
 
 					// cancel all pending promises
 					for (const controller of cache.values()) {
-						controller.error(err);
+						controller.enqueue(err);
 					}
-
-					cache.clear();
 
 					opts.onStreamError?.(err);
 				});

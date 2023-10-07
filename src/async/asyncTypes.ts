@@ -1,4 +1,4 @@
-import { TsonError } from "../errors.js";
+import { TsonError, TsonStreamInterruptedError } from "../errors.js";
 import { TsonType } from "../sync/syncTypes.js";
 import { TsonBranded, TsonTypeTesterCustom } from "../sync/syncTypes.js";
 import { serialized } from "../sync/syncTypes.js";
@@ -33,7 +33,7 @@ export interface TsonTransformerSerializeDeserializeAsync<
 		/**
 		 * Reader for the ReadableStream of values
 		 */
-		reader: ReadableStreamDefaultReader<TSerializedValue>;
+		reader: ReadableStreamDefaultReader;
 	}) => TValue;
 
 	/**
