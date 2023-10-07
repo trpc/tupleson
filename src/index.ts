@@ -28,7 +28,4 @@ export {
 
 // type handlers
 export * from "./async/handlers/tsonPromise.js";
-export {
-	// explicitly returning the handler as more than one handler is exported for testing
-	tsonAsyncIterator,
-} from "./async/handlers/tsonAsyncIterable.js";
+export * from "./async/handlers/tsonAsyncIterable.js";
