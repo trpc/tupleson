@@ -31,7 +31,7 @@ export const tsonAsyncIterator: TsonAsyncType<
 			while (((next = await opts.reader.read()), !next.done)) {
 				const { value } = next;
 				if (value instanceof TsonStreamInterruptedError) {
-					throw TsonPromiseRejectionError.from(next);
+					throw value;
 				}
 
 				switch (value[0]) {

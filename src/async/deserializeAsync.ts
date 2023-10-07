@@ -101,6 +101,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			// </stream state>
 
 			function readLine(str: string) {
+				// console.log("got str", str);
 				str = str.trimStart();
 
 				if (str.startsWith(",")) {
@@ -197,7 +198,11 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					// enqueue the error to all the streams
 					for (const controller of cache.values()) {
-						controller.enqueue(err);
+						try {
+							controller.enqueue(err);
+						} catch {
+							// ignore if the controller is closed
+						}
 					}
 
 					opts.onStreamError?.(err);

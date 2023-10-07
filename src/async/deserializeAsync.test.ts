@@ -375,7 +375,7 @@ test("values missing when stream ends", async () => {
 
 		assert(err);
 
-		expect(err.message).toMatchInlineSnapshot('"Promise rejected"');
+		expect(err.message).toMatchInlineSnapshot('"Stream interrupted: Stream ended unexpectedly"');
 	}
 
 	{
@@ -434,7 +434,7 @@ test("async: missing values of promise", async () => {
 	);
 });
 
-test.only("1 iterator completed but another never finishes", async () => {
+test("1 iterator completed but another never finishes", async () => {
 	async function* generator() {
 		await Promise.resolve();
 
@@ -456,11 +456,12 @@ test.only("1 iterator completed but another never finishes", async () => {
 		// <values>
 
 		// iterator 2 never finishes
-		yield `    [2, [0, "value"]]`;
+		yield `    [2, [0, "value"]]\n`;
+		// yield `    [2, [2]]`; // iterator done
 
 		// iterator 1 finishes
-		yield `    [1, [0, "value"]]`;
-		yield `    [1, [2]]`; // iterator done
+		yield `    [1, [0, "value"]]\n`;
+		yield `    [1, [2]]\n`; // iterator done
 
 		// </values>
 		// yield "  ]" + "\n";
@@ -483,18 +484,11 @@ test.only("1 iterator completed but another never finishes", async () => {
 		// iterator 1 should complete
 		const results = [];
 
-		let err: Error | null = null;
-		try {
-			for await (const value of result.iterable1) {
-				results.push(value);
-			}
-		} catch (cause) {
-			err = cause as Error;
+		for await (const value of result.iterable1) {
+			results.push(value);
 		}
 
 		expect(results).toEqual(["value"]);
-
-		expect(err).toBeNull();
 	}
 
 	{
@@ -512,7 +506,11 @@ test.only("1 iterator completed but another never finishes", async () => {
 
 		assert(err);
 
-		expect(results).toMatchInlineSnapshot();
+		expect(results).toMatchInlineSnapshot(`
+			[
+			  "value",
+			]
+		`);
 
 		expect(err.message).toMatchInlineSnapshot(
 			'"Stream interrupted: Stream ended unexpectedly"',
@@ -521,5 +519,11 @@ test.only("1 iterator completed but another never finishes", async () => {
 
 	expect(opts.onStreamError).toHaveBeenCalledTimes(1);
 
-	expect(opts.onStreamError.mock.calls).toMatchInlineSnapshot();
+	expect(opts.onStreamError.mock.calls).toMatchInlineSnapshot(`
+		[
+		  [
+		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly],
+		  ],
+		]
+	`);
 });
