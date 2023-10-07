@@ -19,12 +19,12 @@ test("serialize promise", async () => {
 
 	expect(head).toMatchInlineSnapshot(`
 		{
+		  "_nonce": "__tson",
 		  "json": [
 		    "Promise",
 		    0,
 		    "__tson",
 		  ],
-		  "nonce": "__tson",
 		}
 	`);
 
@@ -58,6 +58,7 @@ test("serialize 2 promises", async () => {
 
 	expect(head).toMatchInlineSnapshot(`
 		{
+		  "_nonce": "__tson",
 		  "json": [
 		    [
 		      "Promise",
@@ -70,7 +71,6 @@ test("serialize 2 promises", async () => {
 		      "__tson",
 		    ],
 		  ],
-		  "nonce": "__tson",
 		}
 	`);
 
@@ -117,12 +117,12 @@ test("serialize async iterable", async () => {
 
 	expect(head).toMatchInlineSnapshot(`
 		{
+		  "_nonce": "__tson",
 		  "json": [
 		    "AsyncIterable",
 		    0,
 		    "__tson",
 		  ],
-		  "nonce": "__tson",
 		}
 	`);
 
@@ -185,7 +185,7 @@ test("stringify async iterable + promise", async () => {
 	expect(buffer).toMatchInlineSnapshot(`
 		[
 		  "[",
-		  "  {\\"json\\":{\\"foo\\":\\"bar\\",\\"iterable\\":[\\"AsyncIterable\\",0,\\"__tson\\"],\\"promise\\":[\\"Promise\\",1,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
+		  "  {\\"_nonce\\":\\"__tson\\",\\"json\\":{\\"foo\\":\\"bar\\",\\"iterable\\":[\\"AsyncIterable\\",0,\\"__tson\\"],\\"promise\\":[\\"Promise\\",1,\\"__tson\\"]}}",
 		  "  ,",
 		  "  [",
 		  "    [1,[0,42]]",
@@ -198,6 +198,7 @@ test("stringify async iterable + promise", async () => {
 
 	expect(head).toMatchInlineSnapshot(`
 		{
+		  "_nonce": "__tson",
 		  "json": {
 		    "foo": "bar",
 		    "iterable": [
@@ -211,7 +212,6 @@ test("stringify async iterable + promise", async () => {
 		      "__tson",
 		    ],
 		  },
-		  "nonce": "__tson",
 		}
 	`);
 

@@ -190,7 +190,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 			const head = JSON.parse(headLine) as TsonSerialized<any>;
 
-			const walk = walker(head.nonce);
+			const walk = walker(head._nonce);
 
 			try {
 				return walk(head.json);

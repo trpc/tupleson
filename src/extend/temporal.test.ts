@@ -28,12 +28,12 @@ test("PlainDate", () => {
 
 	expect(serialized).toMatchInlineSnapshot(`
 		{
+		  "_nonce": "__tson",
 		  "json": [
 		    "PlainDate",
 		    "2021-01-01",
 		    "__tson",
 		  ],
-		  "nonce": "__tson",
 		}
 	`);
 	const deserialized = tson.deserialize(serialized);
@@ -48,12 +48,12 @@ test("Instant", () => {
 
 	expect(serialized).toMatchInlineSnapshot(`
 		{
+		  "_nonce": "__tson",
 		  "json": [
 		    "Instant",
 		    "2021-01-01T00:00:00Z",
 		    "__tson",
 		  ],
-		  "nonce": "__tson",
 		}
 	`);
 	const deserialized = tson.deserialize(serialized);

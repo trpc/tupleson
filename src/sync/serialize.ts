@@ -119,8 +119,8 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 		const json = walker(nonce)(obj);
 
 		return {
+			_nonce: nonce,
 			json,
-			nonce,
 		} as TsonSerialized<any>;
 	}) as TsonSerializeFn;
 }

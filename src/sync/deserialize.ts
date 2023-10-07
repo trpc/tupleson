@@ -45,12 +45,49 @@ export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 	};
 
 	return ((obj: TsonSerialized) =>
-		walker(obj.nonce)(obj.json)) as TsonDeserializeFn;
+		walker(obj._nonce)(obj.json)) as TsonDeserializeFn;
 }
 
 export function createTsonParser(opts: TsonOptions): TsonParseFn {
 	const deserializer = createTsonDeserialize(opts);
 
-	return ((str: string) =>
-		deserializer(JSON.parse(str) as TsonSerialized)) as TsonParseFn;
+	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
+
+	for (const handler of opts.types) {
+		if (handler.key) {
+			if (typeByKey[handler.key]) {
+				throw new Error(`Multiple handlers for key ${handler.key} found`);
+			}
+
+			typeByKey[handler.key] =
+				handler as AnyTsonTransformerSerializeDeserialize;
+		}
+	}
+
+	return ((str: string) => {
+		const ret = deserializer(JSON.parse(str) as TsonSerialized);
+		let nonce = "";
+		JSON.parse(str, (key, value) => {
+			if (!nonce && key === "_nonce") {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				nonce = value;
+			}
+
+			if (!nonce) {
+				throw new Error("No nonce found");
+			}
+
+			if (isTsonTuple(value, nonce)) {
+				const [type, serializedValue] = value;
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				const transformer = typeByKey[type]!;
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+				return transformer.deserialize(serializedValue);
+			}
+
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+			return value;
+		});
+		return ret;
+	}) as TsonParseFn;
 }

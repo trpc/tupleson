@@ -15,12 +15,12 @@ test("regex", () => {
 	expect(stringified).toMatchInlineSnapshot(
 		`
 		"{
+		  \\"_nonce\\": \\"__tson\\",
 		  \\"json\\": [
 		    \\"RegExp\\",
 		    \\"/foo/g\\",
 		    \\"__tson\\"
-		  ],
-		  \\"nonce\\": \\"__tson\\"
+		  ]
 		}"
 	`,
 	);

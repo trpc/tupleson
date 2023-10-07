@@ -21,12 +21,12 @@ test("Decimal.js", () => {
 
 	expect(serialized).toMatchInlineSnapshot(`
 		{
+		  "_nonce": "__tson",
 		  "json": [
 		    "Decimal",
 		    "1.23",
 		    "__tson",
 		  ],
-		  "nonce": "__tson",
 		}
 	`);
 

@@ -17,12 +17,12 @@ test("URL", () => {
 	expect(stringified).toMatchInlineSnapshot(
 		`
 		"{
+		  \\"_nonce\\": \\"__tson\\",
 		  \\"json\\": [
 		    \\"URL\\",
 		    \\"https://trpc.io/sponsor#foo\\",
 		    \\"__tson\\"
-		  ],
-		  \\"nonce\\": \\"__tson\\"
+		  ]
 		}"
 	`,
 	);

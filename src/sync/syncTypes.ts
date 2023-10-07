@@ -112,8 +112,8 @@ export interface TsonOptions {
 export const serialized = Symbol("serialized");
 
 export interface TsonSerialized<TValue = unknown> {
+	_nonce: TsonNonce;
 	json: TsonSerializedValue;
-	nonce: TsonNonce;
 	[serialized]: TValue;
 }
 

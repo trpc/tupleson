@@ -199,8 +199,8 @@ export function createAsyncTsonSerialize(
 
 		return [
 			{
+				_nonce: nonce,
 				json: walk(value),
-				nonce,
 			} as TsonSerialized<typeof value>,
 			iterator,
 		];

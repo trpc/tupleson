@@ -30,6 +30,7 @@ test("lets have a look at the stringified output", () => {
 
 	expect(stringified).toMatchInlineSnapshot(`
 		"{
+		  \\"_nonce\\": \\"__tson\\",
 		  \\"json\\": [
 		    \\"Set\\",
 		    [
@@ -60,8 +61,7 @@ test("lets have a look at the stringified output", () => {
 		      ]
 		    ],
 		    \\"__tson\\"
-		  ],
-		  \\"nonce\\": \\"__tson\\"
+		  ]
 		}"
 	`);
 

@@ -327,7 +327,7 @@ test("values missing when stream ends", async () => {
 				iterable: ["AsyncIterable", 1, "__tson"],
 				promise: ["Promise", 0, "__tson"],
 			},
-			nonce: "__tson",
+			_nonce: "__tson",
 		} as TsonSerialized<any>;
 		yield JSON.stringify(obj) + "\n";
 
@@ -408,7 +408,7 @@ test("async: missing values of promise", async () => {
 			json: {
 				foo: ["Promise", 0, "__tson"],
 			},
-			nonce: "__tson",
+			_nonce: "__tson",
 		} as TsonSerialized<any>;
 		yield JSON.stringify(obj) + "\n";
 
@@ -446,7 +446,7 @@ test("1 iterator completed but another never finishes", async () => {
 				iterable1: ["AsyncIterable", 1, "__tson"],
 				iterable2: ["AsyncIterable", 2, "__tson"],
 			},
-			nonce: "__tson",
+			_nonce: "__tson",
 		} as TsonSerialized<any>;
 		yield JSON.stringify(obj) + "\n";
 
