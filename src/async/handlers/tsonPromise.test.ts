@@ -3,8 +3,10 @@ import { assert, expect, test } from "vitest";
 import {
 	TsonAsyncOptions,
 	TsonType,
+	createAsyncTsonSerialize,
 	createTsonAsync,
 	createTsonParseAsync,
+	createTsonStringifyAsync,
 	tsonPromise,
 } from "../../index.js";
 import {
@@ -12,17 +14,12 @@ import {
 	waitError,
 	waitFor,
 } from "../../internals/testUtils.js";
-import { TsonSerialized } from "../../sync/syncTypes.js";
 import { createTsonParseAsyncInner } from "../deserializeAsync.js";
 import {
 	mapIterable,
 	readableStreamToAsyncIterable,
 } from "../iterableUtils.js";
-import {
-	TsonAsyncValueTuple,
-	createAsyncTsonSerialize,
-	createTsonStringifyAsync,
-} from "../serializeAsync.js";
+import { TsonAsyncValueTuple } from "../serializeAsync.js";
 
 const createPromise = <T>(result: () => T, wait = 1) => {
 	return new Promise<T>((resolve, reject) => {
@@ -286,10 +283,7 @@ test("stringifier - promise in promise", async () => {
 		buffer.push(value.trimEnd());
 	}
 
-	const full = JSON.parse(buffer.join("")) as [
-		TsonSerialized,
-		TsonAsyncValueTuple[],
-	];
+	const full = JSON.parse(buffer.join("")) as [unknown, TsonAsyncValueTuple[]];
 
 	const [head, values] = full;
 	expect(head).toMatchInlineSnapshot(`
