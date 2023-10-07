@@ -8,7 +8,7 @@ import {
 	TsonNonce,
 	TsonSerialized,
 	TsonTransformerSerializeDeserialize,
-} from "../types.js";
+} from "../sync/syncTypes.js";
 import {
 	TsonAsyncIndex,
 	TsonAsyncOptions,

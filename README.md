@@ -1,6 +1,6 @@
 <h1 align="center">tupleSON</h1>
 
-<p align="center">A hackable JSON serializer/deserializer</p>
+<p align="center">Your hackable JSON serializer/deserializer</p>
 
 <p align="center">
 	<a href="#contributors" target="_blank">
@@ -23,17 +23,26 @@
 	<img alt="TypeScript: Strict" src="https://img.shields.io/badge/typescript-strict-21bb42.svg" />
 </p>
 
-## Introduction
+---
 
-> ⚠️ This package is still experimental (although it's pretty well tested) & is subject to big changes
+Customizable serialization & deserialization.
+Serialize almost[^1] anything!
 
-A hackable JSON serializer/deserializer that allows you to serialize/deserialize almost[^1] anything.
+[^1]:
+    🌀 Circular references not your thing? We agree & we don't support it.
+    But hey, feel free to make a PR add opt-in support for that if you need it!
 
-Serialize exactly what you want; no more, no less.
+### 🎯 Project Goals
 
-[^1]: We don't support circular references as we don't think it's very desireable, but if you wanna contribute with adding opt-in support for that, you are very welcome!
+- 💡 JSON-compatible output
+- 📖 Human-readable output
+- 🔧 Customizable behavior – tailor it to your exact needs
+- 🌊 Serialize & stream things like `Promise`s or async iterators
 
-### Example
+> [!IMPORTANT]  
+> _Though well-tested, this package might undergo big changes, stay tuned!_
+
+### 👀 Example
 
 ```ts
 /* eslint-disable @typescript-eslint/no-unused-vars, n/no-missing-import */
@@ -43,6 +52,8 @@ import {
 	createTson,
 	// Serialize `bigint`
 	tsonBigint,
+	// Serialize `Date`
+	tsonDate,
 	// Serialize `Map`s
 	tsonMap,
 	// **throws** when encountering Infinity or NaN
@@ -81,6 +92,8 @@ const myObj = {
 
 const str = tson.stringify(myObj, 2);
 console.log(str);
+// (👀 All non-JSON values are replaced with a tuple, hence the name)
+
 // ->
 // {
 //   "json": {
@@ -106,14 +119,14 @@ type Obj = typeof obj;
 // -> type Obj = { foo: string; set: Set<number>; }
 ```
 
-### Streaming `Promise`s and `AsyncIterable`s
+### 🤯 Streaming `Promise`s and `AsyncIterable`s
 
 - See example in [`./examples/async`](./examples/async)
 - [Test it on StackBlitz](https://stackblitz.com/github/KATT/tupleson/tree/main/examples/async?file=src/server.ts&file=src/client.ts&view=editor)
 
-## Extend with a custom serializer
+## 🧩 Extend with a custom serializer
 
-### [Temporal](https://www.npmjs.com/package/@js-temporal/polyfill)
+### ⌚️ [Temporal](https://www.npmjs.com/package/@js-temporal/polyfill)
 
 > See test reference in [`./src/extend/temporal.test.ts`](./src/extend/temporal.test.ts)
 
@@ -141,7 +154,7 @@ const tson = createTson({
 });
 ```
 
-### [Decimal.js](https://github.com/MikeMcl/decimal.js)
+### 🧮 [Decimal.js](https://github.com/MikeMcl/decimal.js)
 
 > See test reference in [`./src/extend/decimal.test.ts`](./src/extend/decimal.test.ts)
 

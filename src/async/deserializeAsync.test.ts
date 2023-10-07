@@ -7,12 +7,9 @@ import {
 	tsonPromise,
 } from "../index.js";
 import { assert } from "../internals/assert.js";
-import {
-	mapIterable,
-	readableStreamToAsyncIterable,
-} from "../internals/iterableUtils.js";
 import { createTestServer } from "../internals/testUtils.js";
 import { TsonAsyncOptions } from "./asyncTypes.js";
+import { mapIterable, readableStreamToAsyncIterable } from "./iterableUtils.js";
 
 test("deserialize variable chunk length", async () => {
 	const tson = createTsonAsync({

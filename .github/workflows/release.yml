@@ -62,6 +62,7 @@ jobs:
                     { context: "build" },
                     { context: "compliance" },
                     { context: "lint" },
+                    { context: "lint_knip" },
                     { context: "lint_markdown" },
                     { context: "lint_package_json" },
                     { context: "lint_packages" },

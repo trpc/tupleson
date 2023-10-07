@@ -1,7 +1,6 @@
 import { expect, test } from "vitest";
 
-import { createTson } from "../index.js";
-import { tsonUndefined } from "./index.js";
+import { createTson, tsonUndefined } from "../../index.js";
 
 test("undefined", () => {
 	const ctx = createTson({

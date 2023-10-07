@@ -1,8 +1,7 @@
 import { expect, test } from "vitest";
 
-import { createTson } from "../index.js";
-import { expectError } from "../internals/testUtils.js";
-import { tsonNumberGuard } from "./index.js";
+import { createTson, tsonNumberGuard } from "../../index.js";
+import { expectError } from "../../internals/testUtils.js";
 
 test("number", () => {
 	const t = createTson({
