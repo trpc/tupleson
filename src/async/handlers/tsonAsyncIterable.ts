@@ -36,21 +36,21 @@ export const tsonAsyncIterator: TsonAsyncType<
 
 				switch (value[0]) {
 					case ITERATOR_DONE: {
+						opts.close();
 						return;
 					}
 
 					case ITERATOR_ERROR: {
+						opts.close();
 						throw TsonPromiseRejectionError.from(value[1]);
 					}
 
 					case ITERATOR_VALUE: {
 						yield value[1];
-						break;
+						break; // <-- breaks the switch, not the loop
 					}
 				}
 			}
-
-			opts.close();
 		})();
 	},
 	key: "AsyncIterable",
