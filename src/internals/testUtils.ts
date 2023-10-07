@@ -36,7 +36,6 @@ export const waitFor = async (fn: () => unknown) => {
 			await fn();
 			return;
 		} catch {
-			// wait 5ms
 			await sleep(5);
 		}
 	}
