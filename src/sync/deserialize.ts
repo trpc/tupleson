@@ -65,9 +65,9 @@ export function createTsonParser(opts: TsonOptions): TsonParseFn {
 	}
 
 	return ((str: string) => {
-		const ret = deserializer(JSON.parse(str) as TsonSerialized);
 		let nonce = "";
-		JSON.parse(str, (key, value) => {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+		return JSON.parse(str, (key, value) => {
 			if (!nonce && key === "_nonce") {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				nonce = value;
@@ -88,6 +88,5 @@ export function createTsonParser(opts: TsonOptions): TsonParseFn {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 			return value;
 		});
-		return ret;
 	}) as TsonParseFn;
 }
