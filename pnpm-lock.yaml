@@ -126,7 +126,7 @@ importers:
         specifier: ^1.2.2
         version: 1.2.2
 
-  .benchmark:
+  benchmark:
     dependencies:
       arson:
         specifier: ^0.2.6
