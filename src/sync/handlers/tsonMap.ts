@@ -1,4 +1,4 @@
-import { TsonType } from "../types.js";
+import { TsonType } from "../syncTypes.js";
 
 export const tsonMap: TsonType<Map<unknown, unknown>, [unknown, unknown][]> = {
 	deserialize: (v) => new Map(v),

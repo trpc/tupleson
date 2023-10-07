@@ -1,12 +1,12 @@
 import { assert, expect, test } from "vitest";
 
-import { createTson } from "../index.js";
-import { expectError } from "../internals/testUtils.js";
-import { tsonSet } from "./index.js";
 import {
 	TsonUnknownObjectGuardError,
+	createTson,
+	tsonSet,
 	tsonUnknownObjectGuard,
-} from "./tsonUnknownObjectGuard.js";
+} from "../../index.js";
+import { expectError } from "../../internals/testUtils.js";
 
 test("guard unwanted objects", () => {
 	// Sets are okay, but not Maps

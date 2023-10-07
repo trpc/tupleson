@@ -1,4 +1,4 @@
-import { TsonNonce } from "../types.js";
+import { TsonNonce } from "../sync/syncTypes.js";
 
 const randomString = () => Math.random().toString(36).slice(2);
 

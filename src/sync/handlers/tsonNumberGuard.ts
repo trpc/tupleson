@@ -1,4 +1,4 @@
-import { TsonType } from "../types.js";
+import { TsonType } from "../syncTypes.js";
 
 /**
  * Prevents `NaN` and `Infinity` from being serialized
