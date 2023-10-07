@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@trpc/server': link:./
+  tupleson: link:./
 
 importers:
 
@@ -138,8 +138,8 @@ importers:
         specifier: ^3.12.7
         version: 3.13.0
       tupleson:
-        specifier: latest
-        version: 0.16.3
+        specifier: link:../..
+        version: link:../..
       typescript:
         specifier: ^5.1.3
         version: 5.2.2
@@ -6366,11 +6366,6 @@ packages:
       source-map-support: 0.5.21
     optionalDependencies:
       fsevents: 2.3.3
-    dev: true
-
-  /tupleson@0.16.3:
-    resolution: {integrity: sha512-ugofG0XcGUrCchQe5waD3nItVY8DvrpHO8D08K507jsc9E0ptdKQZGe/155zCAIs/KHu+H6ixTK6Huu23JwkRQ==}
-    engines: {node: '>=18'}
     dev: true
 
   /type-check@0.4.0:

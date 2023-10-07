@@ -83,7 +83,7 @@
 	},
 	"pnpm": {
 		"overrides": {
-			"@trpc/server": "link:./"
+			"tupleson": "link:./"
 		}
 	}
 }
