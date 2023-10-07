@@ -47,10 +47,6 @@ export interface TsonTransformerSerializeDeserializeAsync<
 	 */
 	serializeIterator: (opts: {
 		/**
-		 * Abort signal from of the full stream
-		 */
-		// abortSignal?: AbortSignal;
-		/**
 		 * The value we're serializing
 		 */
 		value: TValue;
