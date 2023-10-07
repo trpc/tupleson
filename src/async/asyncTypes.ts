@@ -1,8 +1,10 @@
 import { TsonError } from "../errors.js";
-import { TsonType } from "../sync/syncTypes.js";
-import { TsonBranded, TsonTypeTesterCustom } from "../sync/syncTypes.js";
-import { serialized } from "../sync/syncTypes.js";
-import { TsonStreamInterruptedError } from "./asyncErrors.js";
+import {
+	TsonBranded,
+	TsonType,
+	TsonTypeTesterCustom,
+	serialized,
+} from "../sync/syncTypes.js";
 
 export type TsonAsyncStringifierIterable<TValue> = AsyncIterable<string> & {
 	[serialized]: TValue;

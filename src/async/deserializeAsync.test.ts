@@ -13,7 +13,6 @@ import {
 	createDeferred,
 	createTestServer,
 	wait as sleep,
-	wait,
 	waitError,
 	waitFor,
 } from "../internals/testUtils.js";
