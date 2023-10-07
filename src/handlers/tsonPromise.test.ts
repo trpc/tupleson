@@ -20,7 +20,7 @@ import {
 	waitError,
 	waitFor,
 } from "../internals/testUtils.js";
-import { TsonSerialized, TsonType } from "../types.js";
+import { TsonSerialized, TsonType } from "../sync/syncTypes.js";
 
 const createPromise = <T>(result: () => T, wait = 1) => {
 	return new Promise<T>((resolve, reject) => {

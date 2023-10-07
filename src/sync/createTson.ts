@@ -1,4 +1,4 @@
-import { TsonOptions } from "../types.js";
+import { TsonOptions } from "./syncTypes.js";
 import { createTsonDeserialize, createTsonParser } from "./deserialize.js";
 import { createTsonSerialize, createTsonStringify } from "./serialize.js";
 

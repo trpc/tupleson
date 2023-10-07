@@ -11,7 +11,7 @@ import {
 	TsonTypeHandlerKey,
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
-} from "../types.js";
+} from "../sync/syncTypes.js";
 import {
 	TsonAsyncIndex,
 	TsonAsyncOptions,

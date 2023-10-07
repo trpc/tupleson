@@ -11,5 +11,5 @@ export * from "./handlers/index.js";
 
 // types
 export type { TsonAsyncOptions } from "./async/asyncTypes.js";
-export type { TsonType } from "./types.js";
-export type { TsonOptions } from "./types.js";
+export type { TsonType } from "./sync/syncTypes.js";
+export type { TsonOptions } from "./sync/syncTypes.js";

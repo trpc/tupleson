@@ -1,4 +1,4 @@
-import { TsonType } from "../types.js";
+import { TsonType } from "../sync/syncTypes.js";
 
 export const tsonSymbol = <T extends symbol>(
 	symbol: T,

@@ -1,4 +1,4 @@
-import { TsonType } from "../types.js";
+import { TsonType } from "../sync/syncTypes.js";
 
 export const tsonUndefined: TsonType<undefined, 0> = {
 	deserialize: () => undefined,
