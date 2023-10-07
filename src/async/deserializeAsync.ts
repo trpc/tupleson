@@ -195,7 +195,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					const err = new TsonStreamInterruptedError(cause);
 
-					// cancel all pending promises
+					// enqueue the error to all the streams
 					for (const controller of cache.values()) {
 						controller.enqueue(err);
 					}

@@ -5,6 +5,7 @@ import {
 	TsonTypeTesterCustom,
 	serialized,
 } from "../sync/syncTypes.js";
+import { TsonStreamInterruptedError } from "./asyncErrors.js";
 
 export type TsonAsyncStringifierIterable<TValue> = AsyncIterable<string> & {
 	[serialized]: TValue;
@@ -36,7 +37,9 @@ export interface TsonTransformerSerializeDeserializeAsync<
 		/**
 		 * Reader for the ReadableStream of values
 		 */
-		reader: ReadableStreamDefaultReader;
+		reader: ReadableStreamDefaultReader<
+			TSerializedValue | TsonStreamInterruptedError
+		>;
 	}) => TValue;
 
 	/**

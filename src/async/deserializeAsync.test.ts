@@ -434,7 +434,7 @@ test("async: missing values of promise", async () => {
 	);
 });
 
-test.only("1 iterator completed but another failed", async () => {
+test.only("1 iterator completed but another never finishes", async () => {
 	async function* generator() {
 		await Promise.resolve();
 

@@ -29,11 +29,12 @@ export const tsonAsyncIterator: TsonAsyncType<
 			let next: Awaited<ReturnType<(typeof opts.reader)["read"]>>;
 
 			while (((next = await opts.reader.read()), !next.done)) {
-				if (next.value instanceof TsonStreamInterruptedError) {
+				const { value } = next;
+				if (value instanceof TsonStreamInterruptedError) {
 					throw TsonPromiseRejectionError.from(next);
 				}
 
-				switch (next.value[0]) {
+				switch (value[0]) {
 					case ITERATOR_DONE: {
 						opts.controller.close();
 						return;
@@ -41,11 +42,11 @@ export const tsonAsyncIterator: TsonAsyncType<
 
 					case ITERATOR_ERROR: {
 						opts.controller.close();
-						throw TsonPromiseRejectionError.from(next.value[1]);
+						throw TsonPromiseRejectionError.from(value[1]);
 					}
 
 					case ITERATOR_VALUE: {
-						yield next.value[1];
+						yield value[1];
 						break;
 					}
 				}

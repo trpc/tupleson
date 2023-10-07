@@ -27,21 +27,23 @@ export const tsonPromise: TsonAsyncType<MyPromise, SerializedPromiseValue> = {
 	deserialize: (opts) => {
 		const promise = new Promise((resolve, reject) => {
 			async function _handle() {
-				const value = await opts.reader.read();
+				const next = await opts.reader.read();
 				opts.controller.close();
 
-				if (value.done) {
+				if (next.done) {
 					throw new TsonPromiseRejectionError(
 						"Expected promise value, got done",
 					);
 				}
 
-				if (value.value instanceof TsonStreamInterruptedError) {
-					reject(TsonPromiseRejectionError.from(value.value));
+				const { value } = next;
+
+				if (value instanceof TsonStreamInterruptedError) {
+					reject(TsonPromiseRejectionError.from(value));
 					return;
 				}
 
-				const [status, result] = value.value;
+				const [status, result] = value;
 
 				status === PROMISE_RESOLVED
 					? resolve(result)
