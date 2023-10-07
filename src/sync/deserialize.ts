@@ -49,8 +49,6 @@ export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 }
 
 export function createTsonParser(opts: TsonOptions): TsonParseFn {
-	const deserializer = createTsonDeserialize(opts);
-
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
 	for (const handler of opts.types) {
