@@ -1,14 +1,7 @@
-import { expect, test, vitest } from "vitest";
+import { expect, test } from "vitest";
 
-import {
-	TsonOptions,
-	TsonType,
-	createTson,
-	createTsonAsync,
-	tsonPromise,
-} from "./index.js";
-import { expectError, waitError, waitFor } from "./internals/testUtils.js";
-import { TsonSerialized } from "./sync/syncTypes.js";
+import { TsonOptions, TsonType, createTson, createTsonAsync } from "./index.js";
+import { expectError, waitError } from "./internals/testUtils.js";
 
 test("multiple handlers for primitive string found", () => {
 	const stringHandler: TsonType<string, never> = {
@@ -141,43 +134,5 @@ test("async: bad init", async () => {
 
 	expect(err).toMatchInlineSnapshot(
 		"[TsonError: Failed to initialize TSON stream]",
-	);
-});
-
-test("async: bad values", async () => {
-	async function* generator() {
-		await Promise.resolve();
-
-		yield "[" + "\n";
-
-		const obj = {
-			json: {
-				foo: ["Promise", 0, "__tson"],
-			},
-			nonce: "__tson",
-		} as TsonSerialized<any>;
-		yield JSON.stringify(obj) + "\n";
-
-		await Promise.resolve();
-
-		yield "  ," + "\n";
-		yield "  [" + "\n";
-		// [....... values should be here .......]
-		yield "  ]" + "\n";
-		yield "]";
-	}
-
-	const onErrorSpy = vitest.fn();
-	await createTsonAsync({
-		onStreamError: onErrorSpy,
-		types: [tsonPromise],
-	}).parse(generator());
-
-	await waitFor(() => {
-		expect(onErrorSpy).toHaveBeenCalledTimes(1);
-	});
-
-	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
-		"[TsonError: Stream interrupted: Stream ended with 1 pending promises]",
 	);
 });

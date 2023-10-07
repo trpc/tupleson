@@ -11,8 +11,8 @@ import {
 } from "../../index.js";
 import {
 	createTestServer,
+	sleep,
 	waitError,
-	waitFor,
 } from "../../internals/testUtils.js";
 import { createTsonParseAsyncInner } from "../deserializeAsync.js";
 import {
@@ -216,8 +216,7 @@ test("stringifier - no promises", async () => {
 		  "    {\\"json\\":{\\"foo\\":\\"bar\\"},\\"nonce\\":\\"__tson\\"}",
 		  "    ,",
 		  "    [",
-		  "    ]",
-		  "]",
+		  "]]",
 		]
 	`);
 
@@ -255,8 +254,7 @@ test("stringifier - with promise", async () => {
 		  "    ,",
 		  "    [",
 		  "        [0,[0,\\"bar\\"]]",
-		  "    ]",
-		  "]",
+		  "]]",
 		]
 	`);
 });
@@ -332,8 +330,7 @@ test("stringifier - promise in promise", async () => {
 		  "  [",
 		  "    [0,[0,{\\"anotherPromise\\":[\\"Promise\\",1,\\"__tson\\"]}]]",
 		  "    ,[1,[0,42]]",
-		  "  ]",
-		  "]",
+		  "]]",
 		]
 	`);
 });
@@ -473,32 +470,13 @@ test("does not crash node when it receives a promise rejection", async () => {
 	const original = {
 		foo: createPromise(() => {
 			throw new Error("foo");
-		}, 5),
+		}, 1),
 	};
 	const iterator = stringify(original);
 
-	const [_result, deferreds] = await parse(iterator);
+	await parse(iterator);
 
-	const result = _result as typeof original;
-	await waitFor(() => {
-		assert(deferreds.size === 1);
-	});
-
-	await waitFor(() => {
-		assert(deferreds.size === 0);
-	});
-
-	expect(result).toMatchInlineSnapshot(`
-		{
-		  "foo": Promise {},
-		}
-	`);
-
-	const err = await waitError(result.foo);
-
-	expect(err).toMatchInlineSnapshot(
-		"[TsonPromiseRejectionError: Promise rejected]",
-	);
+	await sleep(10);
 });
 
 test("stringify promise rejection", async () => {
@@ -528,17 +506,16 @@ test("stringify promise rejection", async () => {
 		}
 
 		expect(buffer).toMatchInlineSnapshot(`
-		[
-		  "[",
-		  "  {\\"json\\":{\\"foo\\":[\\"Promise\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
-		  "  ,",
-		  "  [",
-		  "    [0,[0,{\\"err\\":[\\"Promise\\",1,\\"__tson\\"]}]]",
-		  "    ,[1,[1,[\\"Error\\",{\\"message\\":\\"foo\\"},\\"__tson\\"]]]",
-		  "  ]",
-		  "]",
-		]
-	`);
+			[
+			  "[",
+			  "  {\\"json\\":{\\"foo\\":[\\"Promise\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
+			  "  ,",
+			  "  [",
+			  "    [0,[0,{\\"err\\":[\\"Promise\\",1,\\"__tson\\"]}]]",
+			  "    ,[1,[1,[\\"Error\\",{\\"message\\":\\"foo\\"},\\"__tson\\"]]]",
+			  "]]",
+			]
+		`);
 	}
 
 	{

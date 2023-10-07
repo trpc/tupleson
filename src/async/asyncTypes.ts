@@ -1,7 +1,11 @@
 import { TsonError } from "../errors.js";
-import { TsonType } from "../sync/syncTypes.js";
-import { TsonBranded, TsonTypeTesterCustom } from "../sync/syncTypes.js";
-import { serialized } from "../sync/syncTypes.js";
+import {
+	TsonBranded,
+	TsonType,
+	TsonTypeTesterCustom,
+	serialized,
+} from "../sync/syncTypes.js";
+import { TsonStreamInterruptedError } from "./asyncErrors.js";
 
 export type TsonAsyncStringifierIterable<TValue> = AsyncIterable<string> & {
 	[serialized]: TValue;
@@ -33,7 +37,9 @@ export interface TsonTransformerSerializeDeserializeAsync<
 		/**
 		 * Reader for the ReadableStream of values
 		 */
-		reader: ReadableStreamDefaultReader<TSerializedValue>;
+		reader: ReadableStreamDefaultReader<
+			TSerializedValue | TsonStreamInterruptedError
+		>;
 	}) => TValue;
 
 	/**
