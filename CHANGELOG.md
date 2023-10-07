@@ -1,5 +1,12 @@
 
 
+## [0.16.5](https://github.com/KATT/tupleson/compare/0.16.4...0.16.5) (2023-10-07)
+
+
+### Bug Fixes
+
+* fix type of `ReadableStreamDefaultController` ([#48](https://github.com/KATT/tupleson/issues/48)) ([33d0adb](https://github.com/KATT/tupleson/commit/33d0adb14a327fde2ed921f99f2ef6e967841442))
+
 ## [0.16.4](https://github.com/KATT/tupleson/compare/0.16.3...0.16.4) (2023-10-07)
 
 
