@@ -5,9 +5,9 @@ test("without crypto", async () => {
 
 	global.crypto = undefined as any;
 
-	const { getNonce } = await import("./getNonce.js");
+	const { getNonceDefault } = await import("./getNonce.js");
 
-	expect(getNonce().length).toBeGreaterThan(20);
+	expect(getNonceDefault().length).toBeGreaterThan(20);
 
 	global.crypto = before;
 });
