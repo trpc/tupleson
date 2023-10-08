@@ -81,7 +81,7 @@ export function createDeferred<T>() {
 		resolve: PromiseResolve;
 	};
 	deferred.promise = new Promise<T>((resolve, reject) => {
-		deferred.resolve = resolve as PromiseResolve;
+		deferred.resolve = resolve;
 		deferred.reject = reject;
 	});
 	return deferred;
