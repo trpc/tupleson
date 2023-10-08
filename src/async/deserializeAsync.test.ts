@@ -645,3 +645,129 @@ test("e2e: simulated server crash", async () => {
 
 	expect(streamError.cause).toMatchInlineSnapshot("[TypeError: terminated]");
 });
+
+test("e2e: aborted request", async () => {
+	// ------------- server -------------------
+	const serverSentChunks: string[] = [];
+	const iteratorChunks: number[] = [];
+	function createMockObj() {
+		async function* generator() {
+			for (let i = 0; i < 10; i++) {
+				yield i;
+				iteratorChunks.push(i);
+				await sleep(1);
+			}
+		}
+
+		return {
+			iterable: generator(),
+		};
+	}
+
+	type MockObj = ReturnType<typeof createMockObj>;
+	const opts = {
+		nonce: () => "__tson",
+		types: [tsonPromise, tsonAsyncIterator],
+	} satisfies TsonAsyncOptions;
+
+	const parseOptions = {
+		onStreamError: vitest.fn(),
+	} satisfies TsonParseAsyncOptions;
+
+	const server = await createTestServer({
+		handleRequest: async (_req, res) => {
+			const tson = createTsonAsync(opts);
+
+			const obj = createMockObj();
+			const strIterarable = tson.stringify(obj, 4);
+
+			for await (const value of strIterarable) {
+				serverSentChunks.push(value.trimEnd());
+				res.write(value);
+			}
+
+			res.end();
+		},
+	});
+
+	// ------------- client -------------------
+	const abortController = new AbortController();
+
+	const tson = createTsonAsync(opts);
+
+	// do a streamed fetch request
+	const response = await fetch(server.url, {
+		signal: abortController.signal,
+	});
+
+	assert(response.body);
+
+	const textDecoder = new TextDecoder();
+	const stringIterator = mapIterable(
+		readableStreamToAsyncIterable(response.body),
+		(v) => textDecoder.decode(v),
+	);
+
+	const parsed = await tson.parse<MockObj>(stringIterator, parseOptions);
+	{
+		// check the iterator
+		const results = [];
+		let iteratorError: Error | null = null;
+		try {
+			for await (const value of parsed.iterable) {
+				results.push(value);
+
+				if (value === 5) {
+					// abort the request after when receiving 5
+					abortController.abort();
+				}
+			}
+		} catch (err) {
+			iteratorError = err as Error;
+		} finally {
+			server.close();
+		}
+
+		expect(results).toEqual([0, 1, 2, 3, 4, 5]);
+		expect(iteratorError).toMatchInlineSnapshot(
+			"[TsonStreamInterruptedError: Stream interrupted: The operation was aborted.]",
+		);
+	}
+
+	expect(parseOptions.onStreamError).toHaveBeenCalledTimes(1);
+
+	const streamError = parseOptions.onStreamError.mock.calls[0]![0]!;
+	expect(streamError).toMatchInlineSnapshot(
+		"[TsonStreamInterruptedError: Stream interrupted: The operation was aborted.]",
+	);
+
+	expect(streamError.cause).toMatchInlineSnapshot(
+		"[AbortError: The operation was aborted.]",
+	);
+
+	expect(serverSentChunks).toMatchInlineSnapshot(`
+		[
+		  "[",
+		  "    {\\"json\\":{\\"iterable\\":[\\"AsyncIterable\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
+		  "    ,",
+		  "    [",
+		  "        [0,[0,0]]",
+		  "        ,[0,[0,1]]",
+		  "        ,[0,[0,2]]",
+		  "        ,[0,[0,3]]",
+		  "        ,[0,[0,4]]",
+		  "        ,[0,[0,5]]",
+		]
+	`);
+	expect(iteratorChunks.length).toBeLessThan(10);
+	expect(iteratorChunks).toMatchInlineSnapshot(`
+		[
+		  0,
+		  1,
+		  2,
+		  3,
+		  4,
+		  5,
+		]
+	`);
+});
