@@ -1,5 +1,12 @@
 
 
+## [0.16.8](https://github.com/KATT/tupleson/compare/0.16.7...0.16.8) (2023-10-08)
+
+
+### Bug Fixes
+
+* make `onStreamError` always be of type `TsonStreamInterruptedError` ([#41](https://github.com/KATT/tupleson/issues/41)) ([2614a46](https://github.com/KATT/tupleson/commit/2614a4626a6968439dbf67569d4ffac2dcd8cfdf))
+
 ## [0.16.7](https://github.com/KATT/tupleson/compare/0.16.6...0.16.7) (2023-10-07)
 
 
