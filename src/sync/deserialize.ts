@@ -39,7 +39,7 @@ export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 				const [type, serializedValue] = value;
 				if (type === "CIRCULAR") {
 					references.push([key, serializedValue as string]);
-					return;
+					return nonce;
 				}
 
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -75,15 +75,52 @@ export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 				let insertAt = res;
 				try {
 					while (path.length > 1) {
-						//@ts-expect-error -- insertAt is unknown and not checked, but if it passed serialization, it should be an object
-						insertAt = insertAt[path.shift()];
+						if (insertAt instanceof Map) {
+							if (path.length <= 2) {
+								break;
+							}
+
+							// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-non-null-assertion -- if it passed serialization, path will have an index at this point
+							const key = Array.from(insertAt.keys())[Number(path.shift()!)];
+							insertAt = insertAt.get(key);
+							path.shift();
+						} else if (insertAt instanceof Set) {
+							//@ts-expect-error -- if it passed serialization, path will have an index at this point
+							insertAt = Array.from(insertAt)[path.shift()];
+						} else {
+							//@ts-expect-error -- insertAt is unknown and not checked, but if it passed serialization, it should be an object
+							insertAt = insertAt[path.shift()];
+						}
 					}
 
-					//@ts-expect-error -- see above, + if it passed serialization, path should be length 1 at this point
-					insertAt[path[0]] = prev;
+					if (insertAt instanceof Map) {
+						if (path.length !== 2) {
+							throw new Error(
+								`Invalid path to Map insertion ${copyKey
+									.split(nonce)
+									.join(".")}`,
+							);
+						}
+
+						const mapKeys = Array.from(insertAt.keys());
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-non-null-assertion -- if it passed serialization, path will have an index at this point
+						const key = mapKeys[Number(path[0]!)];
+						insertAt.set(key, prev);
+					} else if (insertAt instanceof Set) {
+						/**
+						 * WARNING: this doesn't preserve order in the Set
+						 */
+						insertAt.delete(nonce);
+						insertAt.add(prev);
+					} else {
+						//@ts-expect-error -- see above, + if it passed serialization, path should be length 1 at this point
+						insertAt[path[0]] = prev;
+					}
 				} catch (cause) {
 					throw new Error(
-						`Invalid path to reference insertion ${copyKey.split(nonce).join(".")}`,
+						`Invalid path to reference insertion ${copyKey
+							.split(nonce)
+							.join(".")}`,
 						{ cause },
 					);
 				}

@@ -7,6 +7,7 @@ import {
 	createTsonAsync,
 	tsonDate,
 	tsonMap,
+	tsonSet,
 } from "./index.js";
 import { waitError } from "./internals/testUtils.js";
 
@@ -234,6 +235,115 @@ test("back-reference: self-referencing Map", () => {
 	const res = t.parse(str);
 
 	expect(res).toEqual(expected);
+	expect(res.get("a")).toBe(res);
+});
+
+test("back-reference: self-referencing Map deep", () => {
+	const t = createTson({
+		nonce: () => "__tson__",
+		types: [tsonMap],
+	});
+
+	const expected = new Map();
+	expected.set("a", {
+		foo: expected,
+	});
+
+	const str = t.stringify(expected, 2);
+
+	expect(str).toMatchInlineSnapshot(`
+		"{
+		  \\"json\\": [
+		    \\"Map\\",
+		    [
+		      [
+		        \\"a\\",
+		        {
+		          \\"foo\\": [
+		            \\"CIRCULAR\\",
+		            \\"\\",
+		            \\"__tson__\\"
+		          ]
+		        }
+		      ]
+		    ],
+		    \\"__tson__\\"
+		  ],
+		  \\"nonce\\": \\"__tson__\\"
+		}"
+	`);
+	const res = t.parse(str);
+
+	expect(res).toEqual(expected);
+	expect(res.get("a").foo).toBe(res);
+});
+
+test("back-reference: self-referencing Set", () => {
+	const t = createTson({
+		nonce: () => "__tson__",
+		types: [tsonSet],
+	});
+
+	const expected = new Set();
+	expected.add(expected);
+
+	const str = t.stringify(expected, 2);
+
+	expect(str).toMatchInlineSnapshot(`
+		"{
+		  \\"json\\": [
+		    \\"Set\\",
+		    [
+		      [
+		        \\"CIRCULAR\\",
+		        \\"\\",
+		        \\"__tson__\\"
+		      ]
+		    ],
+		    \\"__tson__\\"
+		  ],
+		  \\"nonce\\": \\"__tson__\\"
+		}"
+	`);
+	const res = t.parse(str);
+
+	expect(res).toEqual(expected);
+	expect(res.has(res)).toBe(true);
+});
+
+test("back-reference: self-referencing Set deep", () => {
+	const t = createTson({
+		nonce: () => "__tson__",
+		types: [tsonSet],
+	});
+
+	const expected = new Set();
+	expected.add({ foo: expected });
+
+	const str = t.stringify(expected, 2);
+
+	expect(str).toMatchInlineSnapshot(`
+		"{
+		  \\"json\\": [
+		    \\"Set\\",
+		    [
+		      {
+		        \\"foo\\": [
+		          \\"CIRCULAR\\",
+		          \\"\\",
+		          \\"__tson__\\"
+		        ]
+		      }
+		    ],
+		    \\"__tson__\\"
+		  ],
+		  \\"nonce\\": \\"__tson__\\"
+		}"
+	`);
+	const res = t.parse(str);
+
+	expect(res).toEqual(expected);
+	expect(res.values().next().value.foo).toBe(res);
 });
 /**
  * WILL NOT WORK: the async serialize/deserialize functions haven't
