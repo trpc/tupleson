@@ -6,6 +6,7 @@ import {
 	createTson,
 	createTsonAsync,
 	tsonDate,
+	tsonMap,
 } from "./index.js";
 import { waitError } from "./internals/testUtils.js";
 
@@ -200,6 +201,40 @@ test("back-reference: grandparent reference", () => {
 	expect(res).toEqual(expected);
 });
 
+test("back-reference: self-referencing Map", () => {
+	const t = createTson({
+		nonce: () => "__tson__",
+		types: [tsonMap],
+	});
+
+	const expected = new Map();
+	expected.set("a", expected);
+
+	const str = t.stringify(expected, 2);
+
+	expect(str).toMatchInlineSnapshot(`
+		"{
+		  \\"json\\": [
+		    \\"Map\\",
+		    [
+		      [
+		        \\"a\\",
+		        [
+		          \\"CIRCULAR\\",
+		          \\"\\",
+		          \\"__tson__\\"
+		        ]
+		      ]
+		    ],
+		    \\"__tson__\\"
+		  ],
+		  \\"nonce\\": \\"__tson__\\"
+		}"
+	`);
+	const res = t.parse(str);
+
+	expect(res).toEqual(expected);
+});
 /**
  * WILL NOT WORK: the async serialize/deserialize functions haven't
  * been adapted to handle back-references yet
