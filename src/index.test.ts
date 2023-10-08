@@ -115,7 +115,7 @@ test("back-reference: circular array reference", () => {
 	`);
 });
 
-test("back-reference: non-circular complex reference", () => {
+test("back-reference: referential equality", () => {
 	const t = createTson({
 		nonce: () => "__tson",
 		types: [tsonDate],
