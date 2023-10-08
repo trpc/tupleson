@@ -41,6 +41,7 @@ test("duplicate keys", () => {
 
 test("back-reference: circular object reference", () => {
 	const t = createTson({
+		nonce: () => "__tson",
 		types: [],
 	});
 
@@ -48,16 +49,37 @@ test("back-reference: circular object reference", () => {
 	expected["a"] = expected;
 	expected["b"] = expected;
 
-	const str = t.stringify(expected);
+	const str = t.stringify(expected, 2);
 	const res = t.parse(str);
 
 	expect(res).toEqual(expected);
 	expect(res).toBe(res["a"]);
 	expect(res["b"]).toBe(res["a"]);
+
+	expect(str).toMatchInlineSnapshot(
+		`
+		"{
+		  \\"json\\": {
+		    \\"a\\": [
+		      \\"CIRCULAR\\",
+		      \\"\\",
+		      \\"__tson\\"
+		    ],
+		    \\"b\\": [
+		      \\"CIRCULAR\\",
+		      \\"\\",
+		      \\"__tson\\"
+		    ]
+		  },
+		  \\"nonce\\": \\"__tson\\"
+		}"
+	`,
+	);
 });
 
 test("back-reference: circular array reference", () => {
 	const t = createTson({
+		nonce: () => "__tson",
 		types: [],
 	});
 
@@ -65,31 +87,117 @@ test("back-reference: circular array reference", () => {
 	expected[0] = expected;
 	expected[1] = expected;
 
-	const str = t.stringify(expected);
+	const str = t.stringify(expected, 2);
 	const res = t.parse(str);
 
 	expect(res).toEqual(expected);
 	expect(res).toBe(res[0]);
 	expect(res[1]).toBe(res[0]);
+
+	expect(str).toMatchInlineSnapshot(`
+		"{
+		  \\"json\\": [
+		    [
+		      \\"CIRCULAR\\",
+		      \\"\\",
+		      \\"__tson\\"
+		    ],
+		    [
+		      \\"CIRCULAR\\",
+		      \\"\\",
+		      \\"__tson\\"
+		    ]
+		  ],
+		  \\"nonce\\": \\"__tson\\"
+		}"
+	`);
 });
 
 test("back-reference: non-circular complex reference", () => {
 	const t = createTson({
+		nonce: () => "__tson",
 		types: [tsonDate],
 	});
 
 	const expected: Record<string, unknown> = {};
 	expected["a"] = {};
 	expected["b"] = expected["a"];
-	expected["c"] = new Date();
+	expected["c"] = new Date(0);
 	expected["d"] = expected["c"];
 
-	const str = t.stringify(expected);
+	const str = t.stringify(expected, 2);
 	const res = t.parse(str);
 
 	expect(res).toEqual(expected);
 	expect(res["b"]).toBe(res["a"]);
 	expect(res["d"]).toBe(res["c"]);
+
+	expect(str).toMatchInlineSnapshot(
+		`
+		"{
+		  \\"json\\": {
+		    \\"a\\": {},
+		    \\"b\\": [
+		      \\"CIRCULAR\\",
+		      \\"a\\",
+		      \\"__tson\\"
+		    ],
+		    \\"c\\": [
+		      \\"Date\\",
+		      \\"1970-01-01T00:00:00.000Z\\",
+		      \\"__tson\\"
+		    ],
+		    \\"d\\": [
+		      \\"CIRCULAR\\",
+		      \\"c\\",
+		      \\"__tson\\"
+		    ]
+		  },
+		  \\"nonce\\": \\"__tson\\"
+		}"
+	`,
+	);
+});
+
+test("back-reference: grandparent reference", () => {
+	const t = createTson({
+		nonce: () => "__tson",
+		types: [tsonDate],
+	});
+
+	const expected: Record<string, any> = {
+		a: {
+			a: {
+				b: {
+					a: null,
+				},
+			},
+		},
+	};
+	expected["a"].a.b.a = expected["a"].a;
+
+	const str = t.stringify(expected, 2);
+	const res = t.parse(str);
+
+	expect(str).toMatchInlineSnapshot(`
+		"{
+		  \\"json\\": {
+		    \\"a\\": {
+		      \\"a\\": {
+		        \\"b\\": {
+		          \\"a\\": [
+		            \\"CIRCULAR\\",
+		            \\"a__tsona\\",
+		            \\"__tson\\"
+		          ]
+		        }
+		      }
+		    }
+		  },
+		  \\"nonce\\": \\"__tson\\"
+		}"
+	`);
+	expect(res).toEqual(expected);
 });
 
 /**
