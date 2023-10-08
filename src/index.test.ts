@@ -200,6 +200,7 @@ test("back-reference: grandparent reference", () => {
 		}"
 	`);
 	expect(res).toEqual(expected);
+	expect(res["a"].a).toBe(res["a"].a.b.a);
 });
 
 test("back-reference: self-referencing Map", () => {
