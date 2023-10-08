@@ -83,6 +83,7 @@ module.exports = {
 			files: "**/*.test.ts",
 			rules: {
 				// These on-by-default rules aren't useful in test files.
+				"@typescript-eslint/no-non-null-assertion": "off",
 				"@typescript-eslint/no-unsafe-assignment": "off",
 				"@typescript-eslint/no-unsafe-call": "off",
 			},
