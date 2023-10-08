@@ -2,6 +2,8 @@
 import { expect, test, vitest } from "vitest";
 
 import {
+	TsonAsyncOptions,
+	TsonParseAsyncOptions,
 	TsonType,
 	createTsonAsync,
 	createTsonParseAsync,
@@ -18,8 +20,6 @@ import {
 	waitFor,
 } from "../internals/testUtils.js";
 import { TsonSerialized } from "../sync/syncTypes.js";
-import { TsonAsyncOptions } from "./asyncTypes.js";
-import { TsonParseAsyncOptions } from "./deserializeAsync.js";
 import { mapIterable, readableStreamToAsyncIterable } from "./iterableUtils.js";
 
 test("deserialize variable chunk length", async () => {

@@ -20,7 +20,10 @@ export * from "./sync/handlers/tsonSymbol.js";
 // --- async --
 export type { TsonAsyncOptions } from "./async/asyncTypes.js";
 export { createTsonAsync } from "./async/createTsonAsync.js";
-export { createTsonParseAsync } from "./async/deserializeAsync.js";
+export {
+	TsonParseAsyncOptions,
+	createTsonParseAsync,
+} from "./async/deserializeAsync.js";
 export {
 	createAsyncTsonSerialize,
 	createTsonStringifyAsync,
