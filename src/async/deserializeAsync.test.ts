@@ -528,14 +528,19 @@ test("1 iterator completed but another never finishes", async () => {
 	`);
 });
 
-
 test("e2e: server crash", async () => {
+	const crashedDeferred = createDeferred<null>();
 	function createMockObj() {
 		async function* generator() {
-			const values = [1n, 2n, 3n, 4n, 5n];
-			for (let i = 0; i < values.length; i++) {
-				await new Promise((resolve) => setTimeout(resolve, i === 2 ? 200 : 0));
-				yield values[i];
+			for (let i = 0; i < 10; i++) {
+				yield i;
+				await sleep(1);
+				if (i === 5) {
+					// crash the server after 5 iterations
+					crashedDeferred.resolve(null);
+				}
+
+				await sleep(1);
 			}
 		}
 
@@ -550,9 +555,10 @@ test("e2e: server crash", async () => {
 	type MockObj = ReturnType<typeof createMockObj>;
 
 	// ------------- server -------------------
-	const opts: TsonAsyncOptions = {
-		types: [tsonPromise, tsonAsyncIterator, tsonBigint],
-	};
+	const opts = {
+		onStreamError: vi.fn(),
+		types: [tsonPromise, tsonAsyncIterator],
+	} satisfies TsonAsyncOptions;
 
 	const server = await createTestServer({
 		handleRequest: async (_req, res) => {
@@ -561,17 +567,11 @@ test("e2e: server crash", async () => {
 			const obj = createMockObj();
 			const strIterarable = tson.stringify(obj, 4);
 
-			let closed = false;
-			setTimeout(() => {
-				closed = true;
-				server.close();
-			}, 50);
+			void crashedDeferred.promise.then(() => {
+				res.destroy();
+			});
 
 			for await (const value of strIterarable) {
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- what are you on about?
-				if (closed) {
-					continue;
-				}
 				res.write(value);
 			}
 
@@ -607,12 +607,9 @@ test("e2e: server crash", async () => {
 		server.close();
 	}
 
-	// 🔺🔺🔺🔺
-	// WARNING: this probably shouldn't be "3 pending promises" if things are done correctly, because by the time is crashes, everything but the iterator is resolved
-	// 🔺🔺🔺🔺
 	assert(error);
 	expect(error.message).toMatchInlineSnapshot(
-		`"Stream interrupted: Stream ended with 3 pending promises"`,
+		'"Stream interrupted: terminated"',
 	);
 
 	assert(parsed);
@@ -621,5 +618,14 @@ test("e2e: server crash", async () => {
 	await expect(
 		parsed.rejectedPromise,
 	).rejects.toThrowErrorMatchingInlineSnapshot('"Promise rejected"');
-	expect(results).toEqual([1n, 2n]);
+	expect(results).toEqual([0, 1, 2, 3, 4, 5]);
+
+	expect(opts.onStreamError).toHaveBeenCalledTimes(1);
+	expect(opts.onStreamError.mock.calls).toMatchInlineSnapshot(`
+		[
+		  [
+		    [TsonStreamInterruptedError: Stream interrupted: terminated],
+		  ],
+		]
+	`);
 });
