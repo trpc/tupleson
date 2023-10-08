@@ -52,6 +52,8 @@ test("back-reference: circular object reference", () => {
 	const res = t.parse(str);
 
 	expect(res).toEqual(expected);
+	expect(res).toBe(res["a"]);
+	expect(res["b"]).toBe(res["a"]);
 });
 
 test("back-reference: circular array reference", () => {
@@ -67,6 +69,8 @@ test("back-reference: circular array reference", () => {
 	const res = t.parse(str);
 
 	expect(res).toEqual(expected);
+	expect(res).toBe(res[0]);
+	expect(res[1]).toBe(res[0]);
 });
 
 test("back-reference: non-circular complex reference", () => {
@@ -83,6 +87,7 @@ test("back-reference: non-circular complex reference", () => {
 	const str = t.stringify(expected);
 	const res = t.parse(str);
 
+	expect(res).toEqual(expected);
 	expect(res["b"]).toBe(res["a"]);
 	expect(res["d"]).toBe(res["c"]);
 });

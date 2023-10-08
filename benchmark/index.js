@@ -24,8 +24,6 @@ const obj = {
 	set: new Set([1, 2, 3]),
 	xss: '</script><script>alert("XSS")</script>',
 };
-
-// circular references are not supported by tupleson
 obj.self = obj;
 
 const tson = createTson({
