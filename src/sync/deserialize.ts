@@ -31,14 +31,14 @@ export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 
 	const walker: WalkerFactory = (nonce) => {
 		const seen = new Map<string, unknown>();
-		const backrefs: [circular_key: string, origin_key: string][] = [];
+		const references: [copyKey: string, originKey: string][] = [];
 
 		const coreWalk: WalkFn = (value, path = []) => {
 			const key = path.join(nonce);
 			if (isTsonTuple(value, nonce)) {
 				const [type, serializedValue] = value;
 				if (type === "CIRCULAR") {
-					backrefs.push([key, serializedValue as string]);
+					references.push([key, serializedValue as string]);
 					return;
 				}
 
@@ -63,15 +63,15 @@ export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 
 		const walk: WalkFn = (value) => {
 			const res = coreWalk(value);
-			for (const [key, ref] of backrefs) {
-				const prev = seen.get(ref);
+			for (const [copyKey, originKey] of references) {
+				const prev = seen.get(originKey);
 				if (!prev) {
 					throw new Error(
-						`Back-reference ${ref.split(nonce).join(".")} not found`,
+						`Back-reference ${originKey.split(nonce).join(".")} not found`,
 					);
 				}
 
-				const path = key.split(nonce);
+				const path = copyKey.split(nonce);
 				let insertAt = res;
 				try {
 					while (path.length > 1) {
@@ -83,7 +83,7 @@ export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 					insertAt[path[0]] = prev;
 				} catch (cause) {
 					throw new Error(
-						`Invalid path to back-reference ${ref.split(nonce).join(".")}`,
+						`Invalid path to reference insertion ${copyKey.split(nonce).join(".")}`,
 						{ cause },
 					);
 				}
