@@ -179,7 +179,6 @@ test("stringify async iterable + promise", async () => {
 		buffer.push(value.trimEnd());
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const head: any = JSON.parse(buffer[1]!);
 
 	expect(buffer).toMatchInlineSnapshot(`
