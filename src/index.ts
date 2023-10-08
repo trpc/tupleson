@@ -1,3 +1,5 @@
+export * from "./errors.js";
+
 // --- sync --
 export { createTson } from "./sync/createTson.js";
 export { createTsonDeserialize, createTsonParser } from "./sync/deserialize.js";
@@ -20,11 +22,15 @@ export * from "./sync/handlers/tsonSymbol.js";
 // --- async --
 export type { TsonAsyncOptions } from "./async/asyncTypes.js";
 export { createTsonAsync } from "./async/createTsonAsync.js";
-export { createTsonParseAsync } from "./async/deserializeAsync.js";
+export {
+	type TsonParseAsyncOptions,
+	createTsonParseAsync,
+} from "./async/deserializeAsync.js";
 export {
 	createAsyncTsonSerialize,
 	createTsonStringifyAsync,
 } from "./async/serializeAsync.js";
+export * from "./async/asyncErrors.js";
 
 // type handlers
 export * from "./async/handlers/tsonPromise.js";

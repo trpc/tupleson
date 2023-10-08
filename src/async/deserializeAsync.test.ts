@@ -1,6 +1,9 @@
-import { expect, test, vi, vitest } from "vitest";
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { expect, test, vitest } from "vitest";
 
 import {
+	TsonAsyncOptions,
+	TsonParseAsyncOptions,
 	TsonType,
 	createTsonAsync,
 	createTsonParseAsync,
@@ -17,7 +20,6 @@ import {
 	waitFor,
 } from "../internals/testUtils.js";
 import { TsonSerialized } from "../sync/syncTypes.js";
-import { TsonAsyncOptions } from "./asyncTypes.js";
 import { mapIterable, readableStreamToAsyncIterable } from "./iterableUtils.js";
 
 test("deserialize variable chunk length", async () => {
@@ -92,12 +94,14 @@ test("deserialize async iterable", async () => {
 });
 
 test("stringify async iterable + promise", async () => {
-	const onErr = vi.fn();
 	const tson = createTsonAsync({
 		nonce: () => "__tson",
-		onStreamError: onErr,
 		types: [tsonAsyncIterator, tsonPromise, tsonBigint],
 	});
+
+	const parseOptions = {
+		onStreamError: vitest.fn(),
+	} satisfies TsonParseAsyncOptions;
 
 	async function* iterable() {
 		await sleep(1);
@@ -119,7 +123,7 @@ test("stringify async iterable + promise", async () => {
 
 	const strIterable = tson.stringify(input);
 
-	const output = await tson.parse(strIterable);
+	const output = await tson.parse(strIterable, parseOptions);
 
 	expect(output.foo).toEqual("bar");
 
@@ -348,16 +352,19 @@ test("values missing when stream ends", async () => {
 	}
 
 	const opts = {
-		onStreamError: vitest.fn(),
 		types: [tsonPromise, tsonAsyncIterator],
 	} satisfies TsonAsyncOptions;
+
+	const parseOptions = {
+		onStreamError: vitest.fn(),
+	} satisfies TsonParseAsyncOptions;
 
 	const parse = createTsonParseAsync(opts);
 
 	const result = await parse<{
 		iterable: AsyncIterable<string>;
 		promise: Promise<unknown>;
-	}>(generator());
+	}>(generator(), parseOptions);
 
 	{
 		// iterator should error
@@ -388,8 +395,8 @@ test("values missing when stream ends", async () => {
 		);
 	}
 
-	expect(opts.onStreamError).toHaveBeenCalledTimes(1);
-	expect(opts.onStreamError.mock.calls).toMatchInlineSnapshot(`
+	expect(parseOptions.onStreamError).toHaveBeenCalledTimes(1);
+	expect(parseOptions.onStreamError.mock.calls).toMatchInlineSnapshot(`
 		[
 		  [
 		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly],
@@ -420,17 +427,19 @@ test("async: missing values of promise", async () => {
 		// yield "]]\n"; // <-- stream and values ended symbol
 	}
 
-	const onErrorSpy = vitest.fn();
+	const parseOptions = {
+		onStreamError: vitest.fn(),
+	} satisfies TsonParseAsyncOptions;
+
 	await createTsonAsync({
-		onStreamError: onErrorSpy,
 		types: [tsonPromise],
-	}).parse(generator());
+	}).parse(generator(), parseOptions);
 
 	await waitFor(() => {
-		expect(onErrorSpy).toHaveBeenCalledTimes(1);
+		expect(parseOptions.onStreamError).toHaveBeenCalledTimes(1);
 	});
 
-	expect(onErrorSpy.mock.calls[0][0]).toMatchInlineSnapshot(
+	expect(parseOptions.onStreamError.mock.calls[0]![0]!).toMatchInlineSnapshot(
 		"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly]",
 	);
 });
@@ -469,16 +478,18 @@ test("1 iterator completed but another never finishes", async () => {
 	}
 
 	const opts = {
-		onStreamError: vitest.fn(),
 		types: [tsonPromise, tsonAsyncIterator],
 	} satisfies TsonAsyncOptions;
 
+	const parseOptions = {
+		onStreamError: vitest.fn(),
+	} satisfies TsonParseAsyncOptions;
 	const parse = createTsonParseAsync(opts);
 
 	const result = await parse<{
 		iterable1: AsyncIterable<string>;
 		iterable2: AsyncIterable<string>;
-	}>(generator());
+	}>(generator(), parseOptions);
 
 	{
 		// iterator 1 should complete
@@ -517,9 +528,9 @@ test("1 iterator completed but another never finishes", async () => {
 		);
 	}
 
-	expect(opts.onStreamError).toHaveBeenCalledTimes(1);
+	expect(parseOptions.onStreamError).toHaveBeenCalledTimes(1);
 
-	expect(opts.onStreamError.mock.calls).toMatchInlineSnapshot(`
+	expect(parseOptions.onStreamError.mock.calls).toMatchInlineSnapshot(`
 		[
 		  [
 		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly],
@@ -556,9 +567,12 @@ test("e2e: simulated server crash", async () => {
 
 	// ------------- server -------------------
 	const opts = {
-		onStreamError: vi.fn(),
 		types: [tsonPromise, tsonAsyncIterator],
 	} satisfies TsonAsyncOptions;
+
+	const parseOptions = {
+		onStreamError: vitest.fn(),
+	} satisfies TsonParseAsyncOptions;
 
 	const server = await createTestServer({
 		handleRequest: async (_req, res) => {
@@ -594,7 +608,7 @@ test("e2e: simulated server crash", async () => {
 		(v) => textDecoder.decode(v),
 	);
 
-	const parsed = await tson.parse<MockObj>(stringIterator);
+	const parsed = await tson.parse<MockObj>(stringIterator, parseOptions);
 	{
 		// check the iterator
 		const results = [];
@@ -622,13 +636,138 @@ test("e2e: simulated server crash", async () => {
 		parsed.rejectedPromise,
 	).rejects.toThrowErrorMatchingInlineSnapshot('"Promise rejected"');
 
-	expect(opts.onStreamError).toHaveBeenCalledTimes(1);
+	expect(parseOptions.onStreamError).toHaveBeenCalledTimes(1);
 
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	const streamError = opts.onStreamError.mock.calls[0]![0]!;
+	const streamError = parseOptions.onStreamError.mock.calls[0]![0]!;
 	expect(streamError).toMatchInlineSnapshot(
 		"[TsonStreamInterruptedError: Stream interrupted: terminated]",
 	);
 
 	expect(streamError.cause).toMatchInlineSnapshot("[TypeError: terminated]");
+});
+
+test("e2e: client aborted request", async () => {
+	// ------------- server -------------------
+	const serverSentChunks: string[] = [];
+	const iteratorChunks: number[] = [];
+	function createMockObj() {
+		async function* generator() {
+			for (let i = 0; i < 10; i++) {
+				yield i;
+				iteratorChunks.push(i);
+				await sleep(5);
+			}
+		}
+
+		return {
+			iterable: generator(),
+		};
+	}
+
+	type MockObj = ReturnType<typeof createMockObj>;
+	const opts = {
+		nonce: () => "__tson",
+		types: [tsonPromise, tsonAsyncIterator],
+	} satisfies TsonAsyncOptions;
+
+	const parseOptions = {
+		onStreamError: vitest.fn(),
+	} satisfies TsonParseAsyncOptions;
+
+	const server = await createTestServer({
+		handleRequest: async (_req, res) => {
+			const tson = createTsonAsync(opts);
+
+			const obj = createMockObj();
+			const strIterarable = tson.stringify(obj, 4);
+
+			for await (const value of strIterarable) {
+				serverSentChunks.push(value.trimEnd());
+				res.write(value);
+			}
+
+			res.end();
+		},
+	});
+
+	// ------------- client -------------------
+	const abortController = new AbortController();
+
+	const tson = createTsonAsync(opts);
+
+	// do a streamed fetch request
+	const response = await fetch(server.url, {
+		signal: abortController.signal,
+	});
+
+	assert(response.body);
+
+	const textDecoder = new TextDecoder();
+	const stringIterator = mapIterable(
+		readableStreamToAsyncIterable(response.body),
+		(v) => textDecoder.decode(v),
+	);
+
+	const parsed = await tson.parse<MockObj>(stringIterator, parseOptions);
+	{
+		// check the iterator
+		const results = [];
+		let iteratorError: Error | null = null;
+		try {
+			for await (const value of parsed.iterable) {
+				results.push(value);
+
+				if (value === 5) {
+					// abort the request after when receiving 5
+					abortController.abort();
+				}
+			}
+		} catch (err) {
+			iteratorError = err as Error;
+		} finally {
+			server.close();
+		}
+
+		expect(results).toEqual([0, 1, 2, 3, 4, 5]);
+		expect(iteratorError).toMatchInlineSnapshot(
+			"[TsonStreamInterruptedError: Stream interrupted: The operation was aborted.]",
+		);
+	}
+
+	expect(parseOptions.onStreamError).toHaveBeenCalledTimes(1);
+
+	const streamError = parseOptions.onStreamError.mock.calls[0]![0]!;
+	expect(streamError).toMatchInlineSnapshot(
+		"[TsonStreamInterruptedError: Stream interrupted: The operation was aborted.]",
+	);
+
+	expect(streamError.cause).toMatchInlineSnapshot(
+		"[AbortError: The operation was aborted.]",
+	);
+
+	expect(iteratorChunks.length).toBeLessThan(10);
+	expect(iteratorChunks).toMatchInlineSnapshot(`
+		[
+		  0,
+		  1,
+		  2,
+		  3,
+		  4,
+		  5,
+		]
+	`);
+	expect(serverSentChunks).toMatchInlineSnapshot(`
+		[
+		  "[",
+		  "    {\\"json\\":{\\"iterable\\":[\\"AsyncIterable\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
+		  "    ,",
+		  "    [",
+		  "        [0,[0,0]]",
+		  "        ,[0,[0,1]]",
+		  "        ,[0,[0,2]]",
+		  "        ,[0,[0,3]]",
+		  "        ,[0,[0,4]]",
+		  "        ,[0,[0,5]]",
+		]
+	`);
 });

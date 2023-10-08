@@ -462,7 +462,7 @@ test("does not crash node when it receives a promise rejection", async () => {
 	};
 	const iterator = stringify(original);
 
-	await parse(iterator);
+	await parse(iterator, {});
 
 	await sleep(10);
 });

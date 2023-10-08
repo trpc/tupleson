@@ -25,8 +25,16 @@ type AnyTsonTransformerSerializeDeserialize =
 	| TsonAsyncType<any, any>
 	| TsonTransformerSerializeDeserialize<any, any>;
 
+export interface TsonParseAsyncOptions {
+	/**
+	 * On stream error
+	 */
+	onStreamError?: (err: TsonStreamInterruptedError) => void;
+}
+
 type TsonParseAsync = <TValue>(
 	string: AsyncIterable<string> | TsonAsyncStringifierIterable<TValue>,
+	opts?: TsonParseAsyncOptions,
 ) => Promise<TValue>;
 
 export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
@@ -43,7 +51,10 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 		}
 	}
 
-	return async (iterable: AsyncIterable<string>) => {
+	return async (
+		iterable: AsyncIterable<string>,
+		parseOptions: TsonParseAsyncOptions,
+	) => {
 		// this is an awful hack to get around making a some sort of pipeline
 		const cache = new Map<
 			TsonAsyncIndex,
@@ -139,6 +150,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			do {
 				lines.forEach(readLine);
 				lines.length = 0;
+
 				const nextValue = await iterator.next();
 				if (!nextValue.done) {
 					accumulator += nextValue.value;
@@ -205,7 +217,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 						controller.enqueue(err);
 					}
 
-					opts.onStreamError?.(err);
+					parseOptions.onStreamError?.(err);
 				});
 			}
 		}
@@ -220,8 +232,8 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 	const instance = createTsonParseAsyncInner(opts);
 
-	return (async (iterable) => {
-		const [result] = await instance(iterable);
+	return (async (iterable, opts) => {
+		const [result] = await instance(iterable, opts ?? {});
 
 		return result;
 	}) as TsonParseAsync;
