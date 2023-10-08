@@ -6,9 +6,15 @@ import c from "kleur";
 import * as superjson from "superjson";
 import { createTson, tsonDate, tsonRegExp, tsonSet } from "tupleson";
 
-const time_formatter = new Intl.NumberFormat('en-US', { unit: 'millisecond', style: 'unit' });
-const size_formatter = new Intl.NumberFormat('en-US', { unit: 'byte', style: 'unit' });
-const number_formatter = new Intl.NumberFormat('en-US');
+const time_formatter = new Intl.NumberFormat("en-US", {
+	style: "unit",
+	unit: "millisecond",
+});
+const size_formatter = new Intl.NumberFormat("en-US", {
+	style: "unit",
+	unit: "byte",
+});
+const number_formatter = new Intl.NumberFormat("en-US");
 
 const obj = {
 	array: [{ foo: 1 }, { bar: 2 }, { baz: 3 }],
@@ -32,16 +38,24 @@ const devalue_stringified = devalue.stringify(obj);
 const arson_stringified = ARSON.stringify(obj);
 const tson_serialized = tson.stringify(obj);
 
-console.log('-- SERIALIZED SIZE --\n')
+console.log("-- SERIALIZED SIZE --\n");
 
 console.log(
-	`superjson output: ${c.bold().cyan(size_formatter.format(superjson_serialized.length))}`,
+	`superjson output: ${c
+		.bold()
+		.cyan(size_formatter.format(superjson_serialized.length))}`,
 );
 
-console.log(`tson output: ${c.bold().cyan(size_formatter.format(tson_serialized.length))}`);
+console.log(
+	`tson output: ${c
+		.bold()
+		.cyan(size_formatter.format(tson_serialized.length))}`,
+);
 // console.log(superjson_serialized);
 console.log(
-	`devalue.uneval output: ${c.bold().cyan(size_formatter.format(devalue_unevaled.length))}`,
+	`devalue.uneval output: ${c
+		.bold()
+		.cyan(size_formatter.format(devalue_unevaled.length))}`,
 );
 // console.log(devalue_unevaled);
 console.log(
@@ -50,7 +64,11 @@ console.log(
 		.cyan(size_formatter.format(devalue_stringified.length))}`,
 );
 // console.log(devalue_stringified);
-console.log(`arson output: ${c.bold().cyan(size_formatter.format(arson_stringified.length))}`);
+console.log(
+	`arson output: ${c
+		.bold()
+		.cyan(size_formatter.format(arson_stringified.length))}`,
+);
 // console.log(arson_stringified);
 
 // const superjson_deserialized = superjson.parse(superjson_serialized);
@@ -68,10 +86,13 @@ function test(fn, label = fn.toString()) {
 	while (i--) {
 		fn();
 	}
+
 	const delta = Date.now() - start;
 	const after_snap = process.memoryUsage();
 	console.log(
-		`${number_formatter.format(iterations)} iterations in ${c.bold().cyan(time_formatter.format(delta))}`,
+		`${number_formatter.format(iterations)} iterations in ${c
+			.bold()
+			.cyan(time_formatter.format(delta))}`,
 	);
 	// log memory usage delta
 	for (const key in after_snap) {
@@ -83,7 +104,7 @@ function test(fn, label = fn.toString()) {
 	}
 }
 
-console.log('\n-- SERIALIZATION DURATION --')
+console.log("\n-- SERIALIZATION DURATION --");
 
 // serialization
 test(() => superjson.stringify(obj));
@@ -92,7 +113,7 @@ test(() => devalue.uneval(obj));
 test(() => devalue.stringify(obj));
 test(() => ARSON.stringify(obj));
 
-console.log('\n-- DESERIALIZATION DURATION --')
+console.log("\n-- DESERIALIZATION DURATION --");
 
 // deserialization
 test(() => superjson.parse(superjson_serialized));

@@ -13,7 +13,7 @@ import {
 	TsonTypeTesterPrimitive,
 } from "./syncTypes.js";
 
-type WalkFn = (value: unknown, path?: (string|number)[]) => unknown;
+type WalkFn = (value: unknown, path?: (number | string)[]) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 
 function getHandlers(opts: TsonOptions) {
@@ -56,7 +56,7 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 	const [getNonce, nonPrimitive, byPrimitive] = getHandlers(opts);
 
 	const walker: WalkerFactory = (nonce) => {
-		const seen = new WeakMap<object, (string|number)[]>();
+		const seen = new WeakMap<object, (number | string)[]>();
 		const cache = new WeakMap<object, unknown>();
 
 		const walk: WalkFn = (value, path = []) => {
@@ -74,14 +74,10 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 			if (isComplex) {
 				const prev = seen.get(value);
 				if (prev) {
-					return [
-						"CIRCULAR",
-						prev.join(nonce),
-						nonce,
-					] as TsonTuple;
+					return ["CIRCULAR", prev.join(nonce), nonce] as TsonTuple;
 				}
 
-				seen.set(value, path)
+				seen.set(value, path);
 			}
 
 			const primitiveHandler = byPrimitive[type];
@@ -108,7 +104,9 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 				}
 			}
 
-			return cacheAndReturn(mapOrReturn(value, (value, key) => walk(value, [...path, key])));
+			return cacheAndReturn(
+				mapOrReturn(value, (value, key) => walk(value, [...path, key])),
+			);
 		};
 
 		return walk;

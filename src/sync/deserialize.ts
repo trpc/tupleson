@@ -9,7 +9,7 @@ import {
 	TsonTransformerSerializeDeserialize,
 } from "./syncTypes.js";
 
-type WalkFn = (value: unknown, path?: (string|number)[]) => unknown;
+type WalkFn = (value: unknown, path?: (number | string)[]) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 
 type AnyTsonTransformerSerializeDeserialize =
@@ -32,26 +32,32 @@ export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 	const walker: WalkerFactory = (nonce) => {
 		const seen = new Map<string, unknown>();
 		const backrefs: [circular_key: string, origin_key: string][] = [];
-		
+
 		const coreWalk: WalkFn = (value, path = []) => {
 			const key = path.join(nonce);
 			if (isTsonTuple(value, nonce)) {
 				const [type, serializedValue] = value;
-				if (type === 'CIRCULAR') {
+				if (type === "CIRCULAR") {
 					backrefs.push([key, serializedValue as string]);
 					return;
 				}
+
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const transformer = typeByKey[type]!;
-				const parsed = transformer.deserialize(coreWalk(serializedValue, path));
+				const parsed = transformer.deserialize(
+					coreWalk(serializedValue, path),
+				) as unknown;
 				seen.set(key, parsed);
 				return parsed;
 			}
 
-			const parsed = mapOrReturn(value, (value, key) => coreWalk(value, [...path, key]));
-			if (parsed && typeof parsed === 'object') {
-				seen.set(key, parsed)
+			const parsed = mapOrReturn(value, (value, key) =>
+				coreWalk(value, [...path, key]),
+			);
+			if (parsed && typeof parsed === "object") {
+				seen.set(key, parsed);
 			}
+
 			return parsed;
 		};
 
@@ -60,21 +66,31 @@ export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 			for (const [key, ref] of backrefs) {
 				const prev = seen.get(ref);
 				if (!prev) {
-					throw new Error(`Back-reference ${ref.split(nonce).join('.')} not found`);
+					throw new Error(
+						`Back-reference ${ref.split(nonce).join(".")} not found`,
+					);
 				}
+
 				const path = key.split(nonce);
-				let insertAt = res as any
+				let insertAt = res;
 				try {
 					while (path.length > 1) {
-						insertAt = insertAt[path.shift()!];
+						//@ts-expect-error -- insertAt is unknown and not checked, but if it passed serialization, it should be an object
+						insertAt = insertAt[path.shift()];
 					}
-					insertAt[path[0]!] = prev
+
+					//@ts-expect-error -- see above, + if it passed serialization, path should be length 1 at this point
+					insertAt[path[0]] = prev;
 				} catch (cause) {
-					throw new Error(`Invalid path to back-reference ${ref.split(nonce).join('.')}`, { cause });
+					throw new Error(
+						`Invalid path to back-reference ${ref.split(nonce).join(".")}`,
+						{ cause },
+					);
 				}
 			}
-			return res
-		}
+
+			return res;
+		};
 
 		return walk;
 	};

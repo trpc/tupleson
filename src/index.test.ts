@@ -1,7 +1,13 @@
 import { expect, test } from "vitest";
 
-import { TsonOptions, TsonType, createTson, createTsonAsync, tsonDate, tsonPromise } from "./index.js";
-import { expectError, waitError } from "./internals/testUtils.js";
+import {
+	TsonOptions,
+	TsonType,
+	createTson,
+	createTsonAsync,
+	tsonDate,
+} from "./index.js";
+import { waitError } from "./internals/testUtils.js";
 
 test("multiple handlers for primitive string found", () => {
 	const stringHandler: TsonType<string, never> = {
@@ -42,7 +48,7 @@ test("back-reference: circular object reference", () => {
 	expected["a"] = expected;
 	expected["b"] = expected;
 
-	const str = t.stringify(expected)
+	const str = t.stringify(expected);
 	const res = t.parse(str);
 
 	expect(res).toEqual(expected);
@@ -57,7 +63,7 @@ test("back-reference: circular array reference", () => {
 	expected[0] = expected;
 	expected[1] = expected;
 
-	const str = t.stringify(expected)
+	const str = t.stringify(expected);
 	const res = t.parse(str);
 
 	expect(res).toEqual(expected);
@@ -69,12 +75,12 @@ test("back-reference: non-circular complex reference", () => {
 	});
 
 	const expected: Record<string, unknown> = {};
-	expected["a"] = {}
-	expected["b"] = expected["a"]
-	expected["c"] = new Date()
-	expected["d"] = expected["c"]
+	expected["a"] = {};
+	expected["b"] = expected["a"];
+	expected["c"] = new Date();
+	expected["d"] = expected["c"];
 
-	const str = t.stringify(expected)
+	const str = t.stringify(expected);
 	const res = t.parse(str);
 
 	expect(res["b"]).toBe(res["a"]);
