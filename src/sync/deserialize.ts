@@ -37,7 +37,7 @@ export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 			const key = path.join(nonce);
 			if (isTsonTuple(value, nonce)) {
 				const [type, serializedValue] = value;
-				if (type === "CIRCULAR") {
+				if (type === "Reference") {
 					references.push([key, serializedValue as string]);
 					return nonce;
 				}

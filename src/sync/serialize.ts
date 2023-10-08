@@ -74,7 +74,7 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 			if (isComplex) {
 				const prev = seen.get(value);
 				if (prev) {
-					return ["CIRCULAR", prev.join(nonce), nonce] as TsonTuple;
+					return ["Reference", prev.join(nonce), nonce] as TsonTuple;
 				}
 
 				seen.set(value, path);

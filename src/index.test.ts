@@ -63,12 +63,12 @@ test("back-reference: circular object reference", () => {
 		"{
 		  \\"json\\": {
 		    \\"a\\": [
-		      \\"CIRCULAR\\",
+		      \\"Reference\\",
 		      \\"\\",
 		      \\"__tson\\"
 		    ],
 		    \\"b\\": [
-		      \\"CIRCULAR\\",
+		      \\"Reference\\",
 		      \\"\\",
 		      \\"__tson\\"
 		    ]
@@ -100,12 +100,12 @@ test("back-reference: circular array reference", () => {
 		"{
 		  \\"json\\": [
 		    [
-		      \\"CIRCULAR\\",
+		      \\"Reference\\",
 		      \\"\\",
 		      \\"__tson\\"
 		    ],
 		    [
-		      \\"CIRCULAR\\",
+		      \\"Reference\\",
 		      \\"\\",
 		      \\"__tson\\"
 		    ]
@@ -140,7 +140,7 @@ test("back-reference: referential equality", () => {
 		  \\"json\\": {
 		    \\"a\\": {},
 		    \\"b\\": [
-		      \\"CIRCULAR\\",
+		      \\"Reference\\",
 		      \\"a\\",
 		      \\"__tson\\"
 		    ],
@@ -150,7 +150,7 @@ test("back-reference: referential equality", () => {
 		      \\"__tson\\"
 		    ],
 		    \\"d\\": [
-		      \\"CIRCULAR\\",
+		      \\"Reference\\",
 		      \\"c\\",
 		      \\"__tson\\"
 		    ]
@@ -188,7 +188,7 @@ test("back-reference: grandparent reference", () => {
 		      \\"a\\": {
 		        \\"b\\": {
 		          \\"a\\": [
-		            \\"CIRCULAR\\",
+		            \\"Reference\\",
 		            \\"a__tson__a\\",
 		            \\"__tson__\\"
 		          ]
@@ -222,7 +222,7 @@ test("back-reference: self-referencing Map", () => {
 		      [
 		        \\"a\\",
 		        [
-		          \\"CIRCULAR\\",
+		          \\"Reference\\",
 		          \\"\\",
 		          \\"__tson__\\"
 		        ]
@@ -261,7 +261,7 @@ test("back-reference: self-referencing Map deep", () => {
 		        \\"a\\",
 		        {
 		          \\"foo\\": [
-		            \\"CIRCULAR\\",
+		            \\"Reference\\",
 		            \\"\\",
 		            \\"__tson__\\"
 		          ]
@@ -296,7 +296,7 @@ test("back-reference: self-referencing Set", () => {
 		    \\"Set\\",
 		    [
 		      [
-		        \\"CIRCULAR\\",
+		        \\"Reference\\",
 		        \\"\\",
 		        \\"__tson__\\"
 		      ]
@@ -330,7 +330,7 @@ test("back-reference: self-referencing Set deep", () => {
 		    [
 		      {
 		        \\"foo\\": [
-		          \\"CIRCULAR\\",
+		          \\"Reference\\",
 		          \\"\\",
 		          \\"__tson__\\"
 		        ]
