@@ -1,4 +1,3 @@
-import { TsonError } from "../errors.js";
 import {
 	TsonBranded,
 	TsonType,
