@@ -10,8 +10,8 @@ import {
 	tsonPromise,
 } from "../index.js";
 import { assert } from "../internals/assert.js";
-import { createDeferred } from "../internals/testUtils.js";
 import {
+	createDeferred,
 	createTestServer,
 	sleep,
 	waitError,
