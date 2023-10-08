@@ -72,7 +72,7 @@ export async function createTestServer(opts: {
 	};
 }
 
-export function createDeferred<T = never>() {
+export function createDeferred<T>() {
 	type PromiseResolve = (value: T) => void;
 	type PromiseReject = (reason: unknown) => void;
 	const deferred = {} as {
