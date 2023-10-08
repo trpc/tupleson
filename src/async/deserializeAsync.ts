@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { TsonAbortError, TsonError } from "../errors.js";
+import { TsonError } from "../errors.js";
 import { assert } from "../internals/assert.js";
-import { createDeferred } from "../internals/createDeferred.js";
 import { isTsonTuple } from "../internals/isTsonTuple.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
@@ -27,10 +26,6 @@ type AnyTsonTransformerSerializeDeserialize =
 	| TsonTransformerSerializeDeserialize<any, any>;
 
 export interface TsonParseAsyncOptions {
-	/**
-	 * Abort signal to abort the parsing
-	 */
-	abortSignal?: AbortSignal;
 	/**
 	 * On stream error
 	 */
@@ -66,19 +61,6 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			ReadableStreamDefaultController<unknown>
 		>();
 		const iterator = iterable[Symbol.asyncIterator]();
-
-		const abortSignalDeferred = createDeferred();
-
-		function resetAbortSignal() {
-			parseOptions.abortSignal?.removeEventListener("abort", onAbort);
-		}
-
-		function onAbort(event: Event) {
-			abortSignalDeferred.reject(new TsonAbortError(event));
-			resetAbortSignal();
-		}
-
-		parseOptions.abortSignal?.addEventListener("abort", onAbort);
 
 		const walker: WalkerFactory = (nonce) => {
 			const walk: WalkFn = (value) => {
@@ -169,10 +151,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				lines.forEach(readLine);
 				lines.length = 0;
 
-				const nextValue = await Promise.race([
-					iterator.next(),
-					abortSignalDeferred.promise,
-				]);
+				const nextValue = await iterator.next();
 				if (!nextValue.done) {
 					accumulator += nextValue.value;
 					const parts = accumulator.split("\n");
