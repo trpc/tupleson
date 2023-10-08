@@ -646,7 +646,7 @@ test("e2e: simulated server crash", async () => {
 	expect(streamError.cause).toMatchInlineSnapshot("[TypeError: terminated]");
 });
 
-test("e2e: aborted request", async () => {
+test("e2e: client aborted request", async () => {
 	// ------------- server -------------------
 	const serverSentChunks: string[] = [];
 	const iteratorChunks: number[] = [];
@@ -745,20 +745,6 @@ test("e2e: aborted request", async () => {
 		"[AbortError: The operation was aborted.]",
 	);
 
-	expect(serverSentChunks).toMatchInlineSnapshot(`
-		[
-		  "[",
-		  "    {\\"json\\":{\\"iterable\\":[\\"AsyncIterable\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
-		  "    ,",
-		  "    [",
-		  "        [0,[0,0]]",
-		  "        ,[0,[0,1]]",
-		  "        ,[0,[0,2]]",
-		  "        ,[0,[0,3]]",
-		  "        ,[0,[0,4]]",
-		  "        ,[0,[0,5]]",
-		]
-	`);
 	expect(iteratorChunks.length).toBeLessThan(10);
 	expect(iteratorChunks).toMatchInlineSnapshot(`
 		[
@@ -770,4 +756,5 @@ test("e2e: aborted request", async () => {
 		  5,
 		]
 	`);
+	expect(serverSentChunks).toMatchInlineSnapshot();
 });
