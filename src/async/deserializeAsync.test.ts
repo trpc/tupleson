@@ -655,7 +655,7 @@ test("e2e: client aborted request", async () => {
 			for (let i = 0; i < 10; i++) {
 				yield i;
 				iteratorChunks.push(i);
-				await sleep(1);
+				await sleep(5);
 			}
 		}
 
@@ -756,5 +756,18 @@ test("e2e: client aborted request", async () => {
 		  5,
 		]
 	`);
-	expect(serverSentChunks).toMatchInlineSnapshot();
+	expect(serverSentChunks).toMatchInlineSnapshot(`
+		[
+		  "[",
+		  "    {\\"json\\":{\\"iterable\\":[\\"AsyncIterable\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
+		  "    ,",
+		  "    [",
+		  "        [0,[0,0]]",
+		  "        ,[0,[0,1]]",
+		  "        ,[0,[0,2]]",
+		  "        ,[0,[0,3]]",
+		  "        ,[0,[0,4]]",
+		  "        ,[0,[0,5]]",
+		]
+	`);
 });
