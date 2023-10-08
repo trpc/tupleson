@@ -7,7 +7,7 @@
 	"type": "module",
 	"scripts": {
 		"postinstall": "cd ../ && pnpm run build",
-		"start": "node index.js"
+		"start": "node --expose-gc --max-old-space-size=8192 index.js"
 	},
 	"dependencies": {
 		"arson": "^0.2.6",
