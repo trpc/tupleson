@@ -595,20 +595,20 @@ test("e2e: server crash", async () => {
 
 	let parsed: MockObj | null = null;
 	const results = [];
-	let error: Error | null = null;
+	let iteratorError: Error | null = null;
 	try {
 		parsed = await tson.parse<MockObj>(stringIterator);
 		for await (const value of parsed.iterable) {
 			results.push(value);
 		}
 	} catch (err) {
-		error = err as Error;
+		iteratorError = err as Error;
 	} finally {
 		server.close();
 	}
 
-	assert(error);
-	expect(error.message).toMatchInlineSnapshot(
+	assert(iteratorError);
+	expect(iteratorError.message).toMatchInlineSnapshot(
 		'"Stream interrupted: terminated"',
 	);
 
@@ -621,11 +621,12 @@ test("e2e: server crash", async () => {
 	expect(results).toEqual([0, 1, 2, 3, 4, 5]);
 
 	expect(opts.onStreamError).toHaveBeenCalledTimes(1);
-	expect(opts.onStreamError.mock.calls).toMatchInlineSnapshot(`
-		[
-		  [
-		    [TsonStreamInterruptedError: Stream interrupted: terminated],
-		  ],
-		]
-	`);
+
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	const streamError = opts.onStreamError.mock.calls[0]![0]!;
+	expect(streamError).toMatchInlineSnapshot(
+		"[TsonStreamInterruptedError: Stream interrupted: terminated]",
+	);
+
+	expect(streamError.cause).toMatchInlineSnapshot('[TypeError: terminated]');
 });

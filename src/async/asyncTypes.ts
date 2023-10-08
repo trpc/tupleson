@@ -66,7 +66,7 @@ export interface TsonAsyncOptions {
 	/**
 	 * On stream error
 	 */
-	onStreamError?: (err: TsonError) => void;
+	onStreamError?: (err: TsonStreamInterruptedError) => void;
 
 	/**
 	 * The list of types to use
