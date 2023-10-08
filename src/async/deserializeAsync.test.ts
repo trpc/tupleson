@@ -528,7 +528,7 @@ test("1 iterator completed but another never finishes", async () => {
 	`);
 });
 
-test("e2e: server crash", async () => {
+test("e2e: simulated server crash", async () => {
 	const crashedDeferred = createDeferred<null>();
 	function createMockObj() {
 		async function* generator() {
@@ -568,6 +568,7 @@ test("e2e: server crash", async () => {
 			const strIterarable = tson.stringify(obj, 4);
 
 			void crashedDeferred.promise.then(() => {
+				// destroy the response stream
 				res.destroy();
 			});
 
@@ -593,32 +594,33 @@ test("e2e: server crash", async () => {
 		(v) => textDecoder.decode(v),
 	);
 
-	let parsed: MockObj | null = null;
-	const results = [];
-	let iteratorError: Error | null = null;
-	try {
-		parsed = await tson.parse<MockObj>(stringIterator);
-		for await (const value of parsed.iterable) {
-			results.push(value);
+	const parsed = await tson.parse<MockObj>(stringIterator);
+	{
+		// check the iterator
+		const results = [];
+		let iteratorError: Error | null = null;
+		try {
+			for await (const value of parsed.iterable) {
+				results.push(value);
+			}
+		} catch (err) {
+			iteratorError = err as Error;
+		} finally {
+			server.close();
 		}
-	} catch (err) {
-		iteratorError = err as Error;
-	} finally {
-		server.close();
+
+		assert(iteratorError);
+		expect(iteratorError.message).toMatchInlineSnapshot(
+			'"Stream interrupted: terminated"',
+		);
+		expect(results).toEqual([0, 1, 2, 3, 4, 5]);
 	}
 
-	assert(iteratorError);
-	expect(iteratorError.message).toMatchInlineSnapshot(
-		'"Stream interrupted: terminated"',
-	);
-
-	assert(parsed);
 	expect(parsed.foo).toEqual("bar");
 	expect(await parsed.promise).toEqual(42);
 	await expect(
 		parsed.rejectedPromise,
 	).rejects.toThrowErrorMatchingInlineSnapshot('"Promise rejected"');
-	expect(results).toEqual([0, 1, 2, 3, 4, 5]);
 
 	expect(opts.onStreamError).toHaveBeenCalledTimes(1);
 
@@ -628,5 +630,5 @@ test("e2e: server crash", async () => {
 		"[TsonStreamInterruptedError: Stream interrupted: terminated]",
 	);
 
-	expect(streamError.cause).toMatchInlineSnapshot('[TypeError: terminated]');
+	expect(streamError.cause).toMatchInlineSnapshot("[TypeError: terminated]");
 });
