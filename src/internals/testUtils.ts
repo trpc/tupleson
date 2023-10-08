@@ -89,6 +89,7 @@ export function createDeferred<T>() {
 
 export const sleep = (ms: number) =>
 	new Promise((resolve) => setTimeout(resolve, ms));
+
 export const createPromise = <T>(result: () => T, wait = 1) => {
 	return new Promise<T>((resolve, reject) => {
 		setTimeout(() => {
