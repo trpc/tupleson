@@ -1,5 +1,12 @@
 
 
+## [0.16.9](https://github.com/KATT/tupleson/compare/0.16.8...0.16.9) (2023-10-08)
+
+
+### Bug Fixes
+
+* move `onStreamError` to parse options + add test for request abortion ([#55](https://github.com/KATT/tupleson/issues/55)) ([9d5db3c](https://github.com/KATT/tupleson/commit/9d5db3ced181b722ccd2b254080ca0d22fa8c994))
+
 ## [0.16.8](https://github.com/KATT/tupleson/compare/0.16.7...0.16.8) (2023-10-08)
 
 
