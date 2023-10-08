@@ -161,7 +161,7 @@ test("back-reference: non-circular complex reference", () => {
 
 test("back-reference: grandparent reference", () => {
 	const t = createTson({
-		nonce: () => "__tson",
+		nonce: () => "__tson__",
 		types: [tsonDate],
 	});
 
@@ -187,14 +187,14 @@ test("back-reference: grandparent reference", () => {
 		        \\"b\\": {
 		          \\"a\\": [
 		            \\"CIRCULAR\\",
-		            \\"a__tsona\\",
-		            \\"__tson\\"
+		            \\"a__tson__a\\",
+		            \\"__tson__\\"
 		          ]
 		        }
 		      }
 		    }
 		  },
-		  \\"nonce\\": \\"__tson\\"
+		  \\"nonce\\": \\"__tson__\\"
 		}"
 	`);
 	expect(res).toEqual(expected);
