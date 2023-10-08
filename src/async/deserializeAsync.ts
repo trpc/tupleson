@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { TsonError } from "../errors.js";
+import { TsonAbortError, TsonError } from "../errors.js";
 import { assert } from "../internals/assert.js";
+import { createDeferred } from "../internals/createDeferred.js";
 import { isTsonTuple } from "../internals/isTsonTuple.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
@@ -25,8 +26,20 @@ type AnyTsonTransformerSerializeDeserialize =
 	| TsonAsyncType<any, any>
 	| TsonTransformerSerializeDeserialize<any, any>;
 
+export interface TsonParseAsyncOptions {
+	/**
+	 * Abort signal to abort the parsing
+	 */
+	abortSignal?: AbortSignal;
+	/**
+	 * On stream error
+	 */
+	onStreamError?: (err: TsonStreamInterruptedError) => void;
+}
+
 type TsonParseAsync = <TValue>(
 	string: AsyncIterable<string> | TsonAsyncStringifierIterable<TValue>,
+	opts?: TsonParseAsyncOptions,
 ) => Promise<TValue>;
 
 export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
@@ -43,13 +56,29 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 		}
 	}
 
-	return async (iterable: AsyncIterable<string>) => {
+	return async (
+		iterable: AsyncIterable<string>,
+		parseOptions: TsonParseAsyncOptions,
+	) => {
 		// this is an awful hack to get around making a some sort of pipeline
 		const cache = new Map<
 			TsonAsyncIndex,
 			ReadableStreamDefaultController<unknown>
 		>();
 		const iterator = iterable[Symbol.asyncIterator]();
+
+		const abortSignalDeferred = createDeferred();
+
+		function resetAbortSignal() {
+			parseOptions.abortSignal?.removeEventListener("abort", onAbort);
+		}
+
+		function onAbort(event: Event) {
+			abortSignalDeferred.reject(new TsonAbortError(event));
+			resetAbortSignal();
+		}
+
+		parseOptions.abortSignal?.addEventListener("abort", onAbort);
 
 		const walker: WalkerFactory = (nonce) => {
 			const walk: WalkFn = (value) => {
@@ -139,7 +168,11 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			do {
 				lines.forEach(readLine);
 				lines.length = 0;
-				const nextValue = await iterator.next();
+
+				const nextValue = await Promise.race([
+					iterator.next(),
+					abortSignalDeferred.promise,
+				]);
 				if (!nextValue.done) {
 					accumulator += nextValue.value;
 					const parts = accumulator.split("\n");
@@ -205,7 +238,7 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 						controller.enqueue(err);
 					}
 
-					opts.onStreamError?.(err);
+					parseOptions.onStreamError?.(err);
 				});
 			}
 		}
@@ -220,8 +253,8 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 	const instance = createTsonParseAsyncInner(opts);
 
-	return (async (iterable) => {
-		const [result] = await instance(iterable);
+	return (async (iterable, opts) => {
+		const [result] = await instance(iterable, opts ?? {});
 
 		return result;
 	}) as TsonParseAsync;

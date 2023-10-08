@@ -5,6 +5,13 @@ export class TsonError extends Error {
 	}
 }
 
+export class TsonAbortError extends TsonError {
+	constructor(cause: unknown) {
+		super(`TSON operation aborted`, { cause });
+		this.name = "TsonAbortError";
+	}
+}
+
 export class TsonCircularReferenceError extends TsonError {
 	/**
 	 * The circular reference that was found
