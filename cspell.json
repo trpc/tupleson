@@ -22,6 +22,7 @@
 		"lcov",
 		"markdownlintignore",
 		"npmpackagejsonlintrc",
+		"openai",
 		"outro",
 		"packagejson",
 		"quickstart",
