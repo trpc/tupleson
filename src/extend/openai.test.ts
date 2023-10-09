@@ -10,7 +10,7 @@ const apiKey = process.env["OPENAI_API_KEY"];
 test.skipIf(!apiKey)("openai", async () => {
 	assert(apiKey);
 	const openai = new OpenAI({
-		apiKey: apiKey,
+		apiKey,
 	});
 
 	const tson = createTsonAsync({
