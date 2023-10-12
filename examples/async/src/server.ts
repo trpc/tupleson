@@ -60,6 +60,8 @@ async function handleRequest(
 	for await (const chunk of tsonStringifyAsync(obj)) {
 		res.write(chunk);
 	}
+
+	res.end();
 }
 
 const server = http.createServer(
