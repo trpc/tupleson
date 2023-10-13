@@ -110,6 +110,12 @@ module.exports = {
 				],
 			},
 		},
+		{
+			files: ["./examples/sse/**/*.ts"],
+			rules: {
+				"n/no-missing-import": "off",
+			},
+		},
 	],
 	parser: "@typescript-eslint/parser",
 	plugins: [

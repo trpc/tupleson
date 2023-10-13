@@ -9,14 +9,17 @@ import {
 	TsonSerialized,
 	TsonTransformerSerializeDeserialize,
 } from "../sync/syncTypes.js";
-import { TsonStreamInterruptedError } from "./asyncErrors.js";
+import { TsonAbortError, TsonStreamInterruptedError } from "./asyncErrors.js";
 import {
 	TsonAsyncIndex,
 	TsonAsyncOptions,
 	TsonAsyncStringifierIterable,
 	TsonAsyncType,
 } from "./asyncTypes.js";
-import { createReadableStream } from "./iterableUtils.js";
+import {
+	createReadableStream,
+	readableStreamToAsyncIterable,
+} from "./iterableUtils.js";
 import { TsonAsyncValueTuple } from "./serializeAsync.js";
 
 type WalkFn = (value: unknown) => unknown;
@@ -38,9 +41,8 @@ type TsonParseAsync = <TValue>(
 	opts?: TsonParseAsyncOptions,
 ) => Promise<TValue>;
 
-type TsonDeserializeIterable = AsyncIterable<
-	TsonAsyncValueTuple | TsonSerialized
->;
+type TsonDeserializeIterableValue = TsonAsyncValueTuple | TsonSerialized;
+type TsonDeserializeIterable = AsyncIterable<TsonDeserializeIterableValue>;
 function createTsonDeserializer(opts: TsonAsyncOptions) {
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
@@ -73,9 +75,9 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 
 					assert(transformer, `No transformer found for type ${type}`);
 
-					const walkedValue = walk(serializedValue);
 					if (!transformer.async) {
-						return transformer.deserialize(walk(walkedValue));
+						const walkedValue = walk(serializedValue);
+						return transformer.deserialize(walkedValue);
 					}
 
 					const idx = serializedValue as TsonAsyncIndex;
@@ -112,7 +114,9 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 					break;
 				}
 
-				const [index, result] = nextValue.value as TsonAsyncValueTuple;
+				const { value } = nextValue;
+
+				const [index, result] = value as TsonAsyncValueTuple;
 
 				const controller = cache.get(index);
 
@@ -256,38 +260,36 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 	}) as TsonParseAsync;
 }
 
-// export function createTsonParseEventSource(opts: TsonAsyncOptions) {
-// 	const instance = createTsonDeserializer(opts);
+export function createTsonParseEventSource(opts: TsonAsyncOptions) {
+	const instance = createTsonDeserializer(opts);
 
-// 	return async <TValue = unknown>(
-// 		url: string,
-// 		parseOpts?: TsonParseAsyncOptions & {
-// 			abortSignal: AbortSignal;
-// 		},
-// 	) => {
-// 		const [stream, controller] = createReadableStream<string>();
-// 		const eventSource = new EventSource(url);
+	return async <TValue = unknown>(
+		url: string,
+		parseOpts: TsonParseAsyncOptions & {
+			signal?: AbortSignal;
+		} = {},
+	) => {
+		const [stream, controller] =
+			createReadableStream<TsonDeserializeIterableValue>();
+		const eventSource = new EventSource(url);
 
-// 		const onAbort = () => {
-// 			eventSource.close();
-// 			controller.close();
-// 			parseOpts?.abortSignal.removeEventListener("abort", onAbort);
-// 		};
+		const { signal } = parseOpts;
+		const onAbort = () => {
+			assert(signal);
+			eventSource.close();
+			controller.error(new TsonAbortError("Stream aborted by user"));
 
-// 		parseOpts?.abortSignal.addEventListener("abort", onAbort);
+			signal.removeEventListener("abort", onAbort);
+		};
 
-// 		eventSource.onmessage = (msg) => {
-// 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-// 			controller.enqueue(msg.data);
-// 		};
+		signal?.addEventListener("abort", onAbort);
 
-// 		const iterable = mapIterable(
-// 			readableStreamToAsyncIterable(stream),
-// 			(msg) => {
-// 				return JSON.parse(msg) as TsonAsyncValueTuple | TsonSerialized;
-// 			},
-// 		);
+		eventSource.onmessage = (msg) => {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+			controller.enqueue(JSON.parse(msg.data));
+		};
 
-// 		return (await instance(iterable, parseOpts ?? {})) as TValue;
-// 	};
-// }
+		const iterable = readableStreamToAsyncIterable(stream);
+		return (await instance(iterable, parseOpts)) as TValue;
+	};
+}
