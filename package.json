@@ -9,9 +9,9 @@
 	"license": "MIT",
 	"author": "KATT",
 	"exports": {
-		"import": "./lib/index.js",
-		"require": "./lib/index.cjs",
-		"default": "./lib/index.js"
+		"import": "./lib/index.mjs",
+		"require": "./lib/index.js",
+		"default": "./lib/index.mjs"
 	},
 	"main": "./lib/index.js",
 	"files": [
