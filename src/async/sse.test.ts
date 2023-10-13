@@ -34,7 +34,7 @@ test("SSE response test", async () => {
 	} satisfies TsonAsyncOptions;
 
 	const server = await createTestServer({
-		handleRequest: async (req, res) => {
+		handleRequest: async (_req, res) => {
 			const tson = createTsonAsync(opts);
 
 			const obj = createMockObj();

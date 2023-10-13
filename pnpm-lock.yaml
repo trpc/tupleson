@@ -23,6 +23,9 @@ importers:
       '@types/eslint':
         specifier: ^8.44.3
         version: 8.44.3
+      '@types/event-source-polyfill':
+        specifier: ^1.0.2
+        version: 1.0.2
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.7.3
         version: 6.7.3(@typescript-eslint/parser@6.7.3)(eslint@8.50.0)(typescript@5.2.2)
@@ -1215,6 +1218,10 @@ packages:
 
   /@types/estree@1.0.2:
     resolution: {integrity: sha512-VeiPZ9MMwXjO32/Xu7+OwflfmeoRwkE/qzndw42gGtgJwZopBnzy2gD//NN1+go1mADzkDcqf/KnFRSjTJ8xJA==}
+    dev: true
+
+  /@types/event-source-polyfill@1.0.2:
+    resolution: {integrity: sha512-qE5zrFd73BRs5oSjVys6g/5GboqOMbzLRTUFPAhfULvvvbRAOXw9m4Wk+p1BtoZm4JgW7TljGGfVabBqvi3eig==}
     dev: true
 
   /@types/http-cache-semantics@4.0.2:
