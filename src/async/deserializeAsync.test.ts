@@ -6,7 +6,7 @@ import {
 	TsonType,
 	createTsonAsync,
 	createTsonParseAsync,
-	tsonAsyncIterator,
+	tsonAsyncIterable,
 	tsonBigint,
 	tsonPromise,
 } from "../index.js";
@@ -24,7 +24,7 @@ import { mapIterable, readableStreamToAsyncIterable } from "./iterableUtils.js";
 test("deserialize variable chunk length", async () => {
 	const tson = createTsonAsync({
 		nonce: () => "__tson",
-		types: [tsonAsyncIterator, tsonPromise, tsonBigint],
+		types: [tsonAsyncIterable, tsonPromise, tsonBigint],
 	});
 	{
 		const iterable = (async function* () {
@@ -62,7 +62,7 @@ test("deserialize variable chunk length", async () => {
 test("deserialize async iterable", async () => {
 	const tson = createTsonAsync({
 		nonce: () => "__tson",
-		types: [tsonAsyncIterator, tsonPromise, tsonBigint],
+		types: [tsonAsyncIterable, tsonPromise, tsonBigint],
 	});
 
 	{
@@ -95,7 +95,7 @@ test("deserialize async iterable", async () => {
 test("stringify async iterable + promise", async () => {
 	const tson = createTsonAsync({
 		nonce: () => "__tson",
-		types: [tsonAsyncIterator, tsonPromise, tsonBigint],
+		types: [tsonAsyncIterable, tsonPromise, tsonBigint],
 	});
 
 	const parseOptions = {
@@ -158,7 +158,7 @@ test("e2e: stringify async iterable and promise over the network", async () => {
 
 	// ------------- server -------------------
 	const opts: TsonAsyncOptions = {
-		types: [tsonPromise, tsonAsyncIterator, tsonBigint],
+		types: [tsonPromise, tsonAsyncIterable, tsonBigint],
 	};
 
 	const server = await createTestServer({
@@ -259,7 +259,7 @@ test("iterator error", async () => {
 
 	// ------------- server -------------------
 	const opts: TsonAsyncOptions = {
-		types: [tsonPromise, tsonAsyncIterator, tsonCustomError],
+		types: [tsonPromise, tsonAsyncIterable, tsonCustomError],
 	};
 
 	const server = await createTestServer({
@@ -351,7 +351,7 @@ test("values missing when stream ends", async () => {
 	}
 
 	const opts = {
-		types: [tsonPromise, tsonAsyncIterator],
+		types: [tsonPromise, tsonAsyncIterable],
 	} satisfies TsonAsyncOptions;
 
 	const parseOptions = {
@@ -477,7 +477,7 @@ test("1 iterator completed but another never finishes", async () => {
 	}
 
 	const opts = {
-		types: [tsonPromise, tsonAsyncIterator],
+		types: [tsonPromise, tsonAsyncIterable],
 	} satisfies TsonAsyncOptions;
 
 	const parseOptions = {
@@ -566,7 +566,7 @@ test("e2e: simulated server crash", async () => {
 
 	// ------------- server -------------------
 	const opts = {
-		types: [tsonPromise, tsonAsyncIterator],
+		types: [tsonPromise, tsonAsyncIterable],
 	} satisfies TsonAsyncOptions;
 
 	const parseOptions = {
@@ -666,7 +666,7 @@ test("e2e: client aborted request", async () => {
 	type MockObj = ReturnType<typeof createMockObj>;
 	const opts = {
 		nonce: () => "__tson",
-		types: [tsonPromise, tsonAsyncIterator],
+		types: [tsonPromise, tsonAsyncIterable],
 	} satisfies TsonAsyncOptions;
 
 	const parseOptions = {

@@ -1,6 +1,6 @@
 import {
 	TsonAsyncOptions,
-	tsonAsyncIterator,
+	tsonAsyncIterable,
 	tsonBigint,
 	tsonPromise,
 } from "tupleson";
@@ -14,7 +14,7 @@ export const tsonOptions: TsonAsyncOptions = {
 		// Allow serialization of promises
 		tsonPromise,
 		// Allow serialization of async iterators
-		tsonAsyncIterator,
+		tsonAsyncIterable,
 		// Allow serialization of bigints
 		tsonBigint,
 	],
