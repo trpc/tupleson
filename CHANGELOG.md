@@ -1,5 +1,12 @@
 
 
+## [0.17.1](https://github.com/trpc/tupleson/compare/0.17.0...0.17.1) (2023-10-13)
+
+
+### Bug Fixes
+
+* use error constructor params and spread them ([#61](https://github.com/trpc/tupleson/issues/61)) ([e52fe26](https://github.com/trpc/tupleson/commit/e52fe26709865473e1ea4a8bac542c51668770a0))
+
 # [0.17.0](https://github.com/trpc/tupleson/compare/0.16.9...0.17.0) (2023-10-13)
 
 
