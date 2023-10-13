@@ -1,14 +1,10 @@
 {
 	"name": "@examples/json-stream",
-	"version": "10.38.5",
+	"version": "0.0.0",
 	"private": true,
 	"description": "An example project for tupleson",
 	"license": "MIT",
 	"module": "module",
-	"workspaces": [
-		"client",
-		"server"
-	],
 	"scripts": {
 		"build": "tsc",
 		"dev:server": "tsx watch src/server",
