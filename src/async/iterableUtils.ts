@@ -1,3 +1,5 @@
+import { assert } from "../internals/assert";
+
 export async function* readableStreamToAsyncIterable<T>(
 	stream: ReadableStream<T>,
 ): AsyncIterable<T> {
@@ -30,4 +32,18 @@ export async function* mapIterable<T, TValue>(
 	for await (const value of iterable) {
 		yield fn(value);
 	}
+}
+
+export function createReadableStream<TValue>() {
+	let controller: ReadableStreamDefaultController<TValue> =
+		null as unknown as ReadableStreamDefaultController<TValue>;
+	const stream = new ReadableStream<TValue>({
+		start(c) {
+			controller = c;
+		},
+	});
+
+	assert(controller, `Could not find controller - this is a bug`);
+
+	return [stream, controller] as const;
 }

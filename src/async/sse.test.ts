@@ -25,7 +25,7 @@ test("SSE response test", async () => {
 		};
 	}
 
-	type MockObj = ReturnType<typeof createMockObj>;
+	// type MockObj = ReturnType<typeof createMockObj>;
 
 	// ------------- server -------------------
 	const opts = {
@@ -53,7 +53,7 @@ test("SSE response test", async () => {
 	});
 
 	// ------------- client -------------------
-	const tson = createTsonAsync(opts);
+	// const tson = createTsonAsync(opts);
 
 	// do a streamed fetch request
 	const sse = new EventSource(server.url);
@@ -82,3 +82,5 @@ test("SSE response test", async () => {
 		]
 	`);
 });
+
+test.todo("parse SSE response");

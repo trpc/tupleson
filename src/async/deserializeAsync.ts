@@ -11,11 +11,17 @@ import {
 } from "../sync/syncTypes.js";
 import { TsonStreamInterruptedError } from "./asyncErrors.js";
 import {
+	BrandSerialized,
 	TsonAsyncIndex,
 	TsonAsyncOptions,
 	TsonAsyncStringifierIterable,
 	TsonAsyncType,
 } from "./asyncTypes.js";
+import {
+	createReadableStream,
+	mapIterable,
+	readableStreamToAsyncIterable,
+} from "./iterableUtils.js";
 import { TsonAsyncValueTuple } from "./serializeAsync.js";
 
 type WalkFn = (value: unknown) => unknown;
@@ -259,3 +265,39 @@ export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
 		return await instance(tsonIterable, opts ?? {});
 	}) as TsonParseAsync;
 }
+
+// export function createTsonParseEventSource(opts: TsonAsyncOptions) {
+// 	const instance = createTsonDeserializer(opts);
+
+// 	return async <TValue = unknown>(
+// 		url: string,
+// 		parseOpts?: TsonParseAsyncOptions & {
+// 			abortSignal: AbortSignal;
+// 		},
+// 	) => {
+// 		const [stream, controller] = createReadableStream<string>();
+// 		const eventSource = new EventSource(url);
+
+// 		const onAbort = () => {
+// 			eventSource.close();
+// 			controller.close();
+// 			parseOpts?.abortSignal.removeEventListener("abort", onAbort);
+// 		};
+
+// 		parseOpts?.abortSignal.addEventListener("abort", onAbort);
+
+// 		eventSource.onmessage = (msg) => {
+// 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+// 			controller.enqueue(msg.data);
+// 		};
+
+// 		const iterable = mapIterable(
+// 			readableStreamToAsyncIterable(stream),
+// 			(msg) => {
+// 				return JSON.parse(msg) as TsonAsyncValueTuple | TsonSerialized;
+// 			},
+// 		);
+
+// 		return (await instance(iterable, parseOpts ?? {})) as TValue;
+// 	};
+// }
