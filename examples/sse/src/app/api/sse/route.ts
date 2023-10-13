@@ -9,13 +9,13 @@ export function getResponseShape() {
 	async function* currentTimeGenerator() {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		while (true) {
-			await sleep(100);
-			const date = new Date();
-			const hours = date.getHours();
-			const minutes = date.getMinutes();
-			const seconds = date.getSeconds();
-			const time = `${hours}:${minutes}:${seconds}`;
-			yield time;
+			yield new Intl.DateTimeFormat("en-US", {
+				hour: "numeric",
+				hour12: false,
+				minute: "numeric",
+				second: "numeric",
+			}).format(new Date());
+			await sleep(500);
 		}
 	}
 
