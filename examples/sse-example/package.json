@@ -1,0 +1,27 @@
+{
+	"name": "@examples/sse",
+	"version": "0.1.0",
+	"private": true,
+	"description": "SSE example",
+	"scripts": {
+		"build": "next build",
+		"dev": "next dev",
+		"lint": "next lint",
+		"start": "next start"
+	},
+	"dependencies": {
+		"next": "13.5.4",
+		"react": "^18",
+		"react-dom": "^18"
+	},
+	"devDependencies": {
+		"@types/node": "^20",
+		"@types/react": "^18",
+		"@types/react-dom": "^18",
+		"autoprefixer": "^10",
+		"postcss": "^8",
+		"tailwindcss": "^3",
+		"tupleson": "latest",
+		"typescript": "^5"
+	}
+}

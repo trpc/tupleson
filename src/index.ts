@@ -24,6 +24,7 @@ export type { TsonAsyncOptions } from "./async/asyncTypes.js";
 export {
 	type TsonParseAsyncOptions,
 	createTsonParseAsync,
+	createTsonParseEventSource,
 } from "./async/deserializeAsync.js";
 export {
 	createAsyncTsonSerialize,
