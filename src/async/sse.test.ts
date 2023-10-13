@@ -25,7 +25,7 @@ test("SSE response test", async () => {
 		};
 	}
 
-	// type MockObj = ReturnType<typeof createMockObj>;
+	type MockObj = ReturnType<typeof createMockObj>;
 
 	// ------------- server -------------------
 	const opts = {
@@ -53,26 +53,26 @@ test("SSE response test", async () => {
 	});
 
 	// ------------- client -------------------
-	// const tson = createTsonAsync(opts);
+	const tson = createTsonAsync(opts);
 
-	// do a streamed fetch request
-	const sse = new EventSource(server.url);
+	{
+		const sse = new EventSource(server.url);
 
-	const messages: MessageEvent["data"][] = [];
-	await new Promise<void>((resolve) => {
-		sse.onmessage = (msg) => {
-			// console.log(sse.readyState);
-			// console.log({ msg });
-			messages.push(msg.data);
+		const messages: MessageEvent["data"][] = [];
+		await new Promise<void>((resolve) => {
+			sse.onmessage = (msg) => {
+				// console.log(sse.readyState);
+				// console.log({ msg });
+				messages.push(msg.data);
 
-			if (messages.length === 5) {
-				sse.close();
-				resolve();
-			}
-		};
-	});
+				if (messages.length === 5) {
+					sse.close();
+					resolve();
+				}
+			};
+		});
 
-	expect(messages).toMatchInlineSnapshot(`
+		expect(messages).toMatchInlineSnapshot(`
 		[
 		  "{\\"json\\":{\\"foo\\":\\"bar\\",\\"iterable\\":[\\"AsyncIterable\\",0,\\"__tson\\"],\\"promise\\":[\\"Promise\\",1,\\"__tson\\"],\\"rejectedPromise\\":[\\"Promise\\",2,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
 		  "[0,[0,0]]",
@@ -81,6 +81,26 @@ test("SSE response test", async () => {
 		  "[0,[0,1]]",
 		]
 	`);
+	}
+
+	{
+		// e2e
+		const ac = new AbortController();
+		const shape = await tson.createEventSourceParser<MockObj>(server.url, {
+			signal: ac.signal,
+		});
+
+		const messages: number[] = [];
+
+		for await (const value of shape.iterable) {
+			messages.push(value);
+			if (messages.length === 5) {
+				ac.abort();
+			}
+		}
+
+		expect(messages).toMatchInlineSnapshot();
+	}
 });
 
 test.todo("parse SSE response");
