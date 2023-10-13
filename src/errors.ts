@@ -1,9 +1,6 @@
-// get constructor parameters of Error
-type ErrorOptions = ConstructorParameters<typeof Error>[1];
-
 export class TsonError extends Error {
-	constructor(message: string, opts?: ErrorOptions) {
-		super(message, opts);
+	constructor(...args: ConstructorParameters<typeof Error>) {
+		super(...args);
 		this.name = "TsonError";
 	}
 }
