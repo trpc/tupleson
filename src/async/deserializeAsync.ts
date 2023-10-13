@@ -41,7 +41,7 @@ type TsonParseAsync = <TValue>(
 type TsonDeserializeIterable = AsyncIterable<
 	TsonAsyncValueTuple | TsonSerialized
 >;
-export function createTsonDeserializer(opts: TsonAsyncOptions) {
+function createTsonDeserializer(opts: TsonAsyncOptions) {
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
 	for (const handler of opts.types) {
