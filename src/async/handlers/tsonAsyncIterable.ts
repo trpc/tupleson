@@ -7,11 +7,11 @@ import { TsonAsyncType } from "../asyncTypes.js";
 const ITERATOR_VALUE = 0;
 const ITERATOR_ERROR = 1;
 const ITERATOR_DONE = 2;
-type SerializedIteratorResult =
+type SerializedIterableResult =
 	| [typeof ITERATOR_DONE]
 	| [typeof ITERATOR_ERROR, unknown]
 	| [typeof ITERATOR_VALUE, unknown];
-function isAsyncIterator(value: unknown): value is AsyncIterable<unknown> {
+function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
 	return (
 		!!value &&
 		typeof value === "object" &&
@@ -19,9 +19,9 @@ function isAsyncIterator(value: unknown): value is AsyncIterable<unknown> {
 	);
 }
 
-export const tsonAsyncIterator: TsonAsyncType<
+export const tsonAsyncIterable: TsonAsyncType<
 	AsyncIterable<unknown>,
-	SerializedIteratorResult
+	SerializedIterableResult
 > = {
 	async: true,
 	deserialize: (opts) => {
@@ -65,5 +65,5 @@ export const tsonAsyncIterator: TsonAsyncType<
 			yield [ITERATOR_ERROR, err];
 		}
 	},
-	test: isAsyncIterator,
+	test: isAsyncIterable,
 };

@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { expect, test } from "vitest";
 
-import { createTsonAsync, tsonAsyncIterator, tsonPromise } from "../index.js";
+import { createTsonAsync, tsonAsyncIterable, tsonPromise } from "../index.js";
 import { assert } from "../internals/assert.js";
 
 const apiKey = process.env["OPENAI_API_KEY"];
@@ -15,7 +15,7 @@ test.skipIf(!apiKey)("openai", async () => {
 
 	const tson = createTsonAsync({
 		nonce: () => "__tson",
-		types: [tsonAsyncIterator, tsonPromise],
+		types: [tsonAsyncIterable, tsonPromise],
 	});
 
 	const stringified = tson.stringify({
