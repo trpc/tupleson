@@ -1,5 +1,17 @@
 
 
+# [0.17.0](https://github.com/trpc/tupleson/compare/0.16.9...0.17.0) (2023-10-13)
+
+
+### Bug Fixes
+
+* infer error options to avoid type errors in environment that don't support it ([#59](https://github.com/trpc/tupleson/issues/59)) ([3f0ebb6](https://github.com/trpc/tupleson/commit/3f0ebb62cf8a93e65687b813141dbac5c407f212))
+
+
+### Features
+
+* add commonjs support ([#60](https://github.com/trpc/tupleson/issues/60)) ([d0e663c](https://github.com/trpc/tupleson/commit/d0e663c14d00b17e22a736db548f068c7016d7bb))
+
 ## [0.16.9](https://github.com/trpc/tupleson/compare/0.16.8...0.16.9) (2023-10-08)
 
 
