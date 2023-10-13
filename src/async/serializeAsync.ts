@@ -19,6 +19,7 @@ import {
 	TsonAsyncOptions,
 	TsonAsyncStringifier,
 } from "./asyncTypes.js";
+import { createReadableStream } from "./iterableUtils.js";
 
 type WalkFn = (value: unknown) => unknown;
 
@@ -253,13 +254,7 @@ export function createTsonSSEResponse(opts: TsonAsyncOptions) {
 	const serialize = createAsyncTsonSerialize(opts);
 
 	return <TValue>(value: TValue) => {
-		let controller: ReadableStreamDefaultController<unknown> =
-			null as unknown as ReadableStreamDefaultController<unknown>;
-		const readable = new ReadableStream<unknown>({
-			start(c) {
-				controller = c;
-			},
-		});
+		const [readable, controller] = createReadableStream();
 
 		async function iterate() {
 			const [head, iterable] = serialize(value);

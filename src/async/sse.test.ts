@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { EventSourcePolyfill, NativeEventSource } from "event-source-polyfill";
 import { expect, test } from "vitest";
-global.EventSource = NativeEventSource || EventSourcePolyfill;
+(global as any).EventSource = NativeEventSource || EventSourcePolyfill;
 
 import { TsonAsyncOptions, tsonAsyncIterable, tsonPromise } from "../index.js";
 import { createTestServer, sleep } from "../internals/testUtils.js";

@@ -1,4 +1,4 @@
-import { assert } from "../internals/assert";
+import { assert } from "../internals/assert.js";
 
 export async function* readableStreamToAsyncIterable<T>(
 	stream: ReadableStream<T>,
@@ -34,7 +34,7 @@ export async function* mapIterable<T, TValue>(
 	}
 }
 
-export function createReadableStream<TValue>() {
+export function createReadableStream<TValue = unknown>() {
 	let controller: ReadableStreamDefaultController<TValue> =
 		null as unknown as ReadableStreamDefaultController<TValue>;
 	const stream = new ReadableStream<TValue>({

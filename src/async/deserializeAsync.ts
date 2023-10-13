@@ -11,17 +11,12 @@ import {
 } from "../sync/syncTypes.js";
 import { TsonStreamInterruptedError } from "./asyncErrors.js";
 import {
-	BrandSerialized,
 	TsonAsyncIndex,
 	TsonAsyncOptions,
 	TsonAsyncStringifierIterable,
 	TsonAsyncType,
 } from "./asyncTypes.js";
-import {
-	createReadableStream,
-	mapIterable,
-	readableStreamToAsyncIterable,
-} from "./iterableUtils.js";
+import { createReadableStream } from "./iterableUtils.js";
 import { TsonAsyncValueTuple } from "./serializeAsync.js";
 
 type WalkFn = (value: unknown) => unknown;
@@ -85,13 +80,8 @@ export function createTsonDeserializer(opts: TsonAsyncOptions) {
 
 					const idx = serializedValue as TsonAsyncIndex;
 
-					let controller: ReadableStreamDefaultController<unknown> =
-						null as unknown as ReadableStreamDefaultController<unknown>;
-					const readable = new ReadableStream<unknown>({
-						start(c) {
-							controller = c;
-						},
-					});
+					const [readable, controller] = createReadableStream();
+
 					// the `start` method is called "immediately when the object is constructed"
 					// [MDN](http://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream)
 					// so we're guaranteed that the controller is set in the cache
