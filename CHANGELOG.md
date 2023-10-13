@@ -1,5 +1,12 @@
 
 
+## [0.17.4](https://github.com/trpc/tupleson/compare/0.17.3...0.17.4) (2023-10-13)
+
+
+### Bug Fixes
+
+* `tsonAsyncIterator` -> `tsonAsyncIterable` ([#66](https://github.com/trpc/tupleson/issues/66)) ([4a9c5c5](https://github.com/trpc/tupleson/commit/4a9c5c55ad3898271468fecb55dd0d542c37137a))
+
 ## [0.17.3](https://github.com/trpc/tupleson/compare/0.17.2...0.17.3) (2023-10-13)
 
 
