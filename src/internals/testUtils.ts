@@ -51,7 +51,6 @@ export async function createTestServer(opts: {
 		const server = http.createServer((req, res) => {
 			Promise.resolve(opts.handleRequest(req, res)).catch((err) => {
 				console.error(err);
-				res.statusCode = 500;
 				res.end();
 			});
 		});

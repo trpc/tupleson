@@ -12,6 +12,7 @@ import {
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
 } from "../sync/syncTypes.js";
+import { TsonStreamInterruptedError } from "./asyncErrors.js";
 import {
 	BrandSerialized,
 	TsonAsyncIndex,
@@ -268,7 +269,9 @@ export function createTsonSSEResponse(opts: TsonAsyncOptions) {
 				controller.enqueue(`data: ${JSON.stringify(chunk)}\n\n`);
 			}
 
-			controller.close();
+			controller.error(
+				new TsonStreamInterruptedError(new Error("SSE stream ended")),
+			);
 		}
 
 		iterate().catch((err) => {

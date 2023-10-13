@@ -77,6 +77,9 @@ importers:
       eslint-plugin-yml:
         specifier: ^1.9.0
         version: 1.9.0(eslint@8.50.0)
+      event-source-polyfill:
+        specifier: ^1.0.31
+        version: 1.0.31
       jsonc-eslint-parser:
         specifier: ^2.3.0
         version: 2.3.0
@@ -3136,6 +3139,10 @@ packages:
   /esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /event-source-polyfill@1.0.31:
+    resolution: {integrity: sha512-4IJSItgS/41IxN5UVAVuAyczwZF7ZIEsM1XAoUzIHA6A+xzusEZUutdXz2Nr+MQPLxfTiCvqE79/C8HT8fKFvA==}
     dev: true
 
   /event-target-shim@5.0.1:

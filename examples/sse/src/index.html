@@ -1,16 +1,18 @@
-<h1>SSE test</h1>
+<html>
+	<h1>SSE test</h1>
 
-See log output / inspector tools
+	See log output / inspector tools
 
-<script>
-	const eventSource = new EventSource("/sse");
-	eventSource.onopen = () => {
-		console.log("opened");
-	};
-	eventSource.onmessage = (msg) => {
-		console.log("message", msg);
-	};
-	eventSource.onerror = (source, err) => {
-		console.log({ source, err });
-	};
-</script>
+	<script>
+		const eventSource = new EventSource("/sse");
+		eventSource.onopen = () => {
+			console.log("opened");
+		};
+		eventSource.onmessage = (msg) => {
+			console.log("message", msg);
+		};
+		eventSource.onerror = (source, err) => {
+			console.error({ source, err });
+		};
+	</script>
+</html>
