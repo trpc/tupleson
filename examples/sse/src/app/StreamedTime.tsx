@@ -12,11 +12,15 @@ export function StreamedTime() {
 		const abortSignal = new AbortController();
 		createEventSource<ResponseShape>("/api/sse", {
 			signal: abortSignal.signal,
-		}).then(async (shape) => {
-			for await (const time of shape.currentTimeGenerator) {
-				setTime(time);
-			}
-		});
+		})
+			.then(async (shape) => {
+				for await (const time of shape.currentTimeGenerator) {
+					setTime(time);
+				}
+			})
+			.catch((err) => {
+				console.error(err);
+			});
 
 		return () => {
 			abortSignal.abort();
