@@ -174,7 +174,7 @@ importers:
         specifier: ^1.0.1
         version: 1.1.0
 
-  examples/sse-example:
+  examples/sse:
     dependencies:
       next:
         specifier: 13.5.4

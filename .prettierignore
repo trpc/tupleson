@@ -4,3 +4,4 @@ lib/
 pnpm-lock.yaml
 /CHANGELOG.md
 pnpm-workspace.yaml
+.next
