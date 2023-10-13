@@ -75,9 +75,9 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 
 					assert(transformer, `No transformer found for type ${type}`);
 
-					const walkedValue = walk(serializedValue);
 					if (!transformer.async) {
-						return transformer.deserialize(walk(walkedValue));
+						const walkedValue = walk(serializedValue);
+						return transformer.deserialize(walkedValue);
 					}
 
 					const idx = serializedValue as TsonAsyncIndex;
