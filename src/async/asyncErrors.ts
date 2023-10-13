@@ -42,3 +42,10 @@ export class TsonStreamInterruptedError extends TsonError {
 		this.name = "TsonStreamInterruptedError";
 	}
 }
+
+export class TsonAbortError extends TsonError {
+	constructor(cause: unknown) {
+		super("Aborted", { cause });
+		this.name = "TsonAbortError";
+	}
+}

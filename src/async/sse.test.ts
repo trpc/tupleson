@@ -99,8 +99,14 @@ test("SSE response test", async () => {
 			}
 		}
 
-		expect(messages).toMatchInlineSnapshot();
+		expect(messages).toMatchInlineSnapshot(`
+			[
+			  0,
+			  1,
+			  2,
+			  3,
+			  4,
+			]
+		`);
 	}
 });
-
-test.todo("parse SSE response");

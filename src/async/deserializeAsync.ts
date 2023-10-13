@@ -9,7 +9,7 @@ import {
 	TsonSerialized,
 	TsonTransformerSerializeDeserialize,
 } from "../sync/syncTypes.js";
-import { TsonStreamInterruptedError } from "./asyncErrors.js";
+import { TsonAbortError, TsonStreamInterruptedError } from "./asyncErrors.js";
 import {
 	TsonAsyncIndex,
 	TsonAsyncOptions,
@@ -18,7 +18,6 @@ import {
 } from "./asyncTypes.js";
 import {
 	createReadableStream,
-	mapIterable,
 	readableStreamToAsyncIterable,
 } from "./iterableUtils.js";
 import { TsonAsyncValueTuple } from "./serializeAsync.js";
@@ -42,9 +41,8 @@ type TsonParseAsync = <TValue>(
 	opts?: TsonParseAsyncOptions,
 ) => Promise<TValue>;
 
-type TsonDeserializeIterable = AsyncIterable<
-	TsonAsyncValueTuple | TsonSerialized
->;
+type TsonDeserializeIterableValue = TsonAsyncValueTuple | TsonSerialized;
+type TsonDeserializeIterable = AsyncIterable<TsonDeserializeIterableValue>;
 function createTsonDeserializer(opts: TsonAsyncOptions) {
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
@@ -116,7 +114,9 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 					break;
 				}
 
-				const [index, result] = nextValue.value as TsonAsyncValueTuple;
+				const { value } = nextValue;
+
+				const [index, result] = value as TsonAsyncValueTuple;
 
 				const controller = cache.get(index);
 
@@ -269,32 +269,27 @@ export function createTsonParseEventSource(opts: TsonAsyncOptions) {
 			signal?: AbortSignal;
 		} = {},
 	) => {
-		const [stream, controller] = createReadableStream<string>();
+		const [stream, controller] =
+			createReadableStream<TsonDeserializeIterableValue>();
 		const eventSource = new EventSource(url);
 
+		const { signal } = parseOpts;
 		const onAbort = () => {
+			assert(signal);
 			eventSource.close();
-			controller.close();
-			parseOpts.signal?.removeEventListener("abort", onAbort);
+			controller.error(new TsonAbortError("Stream aborted by user"));
+
+			signal.removeEventListener("abort", onAbort);
 		};
 
-		parseOpts.signal?.addEventListener("abort", onAbort);
+		signal?.addEventListener("abort", onAbort);
 
 		eventSource.onmessage = (msg) => {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-			controller.enqueue(msg.data);
+			controller.enqueue(JSON.parse(msg.data));
 		};
 
-		const iterable = mapIterable(
-			readableStreamToAsyncIterable(stream),
-			(msg) => {
-				const parsed = JSON.parse(msg) as TsonAsyncValueTuple | TsonSerialized;
-
-				console.log({ parsed });
-				return parsed;
-			},
-		);
-
+		const iterable = readableStreamToAsyncIterable(stream);
 		return (await instance(iterable, parseOpts)) as TValue;
 	};
 }

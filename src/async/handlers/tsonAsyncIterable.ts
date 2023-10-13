@@ -1,4 +1,5 @@
 import {
+	TsonAbortError,
 	TsonPromiseRejectionError,
 	TsonStreamInterruptedError,
 } from "../asyncErrors.js";
@@ -31,6 +32,11 @@ export const tsonAsyncIterable: TsonAsyncType<
 			while (((next = await opts.reader.read()), !next.done)) {
 				const { value } = next;
 				if (value instanceof TsonStreamInterruptedError) {
+					if (value.cause instanceof TsonAbortError) {
+						opts.close();
+						return;
+					}
+
 					throw value;
 				}
 
