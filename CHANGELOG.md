@@ -16,7 +16,7 @@
 * remove `"type": "module"` ([#62](https://github.com/trpc/tupleson/issues/62)) ([5c84001](https://github.com/trpc/tupleson/commit/5c840015e1bc0541cdcf3d2531e1daef4ed418be))
 * use error constructor params and spread them ([#61](https://github.com/trpc/tupleson/issues/61)) ([e52fe26](https://github.com/trpc/tupleson/commit/e52fe26709865473e1ea4a8bac542c51668770a0))
 
-# [0.17.0](https://github.com/trpc/tupleson/compare/0.16.9...0.17.0) (2023-10-13)
+## [0.17.0](https://github.com/trpc/tupleson/compare/0.16.9...0.17.0) (2023-10-13)
 
 
 ### Bug Fixes
