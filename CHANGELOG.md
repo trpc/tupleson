@@ -1,5 +1,12 @@
 
 
+## [0.17.3](https://github.com/trpc/tupleson/compare/0.17.2...0.17.3) (2023-10-13)
+
+
+### Bug Fixes
+
+* fix commonjs entrypoints ([#64](https://github.com/trpc/tupleson/issues/64)) ([930d59a](https://github.com/trpc/tupleson/commit/930d59a3b1975bca93196186472ce2262baab511))
+
 ## [0.17.2](https://github.com/trpc/tupleson/compare/0.17.0...0.17.2) (2023-10-13)
 
 
