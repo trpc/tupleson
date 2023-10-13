@@ -23,7 +23,7 @@ jobs:
           script: |
             try {
               await github.request(
-                `DELETE /repos/KATT/tupleson/branches/main/protection`,
+                `DELETE /repos/trpc/tupleson/branches/main/protection`,
               );
             } catch (error) {
               if (!error.message?.includes?.("Branch not protected")) {
@@ -43,7 +43,7 @@ jobs:
           github-token: ${{ secrets.ACCESS_TOKEN }}
           script: |
             github.request(
-              `PUT /repos/KATT/tupleson/branches/main/protection`,
+              `PUT /repos/trpc/tupleson/branches/main/protection`,
               {
                 allow_deletions: false,
                 allow_force_pushes: true,

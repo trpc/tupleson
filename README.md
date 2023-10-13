@@ -10,14 +10,14 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 <!-- prettier-ignore-end -->
 </a>
-	<a href="https://codecov.io/gh/KATT/tupleson" target="_blank">
-		<img alt="Codecov Test Coverage" src="https://codecov.io/gh/KATT/tupleson/branch/main/graph/badge.svg"/>
+	<a href="https://codecov.io/gh/trpc/tupleson" target="_blank">
+		<img alt="Codecov Test Coverage" src="https://codecov.io/gh/trpc/tupleson/branch/main/graph/badge.svg"/>
 	</a>
-	<a href="https://github.com/KATT/tupleson/blob/main/.github/CODE_OF_CONDUCT.md" target="_blank">
+	<a href="https://github.com/trpc/tupleson/blob/main/.github/CODE_OF_CONDUCT.md" target="_blank">
 		<img alt="Contributor Covenant" src="https://img.shields.io/badge/code_of_conduct-enforced-21bb42" />
 	</a>
-	<a href="https://github.com/KATT/tupleson/blob/main/LICENSE.md" target="_blank">
-		<img alt="License: MIT" src="https://img.shields.io/github/license/KATT/tupleson?color=21bb42">
+	<a href="https://github.com/trpc/tupleson/blob/main/LICENSE.md" target="_blank">
+		<img alt="License: MIT" src="https://img.shields.io/github/license/trpc/tupleson?color=21bb42">
 	</a>
 	<img alt="Style: Prettier" src="https://img.shields.io/badge/style-prettier-21bb42.svg" />
 	<img alt="TypeScript: Strict" src="https://img.shields.io/badge/typescript-strict-21bb42.svg" />
@@ -122,7 +122,7 @@ type Obj = typeof obj;
 ### 🤯 Streaming `Promise`s and `AsyncIterable`s
 
 - See example in [`./examples/async`](./examples/async)
-- [Test it on StackBlitz](https://stackblitz.com/github/KATT/tupleson/tree/main/examples/async?file=src/server.ts&file=src/client.ts&view=editor)
+- [Test it on StackBlitz](https://stackblitz.com/github/trpc/tupleson/tree/main/examples/async?file=src/server.ts&file=src/client.ts&view=editor)
 
 ## 🧩 Extend with a custom serializer
 
@@ -178,9 +178,9 @@ const tson = createTson({
 
 <!-- ## All contributors ✨
 
-<a href="https://github.com/KATT/tupleson/graphs/contributors">
+<a href="https://github.com/trpc/tupleson/graphs/contributors">
   <p align="center">
-    <img width="720" src="https://contrib.rocks/image?repo=KATT/tupleson" alt="A table of avatars from the project's contributors" />
+    <img width="720" src="https://contrib.rocks/image?repo=trpc/tupleson" alt="A table of avatars from the project's contributors" />
   </p>
 </a> -->
 
