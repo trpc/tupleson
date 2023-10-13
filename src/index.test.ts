@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 
-import { TsonOptions, TsonType, createTson, createTsonAsync } from "./index.js";
+import { createTsonAsync } from "./async/createTsonAsync.js";
+import { TsonOptions, TsonType, createTson } from "./index.js";
 import { expectError, waitError } from "./internals/testUtils.js";
 
 test("multiple handlers for primitive string found", () => {
@@ -88,7 +89,7 @@ test("async: duplicate keys", async () => {
 		const gen = generator();
 		await createTsonAsync({
 			types: [stringHandler, stringHandler],
-		}).parse(gen);
+		}).parseJsonStream(gen);
 	});
 
 	expect(err).toMatchInlineSnapshot(
@@ -104,7 +105,7 @@ test("async: multiple handlers for primitive string found", async () => {
 	const err = await waitError(async () => {
 		const iterator = createTsonAsync({
 			types: [stringHandler, stringHandler],
-		}).stringify({});
+		}).stringifyJsonStream({});
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		for await (const _ of iterator) {
@@ -129,7 +130,7 @@ test("async: bad init", async () => {
 		const gen = generator();
 		await createTsonAsync({
 			types: [],
-		}).parse(gen);
+		}).parseJsonStream(gen);
 	});
 
 	expect(err).toMatchInlineSnapshot(
