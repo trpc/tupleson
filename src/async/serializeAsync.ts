@@ -267,6 +267,8 @@ export function createTsonSSEResponse(opts: TsonAsyncOptions) {
 			for await (const chunk of iterable) {
 				controller.enqueue(`data: ${JSON.stringify(chunk)}\n\n`);
 			}
+
+			controller.close();
 		}
 
 		iterate().catch((err) => {
