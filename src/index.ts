@@ -27,6 +27,7 @@ export {
 } from "./async/deserializeAsync.js";
 export {
 	createAsyncTsonSerialize,
+	createTsonSSEResponse,
 	createTsonStreamAsync,
 } from "./async/serializeAsync.js";
 export * from "./async/asyncErrors.js";

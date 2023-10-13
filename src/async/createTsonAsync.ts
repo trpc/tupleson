@@ -1,6 +1,9 @@
 import { TsonAsyncOptions } from "./asyncTypes.js";
 import { createTsonParseAsync } from "./deserializeAsync.js";
-import { createTsonStreamAsync } from "./serializeAsync.js";
+import {
+	createTsonSSEResponse,
+	createTsonStreamAsync,
+} from "./serializeAsync.js";
 
 /**
  * @internal
@@ -10,4 +13,5 @@ import { createTsonStreamAsync } from "./serializeAsync.js";
 export const createTsonAsync = (opts: TsonAsyncOptions) => ({
 	parseJsonStream: createTsonParseAsync(opts),
 	stringifyJsonStream: createTsonStreamAsync(opts),
+	toSSEResponse: createTsonSSEResponse(opts),
 });

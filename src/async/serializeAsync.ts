@@ -248,7 +248,7 @@ export function createTsonStreamAsync(
 	return stringifier as TsonAsyncStringifier;
 }
 
-export function crateTsonSSEResponse(opts: TsonAsyncOptions) {
+export function createTsonSSEResponse(opts: TsonAsyncOptions) {
 	const serialize = createAsyncTsonSerialize(opts);
 
 	return <TValue>(value: TValue) => {
