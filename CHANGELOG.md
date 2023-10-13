@@ -1,5 +1,12 @@
 
 
+# [0.18.0](https://github.com/trpc/tupleson/compare/0.17.4...0.18.0) (2023-10-13)
+
+
+### Features
+
+* split up deserialization and start on support for SSE ([#67](https://github.com/trpc/tupleson/issues/67)) ([3bd9782](https://github.com/trpc/tupleson/commit/3bd97824d903ce334a0ba448e9d9b41bad921241))
+
 ## [0.17.4](https://github.com/trpc/tupleson/compare/0.17.3...0.17.4) (2023-10-13)
 
 
