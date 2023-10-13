@@ -4,7 +4,6 @@ import {
 	TsonAsyncOptions,
 	TsonParseAsyncOptions,
 	TsonType,
-	createTsonAsync,
 	createTsonParseAsync,
 	tsonAsyncIterable,
 	tsonBigint,
@@ -19,6 +18,7 @@ import {
 	waitFor,
 } from "../internals/testUtils.js";
 import { TsonSerialized } from "../sync/syncTypes.js";
+import { createTsonAsync } from "./createTsonAsync.js";
 import { mapIterable, readableStreamToAsyncIterable } from "./iterableUtils.js";
 
 test("deserialize variable chunk length", async () => {
@@ -32,7 +32,7 @@ test("deserialize variable chunk length", async () => {
 			yield '[\n{"json":{"foo":"bar"},"nonce":"__tson"}';
 			yield "\n,\n[\n]\n]";
 		})();
-		const result = await tson.parse(iterable);
+		const result = await tson.parseJsonStream(iterable);
 		expect(result).toEqual({ foo: "bar" });
 	}
 
@@ -41,7 +41,7 @@ test("deserialize variable chunk length", async () => {
 			await sleep(1);
 			yield '[\n{"json":{"foo":"bar"},"nonce":"__tson"}\n,\n[\n]\n]';
 		})();
-		const result = await tson.parse(iterable);
+		const result = await tson.parseJsonStream(iterable);
 		expect(result).toEqual({ foo: "bar" });
 	}
 
@@ -54,7 +54,7 @@ test("deserialize variable chunk length", async () => {
 			yield "[\n]\n";
 			yield "]";
 		})();
-		const result = await tson.parse(iterable);
+		const result = await tson.parseJsonStream(iterable);
 		expect(result).toEqual({ foo: "bar" });
 	}
 });
@@ -71,9 +71,9 @@ test("deserialize async iterable", async () => {
 			foo: "bar",
 		};
 
-		const strIterable = tson.stringify(obj);
+		const strIterable = tson.stringifyJsonStream(obj);
 
-		const result = await tson.parse(strIterable);
+		const result = await tson.parseJsonStream(strIterable);
 
 		expect(result).toEqual(obj);
 	}
@@ -84,9 +84,9 @@ test("deserialize async iterable", async () => {
 			foo: Promise.resolve("bar"),
 		};
 
-		const strIterable = tson.stringify(obj);
+		const strIterable = tson.stringifyJsonStream(obj);
 
-		const result = await tson.parse(strIterable);
+		const result = await tson.parseJsonStream(strIterable);
 
 		expect(await result.foo).toEqual("bar");
 	}
@@ -120,9 +120,9 @@ test("stringify async iterable + promise", async () => {
 		promise: Promise.resolve(42),
 	};
 
-	const strIterable = tson.stringify(input);
+	const strIterable = tson.stringifyJsonStream(input);
 
-	const output = await tson.parse(strIterable, parseOptions);
+	const output = await tson.parseJsonStream(strIterable, parseOptions);
 
 	expect(output.foo).toEqual("bar");
 
@@ -166,7 +166,7 @@ test("e2e: stringify async iterable and promise over the network", async () => {
 			const tson = createTsonAsync(opts);
 
 			const obj = createMockObj();
-			const strIterarable = tson.stringify(obj, 4);
+			const strIterarable = tson.stringifyJsonStream(obj, 4);
 
 			for await (const value of strIterarable) {
 				res.write(value);
@@ -192,7 +192,7 @@ test("e2e: stringify async iterable and promise over the network", async () => {
 		(v) => textDecoder.decode(v),
 	);
 
-	const parsed = await tson.parse<MockObj>(stringIterator);
+	const parsed = await tson.parseJsonStream<MockObj>(stringIterator);
 
 	expect(parsed.foo).toEqual("bar");
 
@@ -267,7 +267,7 @@ test("iterator error", async () => {
 			const tson = createTsonAsync(opts);
 
 			const obj = createMockObj();
-			const strIterarable = tson.stringify(obj, 4);
+			const strIterarable = tson.stringifyJsonStream(obj, 4);
 
 			for await (const value of strIterarable) {
 				res.write(value);
@@ -291,7 +291,7 @@ test("iterator error", async () => {
 		(v) => textDecoder.decode(v),
 	);
 
-	const parsed = await tson.parse<MockObj>(stringIterator);
+	const parsed = await tson.parseJsonStream<MockObj>(stringIterator);
 	expect(await parsed.promise).toEqual(42);
 
 	const results = [];
@@ -381,7 +381,7 @@ test("values missing when stream ends", async () => {
 		assert(err);
 
 		expect(err.message).toMatchInlineSnapshot(
-			'"Stream interrupted: Stream ended unexpectedly"',
+			'"Stream interrupted: Stream ended unexpectedly (state 1)"',
 		);
 	}
 
@@ -390,7 +390,7 @@ test("values missing when stream ends", async () => {
 		const err = await waitError(result.promise);
 
 		expect(err).toMatchInlineSnapshot(
-			"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly]",
+			"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)]",
 		);
 	}
 
@@ -398,7 +398,7 @@ test("values missing when stream ends", async () => {
 	expect(parseOptions.onStreamError.mock.calls).toMatchInlineSnapshot(`
 		[
 		  [
-		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly],
+		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)],
 		  ],
 		]
 	`);
@@ -432,14 +432,14 @@ test("async: missing values of promise", async () => {
 
 	await createTsonAsync({
 		types: [tsonPromise],
-	}).parse(generator(), parseOptions);
+	}).parseJsonStream(generator(), parseOptions);
 
 	await waitFor(() => {
 		expect(parseOptions.onStreamError).toHaveBeenCalledTimes(1);
 	});
 
 	expect(parseOptions.onStreamError.mock.calls[0]![0]!).toMatchInlineSnapshot(
-		"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly]",
+		"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)]",
 	);
 });
 
@@ -523,7 +523,7 @@ test("1 iterator completed but another never finishes", async () => {
 		`);
 
 		expect(err.message).toMatchInlineSnapshot(
-			'"Stream interrupted: Stream ended unexpectedly"',
+			'"Stream interrupted: Stream ended unexpectedly (state 1)"',
 		);
 	}
 
@@ -532,7 +532,7 @@ test("1 iterator completed but another never finishes", async () => {
 	expect(parseOptions.onStreamError.mock.calls).toMatchInlineSnapshot(`
 		[
 		  [
-		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly],
+		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)],
 		  ],
 		]
 	`);
@@ -578,7 +578,7 @@ test("e2e: simulated server crash", async () => {
 			const tson = createTsonAsync(opts);
 
 			const obj = createMockObj();
-			const strIterarable = tson.stringify(obj, 4);
+			const strIterarable = tson.stringifyJsonStream(obj, 4);
 
 			void crashedDeferred.promise.then(() => {
 				// destroy the response stream
@@ -607,7 +607,10 @@ test("e2e: simulated server crash", async () => {
 		(v) => textDecoder.decode(v),
 	);
 
-	const parsed = await tson.parse<MockObj>(stringIterator, parseOptions);
+	const parsed = await tson.parseJsonStream<MockObj>(
+		stringIterator,
+		parseOptions,
+	);
 	{
 		// check the iterator
 		const results = [];
@@ -678,7 +681,7 @@ test("e2e: client aborted request", async () => {
 			const tson = createTsonAsync(opts);
 
 			const obj = createMockObj();
-			const strIterarable = tson.stringify(obj, 4);
+			const strIterarable = tson.stringifyJsonStream(obj, 4);
 
 			for await (const value of strIterarable) {
 				serverSentChunks.push(value.trimEnd());
@@ -707,7 +710,10 @@ test("e2e: client aborted request", async () => {
 		(v) => textDecoder.decode(v),
 	);
 
-	const parsed = await tson.parse<MockObj>(stringIterator, parseOptions);
+	const parsed = await tson.parseJsonStream<MockObj>(
+		stringIterator,
+		parseOptions,
+	);
 	{
 		// check the iterator
 		const results = [];

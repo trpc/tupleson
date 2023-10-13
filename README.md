@@ -40,7 +40,7 @@ Serialize almost[^1] anything!
 - 🌊 Serialize & stream things like `Promise`s or async iterators
 
 > [!IMPORTANT]  
-> _Though well-tested, this package might undergo big changes, stay tuned!_
+> _Though well-tested, this package might undergo big changes and **does not** follow semver whilst on `0.x.y`-version, stay tuned!_
 
 ### 👀 Example
 

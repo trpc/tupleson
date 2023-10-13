@@ -12,11 +12,14 @@ import {
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
 } from "../sync/syncTypes.js";
+import { TsonStreamInterruptedError } from "./asyncErrors.js";
 import {
+	BrandSerialized,
 	TsonAsyncIndex,
 	TsonAsyncOptions,
 	TsonAsyncStringifier,
 } from "./asyncTypes.js";
+import { createReadableStream } from "./iterableUtils.js";
 
 type WalkFn = (value: unknown) => unknown;
 
@@ -207,7 +210,7 @@ export function createAsyncTsonSerialize(
 	};
 }
 
-export function createTsonStringifyAsync(
+export function createTsonStreamAsync(
 	opts: TsonAsyncOptions,
 ): TsonAsyncStringifier {
 	const indent = (length: number) => " ".repeat(length);
@@ -245,4 +248,39 @@ export function createTsonStringifyAsync(
 		};
 
 	return stringifier as TsonAsyncStringifier;
+}
+
+export function createTsonSSEResponse(opts: TsonAsyncOptions) {
+	const serialize = createAsyncTsonSerialize(opts);
+
+	return <TValue>(value: TValue) => {
+		const [readable, controller] = createReadableStream();
+
+		async function iterate() {
+			const [head, iterable] = serialize(value);
+
+			controller.enqueue(`data: ${JSON.stringify(head)}\n\n`);
+			for await (const chunk of iterable) {
+				controller.enqueue(`data: ${JSON.stringify(chunk)}\n\n`);
+			}
+
+			controller.error(
+				new TsonStreamInterruptedError(new Error("SSE stream ended")),
+			);
+		}
+
+		iterate().catch((err) => {
+			controller.error(err);
+		});
+
+		const res = new Response(readable, {
+			headers: {
+				"Cache-Control": "no-cache",
+				Connection: "keep-alive",
+				"Content-Type": "text/event-stream",
+			},
+			status: 200,
+		});
+		return res as BrandSerialized<typeof res, TValue>;
+	};
 }

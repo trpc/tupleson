@@ -23,6 +23,9 @@ importers:
       '@types/eslint':
         specifier: ^8.44.3
         version: 8.44.3
+      '@types/event-source-polyfill':
+        specifier: ^1.0.2
+        version: 1.0.2
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.7.3
         version: 6.7.3(@typescript-eslint/parser@6.7.3)(eslint@8.50.0)(typescript@5.2.2)
@@ -77,6 +80,9 @@ importers:
       eslint-plugin-yml:
         specifier: ^1.9.0
         version: 1.9.0(eslint@8.50.0)
+      event-source-polyfill:
+        specifier: ^1.0.31
+        version: 1.0.31
       jsonc-eslint-parser:
         specifier: ^2.3.0
         version: 2.3.0
@@ -1212,6 +1218,10 @@ packages:
 
   /@types/estree@1.0.2:
     resolution: {integrity: sha512-VeiPZ9MMwXjO32/Xu7+OwflfmeoRwkE/qzndw42gGtgJwZopBnzy2gD//NN1+go1mADzkDcqf/KnFRSjTJ8xJA==}
+    dev: true
+
+  /@types/event-source-polyfill@1.0.2:
+    resolution: {integrity: sha512-qE5zrFd73BRs5oSjVys6g/5GboqOMbzLRTUFPAhfULvvvbRAOXw9m4Wk+p1BtoZm4JgW7TljGGfVabBqvi3eig==}
     dev: true
 
   /@types/http-cache-semantics@4.0.2:
@@ -3115,6 +3125,10 @@ packages:
   /esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /event-source-polyfill@1.0.31:
+    resolution: {integrity: sha512-4IJSItgS/41IxN5UVAVuAyczwZF7ZIEsM1XAoUzIHA6A+xzusEZUutdXz2Nr+MQPLxfTiCvqE79/C8HT8fKFvA==}
     dev: true
 
   /event-target-shim@5.0.1:

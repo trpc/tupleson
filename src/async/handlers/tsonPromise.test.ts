@@ -4,9 +4,8 @@ import {
 	TsonAsyncOptions,
 	TsonType,
 	createAsyncTsonSerialize,
-	createTsonAsync,
 	createTsonParseAsync,
-	createTsonStringifyAsync,
+	createTsonStreamAsync,
 	tsonPromise,
 } from "../../index.js";
 import {
@@ -15,7 +14,7 @@ import {
 	waitError,
 } from "../../internals/testUtils.js";
 import { createPromise } from "../../internals/testUtils.js";
-import { createTsonParseAsyncInner } from "../deserializeAsync.js";
+import { createTsonAsync } from "../createTsonAsync.js";
 import {
 	mapIterable,
 	readableStreamToAsyncIterable,
@@ -194,7 +193,7 @@ test("stringifier - no promises", async () => {
 
 	const buffer: string[] = [];
 
-	for await (const value of tson.stringify(obj, 4)) {
+	for await (const value of tson.stringifyJsonStream(obj, 4)) {
 		buffer.push(value.trimEnd());
 	}
 
@@ -231,7 +230,7 @@ test("stringifier - with promise", async () => {
 
 	const buffer: string[] = [];
 
-	for await (const value of tson.stringify(obj, 4)) {
+	for await (const value of tson.stringifyJsonStream(obj, 4)) {
 		buffer.push(value.trimEnd());
 	}
 
@@ -265,7 +264,7 @@ test("stringifier - promise in promise", async () => {
 
 	const buffer: string[] = [];
 
-	for await (const value of tson.stringify(obj, 2)) {
+	for await (const value of tson.stringifyJsonStream(obj, 2)) {
 		buffer.push(value.trimEnd());
 	}
 
@@ -333,9 +332,9 @@ test("pipe stringifier to parser", async () => {
 		types: [tsonPromise],
 	});
 
-	const strIterarable = tson.stringify(obj, 4);
+	const strIterarable = tson.stringifyJsonStream(obj, 4);
 
-	const value = await tson.parse(strIterarable);
+	const value = await tson.parseJsonStream(strIterarable);
 
 	expect(value).toHaveProperty("foo");
 	expect(await value.foo).toBe("bar");
@@ -356,9 +355,9 @@ test("stringify and parse promise with a promise", async () => {
 		types: [tsonPromise],
 	});
 
-	const strIterarable = tson.stringify(obj, 4);
+	const strIterarable = tson.stringifyJsonStream(obj, 4);
 
-	const value = await tson.parse(strIterarable);
+	const value = await tson.parseJsonStream(strIterarable);
 
 	const firstPromise = await value.promise;
 
@@ -397,7 +396,7 @@ test("stringify and parse promise with a promise over a network connection", asy
 					};
 				}, 3),
 			};
-			const strIterarable = tson.stringify(obj, 4);
+			const strIterarable = tson.stringifyJsonStream(obj, 4);
 
 			for await (const value of strIterarable) {
 				res.write(value);
@@ -423,7 +422,7 @@ test("stringify and parse promise with a promise over a network connection", asy
 		(v) => textDecoder.decode(v),
 	);
 
-	const value = await tson.parse(stringIterator);
+	const value = await tson.parseJsonStream(stringIterator);
 	const asObj = value as Obj;
 
 	const firstPromise = await asObj.promise;
@@ -451,9 +450,9 @@ test("does not crash node when it receives a promise rejection", async () => {
 		nonce: () => "__tson",
 		types: [tsonPromise],
 	};
-	const stringify = createTsonStringifyAsync(opts);
+	const stringify = createTsonStreamAsync(opts);
 
-	const parse = createTsonParseAsyncInner(opts);
+	const parse = createTsonParseAsync(opts);
 
 	const original = {
 		foo: createPromise(() => {
@@ -472,7 +471,7 @@ test("stringify promise rejection", async () => {
 		nonce: () => "__tson",
 		types: [tsonPromise, tsonError],
 	};
-	const stringify = createTsonStringifyAsync(opts);
+	const stringify = createTsonStreamAsync(opts);
 
 	const parse = createTsonParseAsync(opts);
 

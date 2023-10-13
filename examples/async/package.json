@@ -1,5 +1,5 @@
 {
-	"name": "@examples/minimal",
+	"name": "@examples/json-stream",
 	"version": "10.38.5",
 	"private": true,
 	"description": "An example project for tupleson",

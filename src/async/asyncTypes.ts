@@ -10,6 +10,10 @@ export type TsonAsyncStringifierIterable<TValue> = AsyncIterable<string> & {
 	[serialized]: TValue;
 };
 
+export type BrandSerialized<TType, TValue> = TType & {
+	[serialized]: TValue;
+};
+
 export type TsonAsyncStringifier = <TValue>(
 	value: TValue,
 	space?: number,

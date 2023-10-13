@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { TsonError } from "../errors.js";
 import { assert } from "../internals/assert.js";
@@ -16,6 +16,7 @@ import {
 	TsonAsyncStringifierIterable,
 	TsonAsyncType,
 } from "./asyncTypes.js";
+import { createReadableStream } from "./iterableUtils.js";
 import { TsonAsyncValueTuple } from "./serializeAsync.js";
 
 type WalkFn = (value: unknown) => unknown;
@@ -37,7 +38,10 @@ type TsonParseAsync = <TValue>(
 	opts?: TsonParseAsyncOptions,
 ) => Promise<TValue>;
 
-export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
+type TsonDeserializeIterable = AsyncIterable<
+	TsonAsyncValueTuple | TsonSerialized
+>;
+function createTsonDeserializer(opts: TsonAsyncOptions) {
 	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
 
 	for (const handler of opts.types) {
@@ -52,10 +56,9 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 	}
 
 	return async (
-		iterable: AsyncIterable<string>,
+		iterable: TsonDeserializeIterable,
 		parseOptions: TsonParseAsyncOptions,
 	) => {
-		// this is an awful hack to get around making a some sort of pipeline
 		const cache = new Map<
 			TsonAsyncIndex,
 			ReadableStreamDefaultController<unknown>
@@ -77,13 +80,8 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 
 					const idx = serializedValue as TsonAsyncIndex;
 
-					let controller: ReadableStreamDefaultController<unknown> =
-						null as unknown as ReadableStreamDefaultController<unknown>;
-					const readable = new ReadableStream<unknown>({
-						start(c) {
-							controller = c;
-						},
-					});
+					const [readable, controller] = createReadableStream();
+
 					// the `start` method is called "immediately when the object is constructed"
 					// [MDN](http://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream)
 					// so we're guaranteed that the controller is set in the cache
@@ -106,36 +104,15 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			return walk;
 		};
 
-		async function getStreamedValues(
-			lines: string[],
-			accumulator: string,
-			walk: WalkFn,
-		) {
-			// <stream state>
-			let streamEnded = false;
-			// </stream state>
-
-			function readLine(str: string) {
-				// console.log("got str", str);
-				str = str.trimStart();
-
-				if (str.startsWith(",")) {
-					// ignore leading comma
-					str = str.slice(1);
+		async function getStreamedValues(walk: WalkFn) {
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			while (true) {
+				const nextValue = await iterator.next();
+				if (nextValue.done) {
+					break;
 				}
 
-				if (str === "" || str === "[" || str === ",") {
-					// beginning of values array or empty string
-					return;
-				}
-
-				if (str === "]]") {
-					// end of values and stream
-					streamEnded = true;
-					return;
-				}
-
-				const [index, result] = JSON.parse(str) as TsonAsyncValueTuple;
+				const [index, result] = nextValue.value as TsonAsyncValueTuple;
 
 				const controller = cache.get(index);
 
@@ -146,68 +123,25 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 				// resolving deferred
 				controller.enqueue(walkedResult);
 			}
-
-			do {
-				lines.forEach(readLine);
-				lines.length = 0;
-
-				const nextValue = await iterator.next();
-				if (!nextValue.done) {
-					accumulator += nextValue.value;
-					const parts = accumulator.split("\n");
-					accumulator = parts.pop() ?? "";
-					lines.push(...parts);
-				} else if (accumulator) {
-					readLine(accumulator);
-				}
-			} while (lines.length);
-
-			assert(streamEnded, "Stream ended unexpectedly");
 		}
 
 		async function init() {
-			let accumulator = "";
-
 			// get the head of the JSON
+			const nextValue = await iterator.next();
+			if (nextValue.done) {
+				throw new TsonError("Unexpected end of stream before head");
+			}
 
-			const lines: string[] = [];
-			do {
-				const nextValue = await iterator.next();
-				if (nextValue.done) {
-					throw new TsonError("Unexpected end of stream before head");
-				}
-
-				accumulator += nextValue.value;
-
-				const parts = accumulator.split("\n");
-				accumulator = parts.pop() ?? "";
-				lines.push(...parts);
-			} while (lines.length < 2);
-
-			const [
-				/**
-				 * First line is just a `[`
-				 */
-				_firstLine,
-				/**
-				 * Second line is the shape of the JSON
-				 */
-				headLine,
-				// .. third line is a `,`
-				// .. fourth line is the start of the values array
-				...buffer
-			] = lines;
-
-			assert(headLine, "No head line found");
-
-			const head = JSON.parse(headLine) as TsonSerialized<any>;
+			const head = nextValue.value as TsonSerialized<any>;
 
 			const walk = walker(head.nonce);
 
 			try {
-				return walk(head.json);
+				const walked = walk(head.json);
+
+				return walked;
 			} finally {
-				getStreamedValues(buffer, accumulator, walk).catch((cause) => {
+				getStreamedValues(walk).catch((cause) => {
 					// Something went wrong while getting the streamed values
 
 					const err = new TsonStreamInterruptedError(cause);
@@ -222,19 +156,138 @@ export function createTsonParseAsyncInner(opts: TsonAsyncOptions) {
 			}
 		}
 
-		const result = await init().catch((cause: unknown) => {
+		return await init().catch((cause: unknown) => {
 			throw new TsonError("Failed to initialize TSON stream", { cause });
 		});
-		return [result, cache] as const;
 	};
 }
 
+function lineAccumulator() {
+	let accumulator = "";
+	const lines: string[] = [];
+
+	return {
+		lines,
+		push(chunk: string) {
+			accumulator += chunk;
+
+			const parts = accumulator.split("\n");
+			accumulator = parts.pop() ?? "";
+			lines.push(...parts);
+		},
+	};
+}
+
+async function* stringIterableToTsonIterable(
+	iterable: AsyncIterable<string>,
+): TsonDeserializeIterable {
+	// get the head of the JSON
+	const acc = lineAccumulator();
+
+	// state of stream
+	const AWAITING_HEAD = 0;
+	const STREAMING_VALUES = 1;
+	const ENDED = 2;
+
+	let state: typeof AWAITING_HEAD | typeof ENDED | typeof STREAMING_VALUES =
+		AWAITING_HEAD;
+
+	// iterate values & yield them
+
+	for await (const str of iterable) {
+		acc.push(str);
+
+		if (state === AWAITING_HEAD && acc.lines.length >= 2) {
+			/**
+			 * First line is just a `[`
+			 */
+			acc.lines.shift();
+
+			// Second line is the head
+			const headLine = acc.lines.shift();
+
+			assert(headLine, "No head line found");
+
+			const head = JSON.parse(headLine) as TsonSerialized<any>;
+
+			yield head;
+
+			state = STREAMING_VALUES;
+		}
+
+		if (state === STREAMING_VALUES) {
+			while (acc.lines.length) {
+				let str = acc.lines.shift()!;
+
+				// console.log("got str", str);
+				str = str.trimStart();
+
+				if (str.startsWith(",")) {
+					// ignore leading comma
+					str = str.slice(1);
+				}
+
+				if (str === "" || str === "[" || str === ",") {
+					// beginning of values array or empty string
+					continue;
+				}
+
+				if (str === "]]") {
+					// end of values and stream
+					state = ENDED;
+					continue;
+				}
+
+				yield JSON.parse(str) as TsonAsyncValueTuple;
+			}
+		}
+	}
+
+	assert(state === ENDED, `Stream ended unexpectedly (state ${state})`);
+}
+
 export function createTsonParseAsync(opts: TsonAsyncOptions): TsonParseAsync {
-	const instance = createTsonParseAsyncInner(opts);
+	const instance = createTsonDeserializer(opts);
 
 	return (async (iterable, opts) => {
-		const [result] = await instance(iterable, opts ?? {});
+		const tsonIterable = stringIterableToTsonIterable(iterable);
 
-		return result;
+		return await instance(tsonIterable, opts ?? {});
 	}) as TsonParseAsync;
 }
+
+// export function createTsonParseEventSource(opts: TsonAsyncOptions) {
+// 	const instance = createTsonDeserializer(opts);
+
+// 	return async <TValue = unknown>(
+// 		url: string,
+// 		parseOpts?: TsonParseAsyncOptions & {
+// 			abortSignal: AbortSignal;
+// 		},
+// 	) => {
+// 		const [stream, controller] = createReadableStream<string>();
+// 		const eventSource = new EventSource(url);
+
+// 		const onAbort = () => {
+// 			eventSource.close();
+// 			controller.close();
+// 			parseOpts?.abortSignal.removeEventListener("abort", onAbort);
+// 		};
+
+// 		parseOpts?.abortSignal.addEventListener("abort", onAbort);
+
+// 		eventSource.onmessage = (msg) => {
+// 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+// 			controller.enqueue(msg.data);
+// 		};
+
+// 		const iterable = mapIterable(
+// 			readableStreamToAsyncIterable(stream),
+// 			(msg) => {
+// 				return JSON.parse(msg) as TsonAsyncValueTuple | TsonSerialized;
+// 			},
+// 		);
+
+// 		return (await instance(iterable, parseOpts ?? {})) as TValue;
+// 	};
+// }

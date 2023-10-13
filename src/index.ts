@@ -21,14 +21,14 @@ export * from "./sync/handlers/tsonSymbol.js";
 
 // --- async --
 export type { TsonAsyncOptions } from "./async/asyncTypes.js";
-export { createTsonAsync } from "./async/createTsonAsync.js";
 export {
 	type TsonParseAsyncOptions,
 	createTsonParseAsync,
 } from "./async/deserializeAsync.js";
 export {
 	createAsyncTsonSerialize,
-	createTsonStringifyAsync,
+	createTsonSSEResponse,
+	createTsonStreamAsync,
 } from "./async/serializeAsync.js";
 export * from "./async/asyncErrors.js";
 
