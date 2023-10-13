@@ -1,5 +1,12 @@
 
 
+# [0.19.0](https://github.com/trpc/tupleson/compare/0.18.0...0.19.0) (2023-10-13)
+
+
+### Features
+
+* add "full" SSE support ([#68](https://github.com/trpc/tupleson/issues/68)) ([672778f](https://github.com/trpc/tupleson/commit/672778f833b2b37cd253d3a39801974553cb137f))
+
 # [0.18.0](https://github.com/trpc/tupleson/compare/0.17.4...0.18.0) (2023-10-13)
 
 

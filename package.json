@@ -1,6 +1,6 @@
 {
 	"name": "tupleson",
-	"version": "0.18.0",
+	"version": "0.19.0",
 	"description": "A hackable JSON serializer/deserializer",
 	"repository": {
 		"type": "git",
