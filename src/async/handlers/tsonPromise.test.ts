@@ -4,7 +4,6 @@ import {
 	TsonAsyncOptions,
 	TsonType,
 	createAsyncTsonSerialize,
-	createTsonAsync,
 	createTsonParseAsync,
 	createTsonStringifyAsync,
 	tsonPromise,
@@ -15,6 +14,7 @@ import {
 	waitError,
 } from "../../internals/testUtils.js";
 import { createPromise } from "../../internals/testUtils.js";
+import { createTsonAsync } from "../createTsonAsync.js";
 import {
 	mapIterable,
 	readableStreamToAsyncIterable,

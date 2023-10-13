@@ -4,7 +4,6 @@ import {
 	TsonAsyncOptions,
 	TsonParseAsyncOptions,
 	TsonType,
-	createTsonAsync,
 	createTsonParseAsync,
 	tsonAsyncIterable,
 	tsonBigint,
@@ -19,6 +18,7 @@ import {
 	waitFor,
 } from "../internals/testUtils.js";
 import { TsonSerialized } from "../sync/syncTypes.js";
+import { createTsonAsync } from "./createTsonAsync.js";
 import { mapIterable, readableStreamToAsyncIterable } from "./iterableUtils.js";
 
 test("deserialize variable chunk length", async () => {
@@ -390,7 +390,7 @@ test("values missing when stream ends", async () => {
 		const err = await waitError(result.promise);
 
 		expect(err).toMatchInlineSnapshot(
-			'[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)]',
+			"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)]",
 		);
 	}
 
@@ -439,7 +439,7 @@ test("async: missing values of promise", async () => {
 	});
 
 	expect(parseOptions.onStreamError.mock.calls[0]![0]!).toMatchInlineSnapshot(
-		'[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)]',
+		"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)]",
 	);
 });
 

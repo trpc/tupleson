@@ -21,7 +21,6 @@ export * from "./sync/handlers/tsonSymbol.js";
 
 // --- async --
 export type { TsonAsyncOptions } from "./async/asyncTypes.js";
-export { createTsonAsync } from "./async/createTsonAsync.js";
 export {
 	type TsonParseAsyncOptions,
 	createTsonParseAsync,

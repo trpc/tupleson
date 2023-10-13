@@ -1,7 +1,8 @@
 import OpenAI from "openai";
 import { expect, test } from "vitest";
 
-import { createTsonAsync, tsonAsyncIterable, tsonPromise } from "../index.js";
+import { createTsonAsync } from "../async/createTsonAsync.js";
+import { tsonAsyncIterable, tsonPromise } from "../index.js";
 import { assert } from "../internals/assert.js";
 
 const apiKey = process.env["OPENAI_API_KEY"];
