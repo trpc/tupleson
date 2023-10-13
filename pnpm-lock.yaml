@@ -185,6 +185,9 @@ importers:
       react-dom:
         specifier: ^18
         version: 18.2.0(react@18.2.0)
+      tupleson:
+        specifier: link:../..
+        version: link:../..
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -204,9 +207,6 @@ importers:
       tailwindcss:
         specifier: ^3
         version: 3.3.3
-      tupleson:
-        specifier: link:../..
-        version: link:../..
       typescript:
         specifier: ^5
         version: 5.2.2
