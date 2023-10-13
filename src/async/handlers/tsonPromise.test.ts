@@ -15,7 +15,6 @@ import {
 	waitError,
 } from "../../internals/testUtils.js";
 import { createPromise } from "../../internals/testUtils.js";
-import { createTsonParseAsyncInner } from "../deserializeAsync.js";
 import {
 	mapIterable,
 	readableStreamToAsyncIterable,
@@ -453,7 +452,7 @@ test("does not crash node when it receives a promise rejection", async () => {
 	};
 	const stringify = createTsonStringifyAsync(opts);
 
-	const parse = createTsonParseAsyncInner(opts);
+	const parse = createTsonParseAsync(opts);
 
 	const original = {
 		foo: createPromise(() => {

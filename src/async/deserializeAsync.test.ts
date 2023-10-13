@@ -381,7 +381,7 @@ test("values missing when stream ends", async () => {
 		assert(err);
 
 		expect(err.message).toMatchInlineSnapshot(
-			'"Stream interrupted: Stream ended unexpectedly"',
+			'"Stream interrupted: Stream ended unexpectedly (state 1)"',
 		);
 	}
 
@@ -390,7 +390,7 @@ test("values missing when stream ends", async () => {
 		const err = await waitError(result.promise);
 
 		expect(err).toMatchInlineSnapshot(
-			"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly]",
+			'[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)]',
 		);
 	}
 
@@ -398,7 +398,7 @@ test("values missing when stream ends", async () => {
 	expect(parseOptions.onStreamError.mock.calls).toMatchInlineSnapshot(`
 		[
 		  [
-		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly],
+		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)],
 		  ],
 		]
 	`);
@@ -439,7 +439,7 @@ test("async: missing values of promise", async () => {
 	});
 
 	expect(parseOptions.onStreamError.mock.calls[0]![0]!).toMatchInlineSnapshot(
-		"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly]",
+		'[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)]',
 	);
 });
 
@@ -523,7 +523,7 @@ test("1 iterator completed but another never finishes", async () => {
 		`);
 
 		expect(err.message).toMatchInlineSnapshot(
-			'"Stream interrupted: Stream ended unexpectedly"',
+			'"Stream interrupted: Stream ended unexpectedly (state 1)"',
 		);
 	}
 
@@ -532,7 +532,7 @@ test("1 iterator completed but another never finishes", async () => {
 	expect(parseOptions.onStreamError.mock.calls).toMatchInlineSnapshot(`
 		[
 		  [
-		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly],
+		    [TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 1)],
 		  ],
 		]
 	`);
