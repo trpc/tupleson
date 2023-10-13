@@ -1,9 +1,9 @@
 import http from "node:http";
-import { createTsonStringifyAsync } from "tupleson";
+import { createTsonStreamAsync } from "tupleson";
 
 import { tsonOptions } from "./shared.js";
 
-const tsonStringifyAsync = createTsonStringifyAsync(tsonOptions);
+const tsonStringifyAsync = createTsonStreamAsync(tsonOptions);
 
 const randomNumber = (min: number, max: number) =>
 	Math.floor(Math.random() * (max - min + 1) + min);

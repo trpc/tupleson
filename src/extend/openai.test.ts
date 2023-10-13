@@ -19,7 +19,7 @@ test.skipIf(!apiKey)("openai", async () => {
 		types: [tsonAsyncIterable, tsonPromise],
 	});
 
-	const stringified = tson.stringify({
+	const stringified = tson.stringifyJsonStream({
 		stream: await openai.chat.completions.create({
 			messages: [{ content: "Say this is a test", role: "user" }],
 			model: "gpt-4",
@@ -27,7 +27,7 @@ test.skipIf(!apiKey)("openai", async () => {
 		}),
 	});
 
-	const parsed = await tson.parse(stringified);
+	const parsed = await tson.parseJsonStream(stringified);
 
 	let buffer = "";
 	for await (const out of parsed.stream) {

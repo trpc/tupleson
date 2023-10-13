@@ -4,7 +4,7 @@ import { tsonAsyncIterable, tsonBigint, tsonPromise } from "../index.js";
 import { sleep } from "../internals/testUtils.js";
 import {
 	createAsyncTsonSerialize,
-	createTsonStringifyAsync,
+	createTsonStreamAsync,
 } from "./serializeAsync.js";
 
 test("serialize promise", async () => {
@@ -158,7 +158,7 @@ test("serialize async iterable", async () => {
 });
 
 test("stringify async iterable + promise", async () => {
-	const stringify = createTsonStringifyAsync({
+	const stringify = createTsonStreamAsync({
 		nonce: () => "__tson",
 		types: [tsonAsyncIterable, tsonPromise, tsonBigint],
 	});
