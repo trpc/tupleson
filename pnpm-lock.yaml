@@ -190,8 +190,8 @@ importers:
         version: link:../..
     devDependencies:
       '@types/node':
-        specifier: ^20
-        version: 20.8.5
+        specifier: ^18.16.16
+        version: 18.18.3
       '@types/react':
         specifier: ^18
         version: 18.2.28
@@ -1382,18 +1382,12 @@ packages:
   /@types/node-fetch@2.6.6:
     resolution: {integrity: sha512-95X8guJYhfqiuVVhRFxVQcf4hW/2bCuoPwDasMf/531STFoNoWTT7YDnWdXHEZKqAGUigmpG31r2FE70LwnzJw==}
     dependencies:
-      '@types/node': 20.8.5
+      '@types/node': 18.18.3
       form-data: 4.0.0
     dev: true
 
   /@types/node@18.18.3:
     resolution: {integrity: sha512-0OVfGupTl3NBFr8+iXpfZ8NR7jfFO+P1Q+IO/q0wbo02wYkP5gy36phojeYWpLQ6WAMjl+VfmqUk2YbUfp0irA==}
-    dev: true
-
-  /@types/node@20.8.5:
-    resolution: {integrity: sha512-SPlobFgbidfIeOYlzXiEjSYeIJiOCthv+9tSQVpvk4PAdIIc+2SmjNVzWXk9t0Y7dl73Zdf+OgXKHX9XtkqUpw==}
-    dependencies:
-      undici-types: 5.25.3
     dev: true
 
   /@types/normalize-package-data@2.4.2:
@@ -7116,10 +7110,6 @@ packages:
       has-bigints: 1.0.2
       has-symbols: 1.0.3
       which-boxed-primitive: 1.0.2
-    dev: true
-
-  /undici-types@5.25.3:
-    resolution: {integrity: sha512-Ga1jfYwRn7+cP9v8auvEXN1rX3sWqlayd4HP7OKk4mZWylEmu3KzXDUGrQUN6Ol7qo1gPvB2e5gX6udnyEPgdA==}
     dev: true
 
   /unescape-js@1.1.4:
