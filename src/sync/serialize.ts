@@ -1,4 +1,4 @@
-import { TsonCircularReferenceError } from "../errors.js";
+// import { TsonCircularReferenceError } from "../errors.js";
 import { GetNonce, getDefaultNonce } from "../internals/getNonce.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
@@ -13,7 +13,7 @@ import {
 	TsonTypeTesterPrimitive,
 } from "./syncTypes.js";
 
-type WalkFn = (value: unknown) => unknown;
+type WalkFn = (value: unknown, path?: (number | string)[]) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 
 function getHandlers(opts: TsonOptions) {
@@ -56,25 +56,12 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 	const [getNonce, nonPrimitive, byPrimitive] = getHandlers(opts);
 
 	const walker: WalkerFactory = (nonce) => {
-		const seen = new WeakSet();
+		const seen = new WeakMap<object, (number | string)[]>();
 		const cache = new WeakMap<object, unknown>();
 
-		const walk: WalkFn = (value) => {
+		const walk: WalkFn = (value, path = []) => {
 			const type = typeof value;
 			const isComplex = !!value && type === "object";
-
-			if (isComplex) {
-				if (seen.has(value)) {
-					const cached = cache.get(value);
-					if (!cached) {
-						throw new TsonCircularReferenceError(value);
-					}
-
-					return cached;
-				}
-
-				seen.add(value);
-			}
 
 			const cacheAndReturn = (result: unknown) => {
 				if (isComplex) {
@@ -84,6 +71,15 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 				return result;
 			};
 
+			if (isComplex) {
+				const prev = seen.get(value);
+				if (prev) {
+					return ["Reference", prev.join(nonce), nonce] as TsonTuple;
+				}
+
+				seen.set(value, path);
+			}
+
 			const primitiveHandler = byPrimitive[type];
 			if (
 				primitiveHandler &&
@@ -92,7 +88,7 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 				return cacheAndReturn([
 					primitiveHandler.key,
 					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					walk(primitiveHandler.serialize!(value)),
+					walk(primitiveHandler.serialize!(value), path),
 					nonce,
 				] as TsonTuple);
 			}
@@ -102,13 +98,15 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 					return cacheAndReturn([
 						handler.key,
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						walk(handler.serialize!(value)),
+						walk(handler.serialize!(value), path),
 						nonce,
 					] as TsonTuple);
 				}
 			}
 
-			return cacheAndReturn(mapOrReturn(value, walk));
+			return cacheAndReturn(
+				mapOrReturn(value, (value, key) => walk(value, [...path, key])),
+			);
 		};
 
 		return walk;
