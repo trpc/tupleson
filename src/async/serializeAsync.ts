@@ -265,7 +265,7 @@ export function crateTsonSSEResponse(opts: TsonAsyncOptions) {
 
 			controller.enqueue(`data: ${JSON.stringify(head)}\n\n`);
 			for await (const chunk of iterable) {
-				controller.enqueue(`data: ${JSON.stringify(chunk)}`);
+				controller.enqueue(`data: ${JSON.stringify(chunk)}\n\n`);
 			}
 		}
 
