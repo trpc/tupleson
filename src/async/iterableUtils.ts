@@ -1,5 +1,3 @@
-import type { TsonSerialized } from "../sync/syncTypes.js";
-
 import { assert } from "../internals/assert.js";
 
 export async function* readableStreamToAsyncIterable<T>(
