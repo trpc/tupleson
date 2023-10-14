@@ -1,54 +1,41 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 import type { ResponseShape } from "./api/sse/finite/route";
 
-import { createEventSource } from "./tsonOptions";
+import { createEventSource, isAbortError } from "./tsonOptions";
 
 export function StreamedTuple() {
-	const [list, setList] = useState<number[]>([]);
+	const [list, setList] = useState<null | number[]>(null);
 
-	const handleStream = useCallback(() => {
+	useEffect(() => {
 		const abortSignal = new AbortController();
 		createEventSource<ResponseShape>("/api/sse/finite", {
 			signal: abortSignal.signal,
 		})
 			.then(async (shape) => {
-				for await (const item of shape.finiteListGenerator) {
-					if (item === undefined) {
-						throw new Error("item is undefined");
-					}
-
-					setList((list) => [...list, item]);
+				for await (const time of shape.finiteListGenerator) {
+					setList((list) => [...(list ?? []), time]);
 				}
 			})
 			.catch((err) => {
-				console.error(err);
+				if (isAbortError(err)) {
+					console.log("aborted - might be React doing its double render thing");
+				} else {
+					console.error(err);
+				}
 			});
+
+		return () => {
+			abortSignal.abort();
+		};
 	}, []);
 
 	return (
-		<div
-			style={{
-				alignItems: "center",
-				display: "flex",
-				flexDirection: "column",
-			}}
-		>
-			<button onClick={handleStream}>Stream</button>
-			<div
-				style={{
-					display: "flex",
-					flexDirection: "row",
-					flexWrap: "wrap",
-					justifyContent: "center",
-				}}
-			>
-				{list.map((item, index) => (
-					<div key={index}>{item}</div>
-				))}
-			</div>
-		</div>
+		<>
+			{list?.map((item, index) => <Fragment key={index}>{item}</Fragment>) ??
+				"...."}
+		</>
 	);
 }
