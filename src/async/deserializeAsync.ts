@@ -284,14 +284,18 @@ export function createTsonParseEventSource(opts: TsonAsyncOptions) {
 
 		signal?.addEventListener("abort", onAbort);
 
-		eventSource.onmessage = (msg) => {
-			if (msg.data === '["__tson_disconnect"]') {
-				eventSource.close();
-			}
+		// eventSource.addEventListener("head", (e) => {
+		// 	controller.enqueue(JSON.parse(e.data));
+		// });
 
+		eventSource.onmessage = (msg) => {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			controller.enqueue(JSON.parse(msg.data));
 		};
+
+		eventSource.addEventListener("close", () => {
+			controller.close();
+		});
 
 		const iterable = readableStreamToAsyncIterable(stream);
 		return (await instance(iterable, parseOpts)) as TValue;
