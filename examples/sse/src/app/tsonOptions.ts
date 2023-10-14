@@ -1,5 +1,4 @@
 import {
-	TsonAbortError,
 	TsonAsyncOptions,
 	createTsonParseEventSource,
 	createTsonSSEResponse,
@@ -24,10 +23,3 @@ export const tsonOptions: TsonAsyncOptions = {
 };
 export const createSSEResponse = createTsonSSEResponse(tsonOptions);
 export const createEventSource = createTsonParseEventSource(tsonOptions);
-
-export function isAbortError(err: unknown): err is TsonAbortError {
-	return (
-		err instanceof TsonAbortError ||
-		(err instanceof Error && err.cause === TsonAbortError)
-	);
-}
