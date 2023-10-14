@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 
 import type { ResponseShape } from "./api/sse/finite/route";
 
-import { createEventSource } from "./tsonOptions";
+import { createEventSource, isAbortError } from "./tsonOptions";
 
 export function StreamedTuple() {
 	const [list, setList] = useState<null | number[]>(null);
@@ -20,7 +20,11 @@ export function StreamedTuple() {
 				}
 			})
 			.catch((err) => {
-				console.error(err);
+				if (isAbortError(err)) {
+					console.log("aborted - might be React doing its double render thing");
+				} else {
+					console.error(err);
+				}
 			});
 
 		return () => {
