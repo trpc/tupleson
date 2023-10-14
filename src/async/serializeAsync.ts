@@ -264,6 +264,12 @@ export function createTsonSSEResponse(opts: TsonAsyncOptions) {
 				controller.enqueue(`data: ${JSON.stringify(chunk)}\n\n`);
 			}
 
+			// indicate the end of the stream
+
+			controller.enqueue(`data: ["__tson_disconnect"]\n\n`);
+
+			controller.close();
+
 			controller.error(
 				new TsonStreamInterruptedError(new Error("SSE stream ended")),
 			);
@@ -278,6 +284,8 @@ export function createTsonSSEResponse(opts: TsonAsyncOptions) {
 				"Cache-Control": "no-cache",
 				Connection: "keep-alive",
 				"Content-Type": "text/event-stream",
+				// prevent buffering by nginx
+				"X-Accel-Buffering": "no",
 			},
 			status: 200,
 		});

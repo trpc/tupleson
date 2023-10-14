@@ -1,4 +1,5 @@
 import { StreamedTime } from "./StreamedTime";
+import { StreamedTuple } from "./StreamedTuple";
 
 /**
  * v0 by Vercel.
@@ -10,6 +11,7 @@ export default function Page() {
 			<div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-md">
 				<h1 className="text-2xl text-center text-gray-800 dark:text-gray-200 font-mono">
 					<StreamedTime />
+					<StreamedTuple />
 				</h1>
 			</div>
 		</section>

@@ -285,8 +285,12 @@ export function createTsonParseEventSource(opts: TsonAsyncOptions) {
 		signal?.addEventListener("abort", onAbort);
 
 		eventSource.onmessage = (msg) => {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-			controller.enqueue(JSON.parse(msg.data));
+			if (msg.data === '["__tson_disconnect"]') {
+				eventSource.close();
+			} else {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+				controller.enqueue(JSON.parse(msg.data));
+			}
 		};
 
 		const iterable = readableStreamToAsyncIterable(stream);
