@@ -48,6 +48,17 @@ export function createReadableStream<TValue = unknown>() {
 	return [stream, controller] as const;
 }
 
+/**
+ * Creates an event that adheres to the [Event Stream format](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#event_stream_format)
+ * 
+ * When called without any arguments, it returns a keep-alive event.
+ * @param opts {{ data?: TData; event?: TEvent; id?: TId; retry?: TRetry }}
+ * @param opts.data The data to send to the client. This value will be seriaized to JSON.
+ * @param opts.event The type of event to send to the client. Defaults to `message`.
+ * @param opts.id The id of the event to send to the client, used to resume the connection.
+ * @param opts.retry The reconnection time. If the connection to the server is lost, the
+ * browser will wait for the specified time before attempting to reconnect.
+ */
 export function createServerEvent<
 	const TData,
 	const TEvent extends string,
