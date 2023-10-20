@@ -91,6 +91,7 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 					const idx = serializedValue as TsonAsyncIndex;
 
 					if (cache.has(idx)) {
+						// We already have this async value in the cache - so this is probably a reconnect
 						assert(
 							parseOptions.reconnect,
 							"Duplicate index found but reconnect is off",
