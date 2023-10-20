@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { StreamedTuple } from "./finite/StreamedTuple";
-import { StreamedTime } from "./infinite/StreamedTime";
+import { StreamedTuple } from "./sse-finite/StreamedTuple";
+import { StreamedTime } from "./sse-infinite/StreamedTime";
 
 /**
  * v0 by Vercel.
