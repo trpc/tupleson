@@ -1,8 +1,8 @@
 {
-	"name": "@examples/sse",
+	"name": "@examples/async",
 	"version": "0.1.0",
 	"private": true,
-	"description": "SSE example",
+	"description": "Tupleson example with Next.js",
 	"license": "MIT",
 	"scripts": {
 		"build": "next build",
