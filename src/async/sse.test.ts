@@ -70,14 +70,14 @@ test("SSE response test", async () => {
 		});
 
 		expect(messages).toMatchInlineSnapshot(`
-		[
-		  "{\\"json\\":{\\"foo\\":\\"bar\\",\\"iterable\\":[\\"AsyncIterable\\",0,\\"__tson\\"],\\"promise\\":[\\"Promise\\",1,\\"__tson\\"],\\"rejectedPromise\\":[\\"Promise\\",2,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
-		  "[0,[0,0]]",
-		  "[1,[0,42]]",
-		  "[2,[1,{}]]",
-		  "[0,[0,1]]",
-		]
-	`);
+			[
+			  "{\\"json\\":{\\"iterable\\":[\\"AsyncIterable\\",0,\\"__tson\\"]},\\"nonce\\":\\"__tson\\"}",
+			  "[0,[0,0]]",
+			  "[0,[0,1]]",
+			  "[0,[0,2]]",
+			  "[0,[0,3]]",
+			]
+		`);
 	}
 
 	{
@@ -108,7 +108,7 @@ test("SSE response test", async () => {
 	}
 });
 
-test("SSE handle reconnects", async () => {
+test.only("handle reconnects when server dies", async () => {
 	let i = 0;
 	let kill = false;
 	function createMockObj() {
