@@ -3,11 +3,16 @@ import { EventSourcePolyfill, NativeEventSource } from "event-source-polyfill";
 import { expect, test } from "vitest";
 (global as any).EventSource = NativeEventSource || EventSourcePolyfill;
 
-import { TsonAsyncOptions, tsonAsyncIterable, tsonPromise } from "../index.js";
+import {
+	TsonAsyncOptions,
+	tsonAsyncIterable,
+	tsonBigint,
+	tsonPromise,
+} from "../index.js";
 import { createTestServer, sleep } from "../internals/testUtils.js";
 import { createTsonAsync } from "./createTsonAsync.js";
 
-test("SSE response test", async () => {
+test.only("SSE response test", async () => {
 	function createMockObj() {
 		async function* generator() {
 			let i = 0;
@@ -108,17 +113,24 @@ test("SSE response test", async () => {
 	}
 });
 
-test.only("handle reconnects when server dies", async () => {
+test("handle reconnects when response is interrupted", async () => {
 	let i = 0;
+
 	let kill = false;
 	function createMockObj() {
 		async function* generator() {
 			while (true) {
-				yield i++;
+				yield BigInt(i);
+				i++;
 				await sleep(10);
 
 				if (i === 5) {
 					kill = true;
+				}
+
+				if (i > 10) {
+					// done
+					return;
 				}
 			}
 		}
@@ -132,8 +144,8 @@ test.only("handle reconnects when server dies", async () => {
 
 	// ------------- server -------------------
 	const opts = {
-		nonce: () => "__tson",
-		types: [tsonPromise, tsonAsyncIterable],
+		nonce: () => "__tson" + i, // add index to nonce to make sure it's not cached
+		types: [tsonPromise, tsonAsyncIterable, tsonBigint],
 	} satisfies TsonAsyncOptions;
 
 	const server = await createTestServer({
@@ -167,14 +179,28 @@ test.only("handle reconnects when server dies", async () => {
 	// e2e
 	const ac = new AbortController();
 	const shape = await tson.createEventSource<MockObj>(server.url, {
+		reconnect: true,
 		signal: ac.signal,
 	});
 
-	const messages: number[] = [];
+	const messages: bigint[] = [];
 
 	for await (const value of shape.iterable) {
 		messages.push(value);
 	}
 
-	expect(messages.length).toMatchInlineSnapshot();
+	expect(messages).toMatchInlineSnapshot(`
+		[
+		  0n,
+		  1n,
+		  2n,
+		  3n,
+		  4n,
+		  5n,
+		  7n,
+		  8n,
+		  9n,
+		  10n,
+		]
+	`);
 });

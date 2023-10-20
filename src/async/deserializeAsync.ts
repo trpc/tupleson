@@ -35,6 +35,11 @@ export interface TsonParseAsyncOptions {
 	 * On stream error
 	 */
 	onStreamError?: (err: TsonStreamInterruptedError) => void;
+	/**
+	 * Allow reconnecting to the stream if it's interrupted
+	 * @default false
+	 */
+	reconnect?: boolean;
 }
 
 type TsonParseAsync = <TValue>(
@@ -116,6 +121,19 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 				}
 
 				const { value } = nextValue;
+
+				if (!Array.isArray(value)) {
+					// we got the beginning of a new stream - probably because a reconnect
+					// we assume this new stream will have the same shape and restart the walker with the nonce
+					if (!parseOptions.reconnect) {
+						throw new TsonStreamInterruptedError(
+							"Stream interrupted and reconnecting is not allowed",
+						);
+					}
+
+					await getStreamedValues(walker(value.nonce));
+					return;
+				}
 
 				const [index, result] = value as TsonAsyncValueTuple;
 
