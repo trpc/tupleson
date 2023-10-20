@@ -1,5 +1,12 @@
 
 
+## [0.20.2](https://github.com/trpc/tupleson/compare/0.20.1...0.20.2) (2023-10-20)
+
+
+### Bug Fixes
+
+* update readme StackBlitz link ([#73](https://github.com/trpc/tupleson/issues/73)) ([4ebb90e](https://github.com/trpc/tupleson/commit/4ebb90e3e6d8ce9201e3e47896868ad8546617bd))
+
 ## [0.20.1](https://github.com/trpc/tupleson/compare/0.20.0...0.20.1) (2023-10-20)
 
 
