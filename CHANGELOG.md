@@ -1,5 +1,12 @@
 
 
+## [0.20.3](https://github.com/trpc/tupleson/compare/0.20.2...0.20.3) (2023-10-20)
+
+
+### Bug Fixes
+
+* more lax abort handling ([#74](https://github.com/trpc/tupleson/issues/74)) ([3e469d5](https://github.com/trpc/tupleson/commit/3e469d5de6ca6457fda5391cad0ce257d4861e42))
+
 ## [0.20.2](https://github.com/trpc/tupleson/compare/0.20.1...0.20.2) (2023-10-20)
 
 
