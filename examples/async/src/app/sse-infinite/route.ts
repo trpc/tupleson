@@ -5,7 +5,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /**
  * This function returns the object we will be sending to the client.
  */
-export function getResponseShape() {
+function getResponseShape() {
 	async function* currentTimeGenerator() {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		while (true) {
