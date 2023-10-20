@@ -9,12 +9,14 @@
 		"pnpm-lock.yaml"
 	],
 	"words": [
+		"clsx",
 		"Codecov",
 		"codespace",
 		"commitlint",
 		"contributorsrc",
 		"conventionalcommits",
 		"deferreds",
+		"gzipped",
 		"Iterarable",
 		"KATT",
 		"kleur",
@@ -32,7 +34,6 @@
 		"tsup",
 		"tupleson",
 		"unevaled",
-		"wontfix",
-		"clsx"
+		"wontfix"
 	]
 }
