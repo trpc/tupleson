@@ -122,7 +122,7 @@ type Obj = typeof obj;
 ### 🤯 Streaming `Promise`s and `AsyncIterable`s
 
 - See example in [`./examples/async`](./examples/async)
-- [Test it on StackBlitz](https://stackblitz.com/github/trpc/tupleson/tree/main/examples/async?file=src/app/page.tsx&view=editor)
+- [Test it on StackBlitz](https://stackblitz.com/github/trpc/tupleson/tree/main/examples/async?file=src/app/page.tsx)
 
 ## 🧩 Extend with a custom serializer
 
