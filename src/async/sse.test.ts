@@ -12,7 +12,7 @@ import {
 import { createTestServer, sleep } from "../internals/testUtils.js";
 import { createTsonAsync } from "./createTsonAsync.js";
 
-test.only("SSE response test", async () => {
+test("SSE response test", async () => {
 	function createMockObj() {
 		async function* generator() {
 			let i = 0;
