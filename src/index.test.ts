@@ -134,6 +134,6 @@ test("async: bad init", async () => {
 	});
 
 	expect(err).toMatchInlineSnapshot(
-		'[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 0)]',
+		"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 0)]",
 	);
 });
