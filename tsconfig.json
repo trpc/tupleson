@@ -8,10 +8,7 @@
 		"outDir": "lib",
 		"resolveJsonModule": true,
 		"sourceMap": true,
-		"target": "ES2022",
-		"paths": {
-			"@/*": ["./src/@/*"]
-		}
+		"target": "ES2022"
 	},
 	"extends": "@tsconfig/strictest/tsconfig.json",
 	"include": ["src"]

@@ -10,7 +10,8 @@
 		"moduleResolution": "bundler",
 		"noEmit": true,
 		"paths": {
-			"~/*": ["./src/*"]
+			"~/*": ["./src/*"],
+			"@/*": ["./@/*"]
 		},
 		"plugins": [
 			{
