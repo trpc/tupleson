@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useState } from "react";
 
-import { createEventSource, isAbortError } from "~/utils/tsonOptions";
+import { createEventSource, isAbortError } from "~/tsonOptions";
 
 import type { ResponseShape } from "./route";
 
