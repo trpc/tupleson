@@ -141,7 +141,7 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 					// we assume this new stream will have the same shape and restart the walker with the nonce
 					if (!parseOptions.reconnect) {
 						throw new TsonStreamInterruptedError(
-							"Stream interrupted and reconnecting is not allowed",
+							"Stream got beginning of results but reconnecting is not enabled",
 						);
 					}
 
