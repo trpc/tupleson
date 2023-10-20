@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-import type { ResponseShape } from "./api/sse/infinite/route";
+import { createEventSource, isAbortError } from "~/utils/tsonOptions";
 
-import { createEventSource, isAbortError } from "./tsonOptions";
+import type { ResponseShape } from "./route";
 
 export function StreamedTime() {
 	const [time, setTime] = useState("....");

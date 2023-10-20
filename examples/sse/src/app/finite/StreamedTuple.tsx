@@ -2,9 +2,9 @@
 
 import { Fragment, useEffect, useState } from "react";
 
-import type { ResponseShape } from "./api/sse/finite/route";
+import { createEventSource, isAbortError } from "~/utils/tsonOptions";
 
-import { createEventSource, isAbortError } from "./tsonOptions";
+import type { ResponseShape } from "./route";
 
 export function StreamedTuple() {
 	const [list, setList] = useState<null | number[]>(null);
