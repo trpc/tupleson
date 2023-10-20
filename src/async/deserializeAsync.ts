@@ -33,6 +33,11 @@ type AnyTsonTransformerSerializeDeserialize =
 
 export interface TsonParseAsyncOptions {
 	/**
+	 * Event handler for when the stream reconnects
+	 * You can use this to do extra actions to ensure no messages were lost
+	 */
+	onReconnect?: () => void;
+	/**
 	 * On stream error
 	 */
 	onStreamError?: (err: TsonStreamInterruptedError) => void;
@@ -145,6 +150,7 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 						);
 					}
 
+					parseOptions.onReconnect?.();
 					await getStreamedValues(walker(value.nonce));
 					return;
 				}

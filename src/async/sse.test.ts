@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { EventSourcePolyfill, NativeEventSource } from "event-source-polyfill";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 (global as any).EventSource = NativeEventSource || EventSourcePolyfill;
 
 import {
@@ -212,15 +212,15 @@ test("handle reconnects - iterator wrapped in Promise", async () => {
 	function createMockObj() {
 		async function* generator() {
 			while (true) {
+				await sleep(10);
 				yield BigInt(i);
 				i++;
-				await sleep(10);
 
-				if (i === 5) {
+				if (i % 5 === 0) {
 					kill = true;
 				}
 
-				if (i > 10) {
+				if (i > 11) {
 					// done
 					return;
 				}
@@ -270,7 +270,9 @@ test("handle reconnects - iterator wrapped in Promise", async () => {
 
 	// e2e
 	const ac = new AbortController();
+	const onReconnect = vi.fn();
 	const shape = await tson.createEventSource<MockObj>(server.url, {
+		onReconnect,
 		reconnect: true,
 		signal: ac.signal,
 	});
@@ -288,11 +290,13 @@ test("handle reconnects - iterator wrapped in Promise", async () => {
 		  2n,
 		  3n,
 		  4n,
-		  5n,
+		  6n,
 		  7n,
 		  8n,
 		  9n,
-		  10n,
+		  11n,
 		]
 	`);
+
+	expect(onReconnect).toHaveBeenCalledTimes(2);
 });
