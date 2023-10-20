@@ -134,6 +134,6 @@ test("async: bad init", async () => {
 	});
 
 	expect(err).toMatchInlineSnapshot(
-		"[TsonError: Failed to initialize TSON stream]",
+		"[TsonStreamInterruptedError: Stream interrupted: Stream ended unexpectedly (state 0)]",
 	);
 });

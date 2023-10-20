@@ -45,7 +45,7 @@ export class TsonStreamInterruptedError extends TsonError {
 
 export class TsonAbortError extends TsonError {
 	constructor(cause: unknown) {
-		super("Aborted", { cause });
+		super("The user aborted a request.", { cause });
 		this.name = "TsonAbortError";
 	}
 }
