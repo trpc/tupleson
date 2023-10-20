@@ -19,6 +19,8 @@ function getResponseShape() {
 	};
 }
 
+export const dynamic = "force-dynamic";
+
 export type ResponseShape = ReturnType<typeof getResponseShape>;
 
 export function GET() {

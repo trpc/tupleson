@@ -26,6 +26,8 @@ function getResponseShape() {
 
 export type ResponseShape = ReturnType<typeof getResponseShape>;
 
+export const dynamic = "force-dynamic";
+
 export function GET() {
 	const res = createSSEResponse(getResponseShape());
 
