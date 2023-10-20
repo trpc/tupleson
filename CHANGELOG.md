@@ -1,5 +1,12 @@
 
 
+# [0.20.0](https://github.com/trpc/tupleson/compare/0.19.1...0.20.0) (2023-10-20)
+
+
+### Features
+
+* example tweak + add utils for creating JSON streams ([#70](https://github.com/trpc/tupleson/issues/70)) ([81cb0ca](https://github.com/trpc/tupleson/commit/81cb0ca5d2426d5d96912c2e9dd4b6aa4490983a))
+
 ## [0.19.1](https://github.com/trpc/tupleson/compare/0.19.0...0.19.1) (2023-10-20)
 
 
