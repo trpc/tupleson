@@ -20,6 +20,7 @@ const obj = {
 // obj.self = obj;
 
 const tson = createTson({
+	nonce: () => "__",
 	types: [tsonDate, tsonRegExp, tsonSet],
 });
 
