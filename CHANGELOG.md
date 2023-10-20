@@ -1,5 +1,12 @@
 
 
+# [0.21.0](https://github.com/trpc/tupleson/compare/0.20.4...0.21.0) (2023-10-20)
+
+
+### Features
+
+* handle reconnects when response is interrupted ([#77](https://github.com/trpc/tupleson/issues/77)) ([aa2cbad](https://github.com/trpc/tupleson/commit/aa2cbad179985c3204e52c9482b480694acbb426))
+
 ## [0.20.4](https://github.com/trpc/tupleson/compare/0.20.3...0.20.4) (2023-10-20)
 
 
