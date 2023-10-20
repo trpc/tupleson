@@ -1,5 +1,12 @@
 
 
+## [0.20.4](https://github.com/trpc/tupleson/compare/0.20.3...0.20.4) (2023-10-20)
+
+
+### Bug Fixes
+
+* close `eventSource` on stream end ([#76](https://github.com/trpc/tupleson/issues/76)) ([2cdfc8c](https://github.com/trpc/tupleson/commit/2cdfc8c0478479dcfd790b834feee7cf40f161b7))
+
 ## [0.20.3](https://github.com/trpc/tupleson/compare/0.20.2...0.20.3) (2023-10-20)
 
 
