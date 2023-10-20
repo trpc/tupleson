@@ -19,7 +19,7 @@ import {
 	TsonAsyncOptions,
 	TsonAsyncStringifier,
 } from "./asyncTypes.js";
-import { createReadableStream } from "./iterableUtils.js";
+import { createReadableStream, createServerEvent } from "./iterableUtils.js";
 
 type WalkFn = (value: unknown) => unknown;
 
@@ -259,10 +259,37 @@ export function createTsonSSEResponse(opts: TsonAsyncOptions) {
 		async function iterate() {
 			const [head, iterable] = serialize(value);
 
-			controller.enqueue(`data: ${JSON.stringify(head)}\n\n`);
+			controller.enqueue(
+				createServerEvent({
+					data: head,
+					//event: "head",
+					// id: "0",
+					// retry: 0,
+				}),
+			);
 			for await (const chunk of iterable) {
-				controller.enqueue(`data: ${JSON.stringify(chunk)}\n\n`);
+				controller.enqueue(
+					createServerEvent({
+						data: chunk,
+						// event: "tson",
+						// id: "0",
+						// retry: 0,
+					}),
+				);
 			}
+
+			// indicate the end of the stream
+
+			controller.enqueue(
+				createServerEvent({
+					data: null,
+					event: "close",
+					// id: "0",
+					// retry: 0,
+				}),
+			);
+
+			controller.close();
 
 			controller.error(
 				new TsonStreamInterruptedError(new Error("SSE stream ended")),
@@ -278,6 +305,8 @@ export function createTsonSSEResponse(opts: TsonAsyncOptions) {
 				"Cache-Control": "no-cache",
 				Connection: "keep-alive",
 				"Content-Type": "text/event-stream",
+				// prevent buffering by nginx
+				"X-Accel-Buffering": "no",
 			},
 			status: 200,
 		});

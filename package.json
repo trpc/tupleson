@@ -25,6 +25,7 @@
 	],
 	"scripts": {
 		"build": "tsup",
+		"dev": "tsup --watch",
 		"fix": "pnpm lint --fix && pnpm format:write",
 		"format": "prettier \"**/*\" --ignore-unknown",
 		"format:write": "pnpm format --write",

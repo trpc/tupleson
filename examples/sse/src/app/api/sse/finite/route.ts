@@ -1,4 +1,4 @@
-import { createSSEResponse } from "../../tsonOptions";
+import { createSSEResponse } from "../../../tsonOptions";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -6,21 +6,16 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * This function returns the object we will be sending to the client.
  */
 export function getResponseShape() {
-	async function* currentTimeGenerator() {
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		while (true) {
-			yield new Intl.DateTimeFormat("en-US", {
-				hour: "numeric",
-				hour12: false,
-				minute: "numeric",
-				second: "numeric",
-			}).format(new Date());
+	const tuple = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+	async function* finiteListGenerator() {
+		while (tuple.length) {
+			yield tuple.shift();
 			await sleep(500);
 		}
 	}
 
 	return {
-		currentTimeGenerator: currentTimeGenerator(),
+		finiteListGenerator: finiteListGenerator(),
 	};
 }
 
