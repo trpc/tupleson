@@ -1,5 +1,12 @@
 
 
+## [0.20.1](https://github.com/trpc/tupleson/compare/0.20.0...0.20.1) (2023-10-20)
+
+
+### Bug Fixes
+
+* mv `/examples/sse` -> `/examples/async` & update readme ([#72](https://github.com/trpc/tupleson/issues/72)) ([2da9db6](https://github.com/trpc/tupleson/commit/2da9db6fbe2ce562b3f0cab7dbade17c25af0c9a))
+
 # [0.20.0](https://github.com/trpc/tupleson/compare/0.19.1...0.20.0) (2023-10-20)
 
 
