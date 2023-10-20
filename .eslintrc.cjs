@@ -111,7 +111,7 @@ module.exports = {
 			},
 		},
 		{
-			files: ["./examples/sse/**/*.ts"],
+			files: ["./examples/async/**/*.ts"],
 			rules: {
 				"@typescript-eslint/no-unsafe-assignment": "off",
 				"@typescript-eslint/no-unsafe-call": "off",
