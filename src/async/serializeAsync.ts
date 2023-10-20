@@ -210,6 +210,9 @@ export function createAsyncTsonSerialize(
 	};
 }
 
+/**
+ * JSON stream
+ */
 export function createTsonStreamAsync(
 	opts: TsonAsyncOptions,
 ): TsonAsyncStringifier {
@@ -307,6 +310,39 @@ export function createTsonSSEResponse(opts: TsonAsyncOptions) {
 				"Content-Type": "text/event-stream",
 				// prevent buffering by nginx
 				"X-Accel-Buffering": "no",
+			},
+			status: 200,
+		});
+		return res as BrandSerialized<typeof res, TValue>;
+	};
+}
+
+/**
+ * JSON stream Response
+ */
+export function createTsonJsonStreamResponse(opts: TsonAsyncOptions) {
+	const serialize = createTsonStreamAsync(opts);
+
+	return <TValue>(value: TValue) => {
+		const [readable, controller] = createReadableStream<string>();
+
+		async function iterate() {
+			for await (const chunk of serialize(value)) {
+				controller.enqueue(chunk);
+			}
+
+			controller.close();
+		}
+
+		iterate().catch((err) => {
+			controller.error(err);
+		});
+
+		const res = new Response(readable, {
+			headers: {
+				"Cache-Control": "no-cache",
+				Connection: "keep-alive",
+				"Content-Type": "application/json",
 			},
 			status: 200,
 		});

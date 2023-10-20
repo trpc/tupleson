@@ -1,21 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 import { createEventSource, isAbortError } from "~/tsonOptions";
 
 import type { ResponseShape } from "./route";
 
-export function StreamedTime() {
-	const [time, setTime] = useState("....");
+export function StreamedTupleSSE() {
+	const [list, setList] = useState<null | number[]>(null);
+
 	useEffect(() => {
 		const abortSignal = new AbortController();
-		createEventSource<ResponseShape>("/sse-infinite", {
+		createEventSource<ResponseShape>("/sse-finite", {
 			signal: abortSignal.signal,
 		})
 			.then(async (shape) => {
-				for await (const time of shape.currentTimeGenerator) {
-					setTime(time);
+				for await (const time of shape.finiteListGenerator) {
+					setList((list) => [...(list ?? []), time]);
 				}
 			})
 			.catch((err) => {
@@ -30,5 +31,11 @@ export function StreamedTime() {
 			abortSignal.abort();
 		};
 	}, []);
-	return <>{time}</>;
+
+	return (
+		<>
+			{list?.map((item, index) => <Fragment key={index}>{item}</Fragment>) ??
+				"...."}
+		</>
+	);
 }
