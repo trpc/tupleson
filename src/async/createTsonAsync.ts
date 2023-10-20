@@ -2,9 +2,11 @@ import { TsonAsyncOptions } from "./asyncTypes.js";
 import {
 	createTsonParseAsync,
 	createTsonParseEventSource,
+	createTsonParseJsonStreamResponse,
 } from "./deserializeAsync.js";
 import {
 	createTsonSSEResponse,
+	createTsonSerializeJsonStreamResponse,
 	createTsonStreamAsync,
 } from "./serializeAsync.js";
 
@@ -13,8 +15,10 @@ import {
  * @internal
  */
 export const createTsonAsync = (opts: TsonAsyncOptions) => ({
-	createEventSourceParser: createTsonParseEventSource(opts),
+	createEventSource: createTsonParseEventSource(opts),
+	fromJsonStreamResponse: createTsonParseJsonStreamResponse(opts),
 	parseJsonStream: createTsonParseAsync(opts),
 	stringifyJsonStream: createTsonStreamAsync(opts),
+	toJsonStreamResponse: createTsonSerializeJsonStreamResponse,
 	toSSEResponse: createTsonSSEResponse(opts),
 });

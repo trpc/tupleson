@@ -86,7 +86,7 @@ test("SSE response test", async () => {
 	{
 		// e2e
 		const ac = new AbortController();
-		const shape = await tson.createEventSourceParser<MockObj>(server.url, {
+		const shape = await tson.createEventSource<MockObj>(server.url, {
 			signal: ac.signal,
 		});
 
