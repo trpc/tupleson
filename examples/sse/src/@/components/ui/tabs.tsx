@@ -16,7 +16,14 @@ const TabsContext = React.createContext<Context>(null as any);
 export function Tabs(props: {
 	children: React.ReactNode;
 	className?: string;
+	/**
+	 * The default tab
+	 */
 	defaultValue: string;
+	/**
+	 * Which search param to use
+	 * @default "tab"
+	 */
 	searchParam?: string;
 }) {
 	const { children, className, searchParam = "tab", ...other } = props;
