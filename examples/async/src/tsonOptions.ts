@@ -1,5 +1,4 @@
 import {
-	TsonAbortError,
 	TsonAsyncOptions,
 	createTsonParseEventSource,
 	createTsonParseJsonStreamResponse,
