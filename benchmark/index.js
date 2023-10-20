@@ -5,6 +5,7 @@ import { parse, stringify, uneval } from "devalue";
 import c from "kleur";
 import * as superjson from "superjson";
 import { createTson, tsonDate, tsonRegExp, tsonSet } from "tupleson";
+import { gzipSync } from "zlib";
 
 const obj = {
 	array: [{ foo: 1 }, { bar: 2 }, { baz: 3 }],
@@ -28,27 +29,19 @@ const devalue_stringified = stringify(obj);
 const arson_stringified = ARSON.stringify(obj);
 const tson_serialized = tson.stringify(obj);
 
-console.log(
-	`superjson output: ${c.bold().cyan(superjson_serialized.length)} bytes`,
-);
+const printSize = (label, str) => {
+	console.log(
+		`${label}: ${c.bold().cyan(str.length)} bytes / ${c
+			.bold()
+			.cyan(gzipSync(str).length)} bytes gzipped`,
+	);
+};
 
-console.log(`tson output: ${c.bold().cyan(tson_serialized.length)} bytes`);
-// console.log(superjson_serialized);
-console.log(
-	`devalue.uneval output: ${c.bold().cyan(devalue_unevaled.length)} bytes`,
-);
-// console.log(devalue_unevaled);
-console.log(
-	`devalue.stringify output: ${c
-		.bold()
-		.cyan(devalue_stringified.length)} bytes`,
-);
-// console.log(devalue_stringified);
-console.log(`arson output: ${c.bold().cyan(arson_stringified.length)} bytes`);
-// console.log(arson_stringified);
-
-// const superjson_deserialized = superjson.parse(superjson_serialized);
-// const devalue_deserialized = eval(`(${devalue_unevaled})`);
+printSize("superjson", superjson_serialized);
+printSize("tson", tson_serialized);
+printSize("devalue.uneval", devalue_unevaled);
+printSize("devalue.stringify", devalue_stringified);
+printSize("arson", arson_stringified);
 
 const iterations = 1e6;
 
