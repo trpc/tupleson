@@ -1,5 +1,12 @@
 
 
+## [0.19.1](https://github.com/trpc/tupleson/compare/0.19.0...0.19.1) (2023-10-20)
+
+
+### Bug Fixes
+
+* close event-source connection when response is complete ([#69](https://github.com/trpc/tupleson/issues/69)) ([9a90d4c](https://github.com/trpc/tupleson/commit/9a90d4c53898928b45632a3f61c7553f071969a2))
+
 # [0.19.0](https://github.com/trpc/tupleson/compare/0.18.0...0.19.0) (2023-10-13)
 
 
