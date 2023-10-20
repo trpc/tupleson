@@ -11,6 +11,7 @@ export function StreamedTimeSSE() {
 	useEffect(() => {
 		const abortSignal = new AbortController();
 		createEventSource<ResponseShape>("/sse-infinite", {
+			reconnect: true,
 			signal: abortSignal.signal,
 		})
 			.then(async (shape) => {

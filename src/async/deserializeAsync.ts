@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { TsonError } from "../errors.js";
@@ -32,9 +33,19 @@ type AnyTsonTransformerSerializeDeserialize =
 
 export interface TsonParseAsyncOptions {
 	/**
+	 * Event handler for when the stream reconnects
+	 * You can use this to do extra actions to ensure no messages were lost
+	 */
+	onReconnect?: () => void;
+	/**
 	 * On stream error
 	 */
 	onStreamError?: (err: TsonStreamInterruptedError) => void;
+	/**
+	 * Allow reconnecting to the stream if it's interrupted
+	 * @default false
+	 */
+	reconnect?: boolean;
 }
 
 type TsonParseAsync = <TValue>(
@@ -62,10 +73,11 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 		iterable: TsonDeserializeIterable,
 		parseOptions: TsonParseAsyncOptions,
 	) => {
-		const cache = new Map<
+		const controllers = new Map<
 			TsonAsyncIndex,
 			ReadableStreamDefaultController<unknown>
 		>();
+		const cache = new Map<TsonAsyncIndex, unknown>();
 		const iterator = iterable[Symbol.asyncIterator]();
 
 		const walker: WalkerFactory = (nonce) => {
@@ -83,6 +95,15 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 
 					const idx = serializedValue as TsonAsyncIndex;
 
+					if (cache.has(idx)) {
+						// We already have this async value in the cache - so this is probably a reconnect
+						assert(
+							parseOptions.reconnect,
+							"Duplicate index found but reconnect is off",
+						);
+						return cache.get(idx);
+					}
+
 					const [readable, controller] = createReadableStream();
 
 					// the `start` method is called "immediately when the object is constructed"
@@ -90,15 +111,18 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 					// so we're guaranteed that the controller is set in the cache
 					assert(controller, "Controller not set - this is a bug");
 
-					cache.set(idx, controller);
+					controllers.set(idx, controller);
 
-					return transformer.deserialize({
+					const result = transformer.deserialize({
 						close() {
 							controller.close();
-							cache.delete(idx);
+							controllers.delete(idx);
 						},
 						reader: readable.getReader(),
 					});
+
+					cache.set(idx, result);
+					return result;
 				}
 
 				return mapOrReturn(value, walk);
@@ -117,16 +141,33 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 
 				const { value } = nextValue;
 
+				if (!Array.isArray(value)) {
+					// we got the beginning of a new stream - probably because a reconnect
+					// we assume this new stream will have the same shape and restart the walker with the nonce
+
+					parseOptions.onReconnect?.();
+
+					assert(
+						parseOptions.reconnect,
+						"Stream got beginning of results but reconnecting is not enabled",
+					);
+
+					await getStreamedValues(walker(value.nonce));
+					return;
+				}
+
 				const [index, result] = value as TsonAsyncValueTuple;
 
-				const controller = cache.get(index);
+				const controller = controllers.get(index);
 
 				const walkedResult = walk(result);
 
-				assert(controller, `No stream found for index ${index}`);
+				if (!parseOptions.reconnect) {
+					assert(controller, `No stream found for index ${index}`);
+				}
 
 				// resolving deferred
-				controller.enqueue(walkedResult);
+				controller?.enqueue(walkedResult);
 			}
 		}
 
@@ -152,7 +193,7 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 					const err = new TsonStreamInterruptedError(cause);
 
 					// enqueue the error to all the streams
-					for (const controller of cache.values()) {
+					for (const controller of controllers.values()) {
 						controller.enqueue(err);
 					}
 
