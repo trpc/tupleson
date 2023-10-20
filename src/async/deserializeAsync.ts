@@ -144,11 +144,11 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 				if (!Array.isArray(value)) {
 					// we got the beginning of a new stream - probably because a reconnect
 					// we assume this new stream will have the same shape and restart the walker with the nonce
-					if (!parseOptions.reconnect) {
-						throw new TsonStreamInterruptedError(
-							"Stream got beginning of results but reconnecting is not enabled",
-						);
-					}
+
+					assert(
+						parseOptions.reconnect,
+						"Stream got beginning of results but reconnecting is not enabled",
+					);
 
 					parseOptions.onReconnect?.();
 					await getStreamedValues(walker(value.nonce));
