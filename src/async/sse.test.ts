@@ -18,7 +18,7 @@ test("SSE response test", async () => {
 			let i = 0;
 			while (true) {
 				yield i++;
-				await sleep(100);
+				await sleep(10);
 			}
 		}
 

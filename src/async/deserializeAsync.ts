@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { TsonError } from "../errors.js";
@@ -67,10 +68,11 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 		iterable: TsonDeserializeIterable,
 		parseOptions: TsonParseAsyncOptions,
 	) => {
-		const cache = new Map<
+		const controllers = new Map<
 			TsonAsyncIndex,
 			ReadableStreamDefaultController<unknown>
 		>();
+		const cache = new Map<TsonAsyncIndex, unknown>();
 		const iterator = iterable[Symbol.asyncIterator]();
 
 		const walker: WalkerFactory = (nonce) => {
@@ -88,6 +90,14 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 
 					const idx = serializedValue as TsonAsyncIndex;
 
+					if (cache.has(idx)) {
+						assert(
+							parseOptions.reconnect,
+							"Duplicate index found but reconnect is off",
+						);
+						return cache.get(idx);
+					}
+
 					const [readable, controller] = createReadableStream();
 
 					// the `start` method is called "immediately when the object is constructed"
@@ -95,15 +105,18 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 					// so we're guaranteed that the controller is set in the cache
 					assert(controller, "Controller not set - this is a bug");
 
-					cache.set(idx, controller);
+					controllers.set(idx, controller);
 
-					return transformer.deserialize({
+					const result = transformer.deserialize({
 						close() {
 							controller.close();
-							cache.delete(idx);
+							controllers.delete(idx);
 						},
 						reader: readable.getReader(),
 					});
+
+					cache.set(idx, result);
+					return result;
 				}
 
 				return mapOrReturn(value, walk);
@@ -137,14 +150,16 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 
 				const [index, result] = value as TsonAsyncValueTuple;
 
-				const controller = cache.get(index);
+				const controller = controllers.get(index);
 
 				const walkedResult = walk(result);
 
-				assert(controller, `No stream found for index ${index}`);
+				if (!parseOptions.reconnect) {
+					assert(controller, `No stream found for index ${index}`);
+				}
 
 				// resolving deferred
-				controller.enqueue(walkedResult);
+				controller?.enqueue(walkedResult);
 			}
 		}
 
@@ -170,7 +185,7 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 					const err = new TsonStreamInterruptedError(cause);
 
 					// enqueue the error to all the streams
-					for (const controller of cache.values()) {
+					for (const controller of controllers.values()) {
 						controller.enqueue(err);
 					}
 
