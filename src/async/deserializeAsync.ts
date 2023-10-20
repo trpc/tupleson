@@ -303,7 +303,7 @@ export function createTsonParseEventSource(opts: TsonAsyncOptions) {
 	};
 }
 
-export function createTsonParseFetchStreamResponse(opts: TsonAsyncOptions) {
+export function createTsonParseJsonStreamResponse(opts: TsonAsyncOptions) {
 	const instance = createTsonParseAsync(opts);
 
 	return async <TValue = unknown>(response: Response) => {

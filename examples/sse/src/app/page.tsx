@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import { StreamedTupleJsonStream } from "./json-stream-finite/StreamedTupleJsonStream";
 import { StreamedTupleSSE } from "./sse-finite/StreamedTupleSSE";
 import { StreamedTimeSSE } from "./sse-infinite/StreamedTimeSSE";
 
@@ -17,13 +18,17 @@ import { StreamedTimeSSE } from "./sse-infinite/StreamedTimeSSE";
 export default function Page() {
 	return (
 		<div className="flex flex-col h-screen justify-center items-center bg-muted">
-			<Tabs className="w-[400px]" defaultValue="account" searchParam="tab">
+			<Tabs
+				className="w-[400px]"
+				defaultValue="json-stream--finite"
+				searchParam="tab"
+			>
 				<TabsList className="grid w-full grid-cols-3">
-					<TabsTrigger value="json-stream">JSON stream</TabsTrigger>
+					<TabsTrigger value="json-stream--finite">JSON stream</TabsTrigger>
 					<TabsTrigger value="sse--finite">SSE Finite</TabsTrigger>
 					<TabsTrigger value="sse--infinite">SSE infinite</TabsTrigger>
 				</TabsList>
-				<TabsContent value="json-stream">
+				<TabsContent value="json-stream--finite">
 					<Card>
 						<CardHeader>
 							<CardTitle>JSON stream</CardTitle>
@@ -32,7 +37,7 @@ export default function Page() {
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-2">
-							<StreamedTupleSSE />
+							<StreamedTupleJsonStream />
 						</CardContent>
 					</Card>
 				</TabsContent>

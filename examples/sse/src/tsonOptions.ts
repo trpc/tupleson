@@ -2,7 +2,9 @@ import {
 	TsonAbortError,
 	TsonAsyncOptions,
 	createTsonParseEventSource,
+	createTsonParseJsonStreamResponse,
 	createTsonSSEResponse,
+	createTsonSerializeJsonStreamResponse,
 	tsonAsyncIterable,
 	tsonBigint,
 	tsonPromise,
@@ -24,6 +26,11 @@ export const tsonOptions: TsonAsyncOptions = {
 };
 export const createSSEResponse = createTsonSSEResponse(tsonOptions);
 export const createEventSource = createTsonParseEventSource(tsonOptions);
+
+export const createJsonStreamResponse =
+	createTsonSerializeJsonStreamResponse(tsonOptions);
+export const parseJsonStreamResponse =
+	createTsonParseJsonStreamResponse(tsonOptions);
 
 export function isAbortError(err: unknown): err is TsonAbortError {
 	return (

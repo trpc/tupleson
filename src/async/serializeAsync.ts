@@ -320,7 +320,7 @@ export function createTsonSSEResponse(opts: TsonAsyncOptions) {
 /**
  * JSON stream Response
  */
-export function createTsonJsonStreamResponse(opts: TsonAsyncOptions) {
+export function createTsonSerializeJsonStreamResponse(opts: TsonAsyncOptions) {
 	const serialize = createTsonStreamAsync(opts);
 
 	return <TValue>(value: TValue) => {
