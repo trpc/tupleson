@@ -11,10 +11,6 @@ import { StreamedTupleJsonStream } from "./json-stream-finite/StreamedTupleJsonS
 import { StreamedTupleSSE } from "./sse-finite/StreamedTupleSSE";
 import { StreamedTimeSSE } from "./sse-infinite/StreamedTimeSSE";
 
-/**
- * v0 by Vercel.
- * @see https://v0.dev/t/Qe7NQkqAiEG
- */
 export default function Page() {
 	return (
 		<div className="flex flex-col h-screen justify-center items-center bg-muted">
