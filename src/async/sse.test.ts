@@ -18,10 +18,7 @@ test("SSE response test", async () => {
 		}
 
 		return {
-			foo: "bar",
 			iterable: generator(),
-			promise: Promise.resolve(42),
-			rejectedPromise: Promise.reject(new Error("rejected promise")),
 		};
 	}
 
@@ -109,4 +106,75 @@ test("SSE response test", async () => {
 			]
 		`);
 	}
+});
+
+test("SSE handle reconnects", async () => {
+	let i = 0;
+	let kill = false;
+	function createMockObj() {
+		async function* generator() {
+			while (true) {
+				yield i++;
+				await sleep(10);
+
+				if (i === 5) {
+					kill = true;
+				}
+			}
+		}
+
+		return {
+			iterable: generator(),
+		};
+	}
+
+	type MockObj = ReturnType<typeof createMockObj>;
+
+	// ------------- server -------------------
+	const opts = {
+		nonce: () => "__tson",
+		types: [tsonPromise, tsonAsyncIterable],
+	} satisfies TsonAsyncOptions;
+
+	const server = await createTestServer({
+		handleRequest: async (_req, res) => {
+			const tson = createTsonAsync(opts);
+
+			const obj = createMockObj();
+			const response = tson.toSSEResponse(obj);
+
+			for (const [key, value] of response.headers) {
+				res.setHeader(key, value);
+			}
+
+			for await (const value of response.body as any) {
+				res.write(value);
+				if (kill) {
+					// interrupt the stream
+					res.end();
+					kill = false;
+					return;
+				}
+			}
+
+			res.end();
+		},
+	});
+
+	// ------------- client -------------------
+	const tson = createTsonAsync(opts);
+
+	// e2e
+	const ac = new AbortController();
+	const shape = await tson.createEventSource<MockObj>(server.url, {
+		signal: ac.signal,
+	});
+
+	const messages: number[] = [];
+
+	for await (const value of shape.iterable) {
+		messages.push(value);
+	}
+
+	expect(messages.length).toMatchInlineSnapshot();
 });
