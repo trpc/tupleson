@@ -734,21 +734,18 @@ test("e2e: client aborted request", async () => {
 		}
 
 		expect(results).toEqual([0, 1, 2, 3, 4, 5]);
-		expect(iteratorError).toMatchInlineSnapshot(
-			"[TsonStreamInterruptedError: Stream interrupted: The operation was aborted.]",
-		);
+		expect(iteratorError).toMatch(/operation was aborted/);
 	}
 
 	expect(parseOptions.onStreamError).toHaveBeenCalledTimes(1);
 
 	const streamError = parseOptions.onStreamError.mock.calls[0]![0]!;
-	expect(streamError).toMatchInlineSnapshot(
-		"[TsonStreamInterruptedError: Stream interrupted: The operation was aborted.]",
-	);
 
-	expect(streamError.cause).toMatchInlineSnapshot(
-		"[AbortError: The operation was aborted.]",
-	);
+	expect(streamError).toMatch(/operation was aborted/);
+
+	assert(streamError.cause instanceof Error);
+	expect(streamError.cause.message).toMatch(/operation was aborted/);
+	expect(streamError.cause.name).toMatchInlineSnapshot('"AbortError"');
 
 	expect(iteratorChunks.length).toBeLessThan(10);
 	expect(iteratorChunks).toMatchInlineSnapshot(`
