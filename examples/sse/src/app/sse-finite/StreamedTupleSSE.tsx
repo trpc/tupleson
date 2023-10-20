@@ -2,16 +2,16 @@
 
 import { Fragment, useEffect, useState } from "react";
 
-import type { ResponseShape } from "./api/sse/finite/route";
+import { createEventSource, isAbortError } from "~/tsonOptions";
 
-import { createEventSource, isAbortError } from "./tsonOptions";
+import type { ResponseShape } from "./route";
 
-export function StreamedTuple() {
+export function StreamedTupleSSE() {
 	const [list, setList] = useState<null | number[]>(null);
 
 	useEffect(() => {
 		const abortSignal = new AbortController();
-		createEventSource<ResponseShape>("/api/sse/finite", {
+		createEventSource<ResponseShape>("/sse-finite", {
 			signal: abortSignal.signal,
 		})
 			.then(async (shape) => {

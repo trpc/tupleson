@@ -25,10 +25,12 @@ export {
 	type TsonParseAsyncOptions,
 	createTsonParseAsync,
 	createTsonParseEventSource,
+	createTsonParseJsonStreamResponse,
 } from "./async/deserializeAsync.js";
 export {
 	createAsyncTsonSerialize,
 	createTsonSSEResponse,
+	createTsonSerializeJsonStreamResponse,
 	createTsonStreamAsync,
 } from "./async/serializeAsync.js";
 export * from "./async/asyncErrors.js";

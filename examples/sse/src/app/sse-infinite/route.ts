@@ -1,4 +1,4 @@
-import { createSSEResponse } from "../../../tsonOptions";
+import { createSSEResponse } from "~/tsonOptions";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

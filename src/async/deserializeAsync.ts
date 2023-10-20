@@ -18,6 +18,7 @@ import {
 } from "./asyncTypes.js";
 import {
 	createReadableStream,
+	mapIterable,
 	readableStreamToAsyncIterable,
 } from "./iterableUtils.js";
 import { TsonAsyncValueTuple } from "./serializeAsync.js";
@@ -299,5 +300,23 @@ export function createTsonParseEventSource(opts: TsonAsyncOptions) {
 
 		const iterable = readableStreamToAsyncIterable(stream);
 		return (await instance(iterable, parseOpts)) as TValue;
+	};
+}
+
+export function createTsonParseJsonStreamResponse(opts: TsonAsyncOptions) {
+	const instance = createTsonParseAsync(opts);
+
+	return async <TValue = unknown>(response: Response) => {
+		assert(response.body, "Response body is empty");
+
+		const textDecoder = new TextDecoder();
+		const stringIterator = mapIterable(
+			readableStreamToAsyncIterable(response.body),
+			(v) => textDecoder.decode(v),
+		);
+
+		const output = await instance<TValue>(stringIterator);
+
+		return output;
 	};
 }

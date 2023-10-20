@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-import type { ResponseShape } from "./api/sse/infinite/route";
+import { createEventSource, isAbortError } from "~/tsonOptions";
 
-import { createEventSource, isAbortError } from "./tsonOptions";
+import type { ResponseShape } from "./route";
 
-export function StreamedTime() {
+export function StreamedTimeSSE() {
 	const [time, setTime] = useState("....");
 	useEffect(() => {
 		const abortSignal = new AbortController();
-		createEventSource<ResponseShape>("/api/sse/infinite", {
+		createEventSource<ResponseShape>("/sse-infinite", {
 			signal: abortSignal.signal,
 		})
 			.then(async (shape) => {
