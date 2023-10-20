@@ -162,7 +162,7 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 		}
 
 		return await init().catch((cause: unknown) => {
-			throw new TsonError("Failed to initialize TSON stream", { cause });
+			throw new TsonStreamInterruptedError(cause);
 		});
 	};
 }

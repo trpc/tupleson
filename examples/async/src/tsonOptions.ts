@@ -32,9 +32,6 @@ export const createJsonStreamResponse =
 export const parseJsonStreamResponse =
 	createTsonParseJsonStreamResponse(tsonOptions);
 
-export function isAbortError(err: unknown): err is TsonAbortError {
-	return (
-		err instanceof TsonAbortError ||
-		(err instanceof Error && err.cause === TsonAbortError)
-	);
+export function isAbortError(err: unknown): err is Error {
+	return err instanceof Error && err.message.includes("aborted");
 }
