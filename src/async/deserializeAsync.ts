@@ -285,10 +285,6 @@ export function createTsonParseEventSource(opts: TsonAsyncOptions) {
 
 		signal?.addEventListener("abort", onAbort);
 
-		// eventSource.addEventListener("head", (e) => {
-		// 	controller.enqueue(JSON.parse(e.data));
-		// });
-
 		eventSource.onmessage = (msg) => {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			controller.enqueue(JSON.parse(msg.data));
@@ -296,6 +292,7 @@ export function createTsonParseEventSource(opts: TsonAsyncOptions) {
 
 		eventSource.addEventListener("close", () => {
 			controller.close();
+			eventSource.close();
 		});
 
 		const iterable = readableStreamToAsyncIterable(stream);
