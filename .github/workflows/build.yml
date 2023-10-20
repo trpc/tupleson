@@ -6,6 +6,7 @@ jobs:
       - uses: ./.github/actions/prepare
       - run: pnpm build
       - run: node ./lib/index.js
+      - run: cd examples/async && pnpm build
 
 name: Build
 
