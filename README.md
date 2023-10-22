@@ -126,6 +126,9 @@ type Obj = typeof obj;
 
 ## 🧩 Extend with a custom serializer
 
+> [!IMPORTANT]
+> When defining custom serializers, the array order matters! If a value passes the test for more than one custom serializer, the first wins.
+
 ### ⌚️ [Temporal](https://www.npmjs.com/package/@js-temporal/polyfill)
 
 > See test reference in [`./src/extend/temporal.test.ts`](./src/extend/temporal.test.ts)
