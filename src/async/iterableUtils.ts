@@ -1,8 +1,24 @@
 import { assert } from "../internals/assert.js";
+import {
+	NodeJSReadableStreamEsque,
+	WebReadableStreamEsque,
+} from "../internals/esque.js";
 
 export async function* readableStreamToAsyncIterable<T>(
-	stream: ReadableStream<T>,
+	stream:
+		| NodeJSReadableStreamEsque
+		| ReadableStream<T>
+		| WebReadableStreamEsque,
 ): AsyncIterable<T> {
+	if (Symbol.asyncIterator in stream) {
+		// NodeJS.ReadableStream
+		for await (const chunk of stream) {
+			yield chunk as T;
+		}
+
+		return;
+	}
+
 	// Get a lock on the stream
 	const reader = stream.getReader();
 
@@ -18,7 +34,7 @@ export async function* readableStreamToAsyncIterable<T>(
 			}
 
 			// Else yield the chunk
-			yield result.value;
+			yield result.value as T;
 		}
 	} finally {
 		reader.releaseLock();
