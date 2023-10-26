@@ -344,10 +344,11 @@ export function createTsonParseEventSource(opts: TsonAsyncOptions) {
 export function createTsonParseJsonStreamResponse(opts: TsonAsyncOptions) {
 	const instance = createTsonParseAsync(opts);
 
+	const textDecoder = opts.textDecoder ?? new TextDecoder();
+
 	return async <TValue = unknown>(response: Response) => {
 		assert(response.body, "Response body is empty");
 
-		const textDecoder = new TextDecoder();
 		const stringIterator = mapIterable(
 			readableStreamToAsyncIterable(response.body),
 			(v) => textDecoder.decode(v),
