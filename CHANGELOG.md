@@ -1,5 +1,12 @@
 
 
+## [0.22.1](https://github.com/trpc/tupleson/compare/0.22.0...0.22.1) (2023-10-26)
+
+
+### Bug Fixes
+
+* handle `NodeJS.ReadableStream` ([#81](https://github.com/trpc/tupleson/issues/81)) ([d190fa6](https://github.com/trpc/tupleson/commit/d190fa672f5af074db6165d38f362a035634ff50))
+
 # [0.22.0](https://github.com/trpc/tupleson/compare/0.21.0...0.22.0) (2023-10-26)
 
 
