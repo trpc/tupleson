@@ -1,5 +1,12 @@
 
 
+# [0.22.0](https://github.com/trpc/tupleson/compare/0.21.0...0.22.0) (2023-10-26)
+
+
+### Features
+
+* configurable `TextDecoder` instance ([#80](https://github.com/trpc/tupleson/issues/80)) ([f4b3630](https://github.com/trpc/tupleson/commit/f4b3630e7390cf04983b01d89d05affb81ff2e4c))
+
 # [0.21.0](https://github.com/trpc/tupleson/compare/0.20.4...0.21.0) (2023-10-20)
 
 
