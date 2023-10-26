@@ -18,5 +18,5 @@ export interface WebReadableStreamEsque {
  * @see NodeJS.ReadableStream from @types/node
  */
 export interface NodeJSReadableStreamEsque {
-	[Symbol.asyncIterator]: () => AsyncIterableIterator<Buffer | string>;
+	[Symbol.asyncIterator]: () => AsyncIterableIterator<unknown>;
 }
