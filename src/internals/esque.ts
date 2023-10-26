@@ -13,3 +13,10 @@ export interface TextDecoderEsque {
 export interface WebReadableStreamEsque {
 	getReader: () => ReadableStreamDefaultReader<Uint8Array>;
 }
+
+/**
+ * @see NodeJS.ReadableStream from @types/node
+ */
+export interface NodeJSReadableStreamEsque {
+	[Symbol.asyncIterator]: () => AsyncIterableIterator<Buffer | string>;
+}

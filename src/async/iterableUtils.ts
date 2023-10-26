@@ -1,10 +1,16 @@
 import { assert } from "../internals/assert.js";
-import { WebReadableStreamEsque } from "../internals/esque.js";
+import {
+	NodeJSReadableStreamEsque,
+	WebReadableStreamEsque,
+} from "../internals/esque.js";
 
 export async function* readableStreamToAsyncIterable<T>(
-	stream: NodeJS.ReadableStream | ReadableStream<T> | WebReadableStreamEsque,
+	stream:
+		| NodeJSReadableStreamEsque
+		| ReadableStream<T>
+		| WebReadableStreamEsque,
 ): AsyncIterable<T> {
-	if (!("getReader" in stream)) {
+	if (Symbol.asyncIterator in stream) {
 		// NodeJS.ReadableStream
 		for await (const chunk of stream) {
 			yield chunk as T;
