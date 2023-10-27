@@ -24,25 +24,78 @@ const tson = createTson({
 	types: [tsonDate, tsonRegExp, tsonSet],
 });
 
-const superjson_serialized = superjson.stringify(obj);
-const devalue_unevaled = uneval(obj);
-const devalue_stringified = stringify(obj);
-const arson_stringified = ARSON.stringify(obj);
-const tson_serialized = tson.stringify(obj);
+const testingMethods = [
+	{
+		name: 'superJSON',
+		parse: str => superjson.parse(str),
+		results: {
+			parse: 0,
+			size: 0,
+			sizeGZipped: 0,
+			stringify: 0,
+		},
+		stringify: () => superjson.stringify(obj),
+	},
+	{
+		name: 'devalue.uneval',
+		parse: str => eval(`(${str})`),
+		results: {
+			parse: 0,
+			size: 0,
+			sizeGZipped: 0,
+			stringify: 0,
+		},
+		stringify: () => uneval(obj),
+	},
+	{
+		name: 'devalue.stringify',
+		parse: str => parse(str),
+		results: {
+			parse: 0,
+			size: 0,
+			sizeGZipped: 0,
+			stringify: 0,
+		},
+		stringify: () => stringify(obj),
+	},
+	{
+		name: 'arson',
+		parse: str => ARSON.parse(str),
+		results: {
+			parse: 0,
+			size: 0,
+			sizeGZipped: 0,
+			stringify: 0,
+		},
+		stringify: () => ARSON.stringify(obj),
+	},
+	{
+		name: 'tson',
+		parse: str => tson.parse(str),
+		results: {
+			parse: 0,
+			size: 0,
+			sizeGZipped: 0,
+			stringify: 0,
+		},
+		stringify: () => tson.stringify(obj),
+	},
+];
 
-const printSize = (label, str) => {
+// Test sizes
+testingMethods.forEach(method => {
+	const str = method.stringify(obj);
+
+	method.results.size = str.length;
+	method.results.sizeGZipped = gzipSync(str).length;
+
 	console.log(
-		`${label}: ${c.bold().cyan(str.length)} bytes / ${c
+		`${method.name}: ${c.bold().cyan(method.results.size)} bytes / ${c
 			.bold()
-			.cyan(gzipSync(str).length)} bytes gzipped`,
+			.cyan(method.results.sizeGZipped)} bytes gzipped`,
 	);
-};
+});
 
-printSize("superjson", superjson_serialized);
-printSize("tson", tson_serialized);
-printSize("devalue.uneval", devalue_unevaled);
-printSize("devalue.stringify", devalue_stringified);
-printSize("arson", arson_stringified);
 
 const iterations = 1e6;
 
@@ -55,23 +108,37 @@ function test(fn, label = fn.toString()) {
 		fn();
 	}
 
+	const elapsed = Date.now() - start;
 	console.log(
-		`${iterations} iterations in ${c.bold().cyan(Date.now() - start)}ms`,
+		`${iterations} iterations in ${c.bold().cyan(elapsed)}ms`,
 	);
+
+	return { elapsed, iterations };
 }
 
-// serialization
-test(() => superjson.stringify(obj));
-test(() => tson.stringify(obj));
-test(() => uneval(obj));
-test(() => stringify(obj));
-test(() => ARSON.stringify(obj));
+// Test serialization
 
-// deserialization
-test(() => superjson.parse(superjson_serialized));
-test(() => tson.parse(tson_serialized));
-test(() => eval(`(${devalue_unevaled})`));
-test(() => ARSON.parse(arson_stringified));
-test(() => parse(devalue_stringified));
+testingMethods.forEach(method => {
+	const { elapsed } = test(method.stringify);
+	method.results.stringify = elapsed;
+});
+
+// Test deserialization
+
+testingMethods.forEach(method => {
+	const str = method.stringify(obj);
+	const { elapsed } = test(() => method.parse(str));
+	method.results.parse = elapsed;
+});
 
 console.log();
+
+console.table(testingMethods.map(method => {
+	return {
+		name: method.name,
+		"parse (ms)": method.results.parse,
+		"size (bytes)": method.results.size,
+		"size gzipped (bytes)": method.results.sizeGZipped,
+		"stringify (ms)": method.results.stringify,
+	};
+}));
