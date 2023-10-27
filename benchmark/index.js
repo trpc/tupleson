@@ -7,11 +7,13 @@ import * as superjson from "superjson";
 import { createTson, tsonDate, tsonRegExp, tsonSet } from "tupleson";
 import { gzipSync } from "zlib";
 
+import { nativeJSONParse, nativeJSONStringify } from './native-json/index.js';
+
 const obj = {
 	array: [{ foo: 1 }, { bar: 2 }, { baz: 3 }],
 	date: new Date(),
 	number: 42,
-	regex: /the quick brown fox/,
+	regex: /the quick brown fox/i,
 	set: new Set([1, 2, 3]),
 	xss: '</script><script>alert("XSS")</script>',
 };
@@ -25,6 +27,17 @@ const tson = createTson({
 });
 
 const testingMethods = [
+	{
+		name: 'native',
+		parse: str => nativeJSONParse(str),
+		results: {
+			parse: 0,
+			size: 0,
+			sizeGZipped: 0,
+			stringify: 0,
+		},
+		stringify: () => nativeJSONStringify(obj),
+	},
 	{
 		name: 'superJSON',
 		parse: str => superjson.parse(str),
