@@ -123,7 +123,7 @@ export type TsonDeserializeFn = <TValue>(
 	data: TsonSerialized<TValue>,
 ) => TValue;
 
-type TsonStringified<TValue> = string & { [serialized]: TValue };
+export type TsonStringified<TValue> = string & { [serialized]: TValue };
 
 export type TsonStringifyFn = <TValue>(
 	obj: TValue,
