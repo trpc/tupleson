@@ -96,7 +96,12 @@ test("deserialize async iterable", async () => {
 test("stringify async iterable + promise + async generator function", async () => {
 	const tson = createTsonAsync({
 		nonce: () => "__tson",
-		types: [tsonAsyncIterable, tsonPromise, tsonBigint, tsonAsyncGeneratorFunction],
+		types: [
+			tsonAsyncIterable,
+			tsonPromise,
+			tsonBigint,
+			tsonAsyncGeneratorFunction,
+		],
 	});
 
 	const parseOptions = {
@@ -144,7 +149,7 @@ test("stringify async iterable + promise + async generator function", async () =
 	}
 
 	expect(generatorResult1).toEqual([1n, 2n, 3n, 4n, 5n]);
-	
+
 	// generator should be able to be iterated again
 	const generatorResult2 = [];
 	const iterator2 = output.generator();

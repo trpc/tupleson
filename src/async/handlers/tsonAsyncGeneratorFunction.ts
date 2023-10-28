@@ -13,9 +13,10 @@ type SerializedIterableResult =
 	| [typeof ITERATOR_ERROR, unknown]
 	| [typeof ITERATOR_VALUE, unknown];
 
-function isAsyncGeneratorFunction(value: unknown): value is () => AsyncGenerator<unknown, void> {
+function isAsyncGeneratorFunction(
+	value: unknown,
+): value is () => AsyncGenerator<unknown, void> {
 	return (
-		!!value &&
 		typeof value === "function" &&
 		value.prototype[Symbol.toStringTag] === "AsyncGenerator"
 	);
@@ -28,30 +29,33 @@ export const tsonAsyncGeneratorFunction: TsonAsyncType<
 	async: true,
 	deserialize: (opts) => {
 		// each value is stored in RAM for generator to be iterated many times
-		const chunks: Exclude<Awaited<ReturnType<(typeof opts.reader)["read"]>>['value'], undefined>[] = []
+		const chunks: Exclude<
+			Awaited<ReturnType<(typeof opts.reader)["read"]>>["value"],
+			undefined
+		>[] = [];
 		// we need to know if stream is done or just waiting, so that generator can stop looping
-		let collectionDone = false
+		let collectionDone = false;
 		// if generator is being iterated while data is still being collected, we need to be able to wait on the next chunks
-		let resolveNext: () => void
-		let promiseNext = new Promise<void>(resolve => resolveNext = resolve)
+		let resolveNext: () => void;
+		let promiseNext = new Promise<void>((resolve) => (resolveNext = resolve));
 
 		/**
 		 * Collects chunks from the stream until it's done
 		 * - handle closing the stream
 		 * - handle generating new promises for generator to wait on
 		 */
-		void async function collect() {
+		void (async function collect() {
 			let next: Awaited<ReturnType<(typeof opts.reader)["read"]>>;
 			loop: while (((next = await opts.reader.read()), !next.done)) {
-				const { value } = next
-				chunks.push(value)
+				const { value } = next;
+				chunks.push(value);
 				if (value instanceof TsonStreamInterruptedError) {
 					if (value.cause instanceof TsonAbortError) {
-						opts.close()
-						return
+						opts.close();
+						return;
 					}
 
-					throw value // <-- is this `throw` necessary for "stream management" / "error reporting"? Or should we only throw in the generator?
+					throw value; // <-- is this `throw` necessary for "stream management" / "error reporting"? Or should we only throw in the generator?
 				}
 
 				switch (value[0]) {
@@ -67,14 +71,14 @@ export const tsonAsyncGeneratorFunction: TsonAsyncType<
 				}
 
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- synchronously set when creating `promiseNext`
-				resolveNext!()
-				promiseNext = new Promise<void>(resolve => resolveNext = resolve)
+				resolveNext!();
+				promiseNext = new Promise<void>((resolve) => (resolveNext = resolve));
 			}
 
-			collectionDone = true
+			collectionDone = true;
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- synchronously set when creating `promiseNext`
-			resolveNext!()
-		}()
+			resolveNext!();
+		})();
 
 		/**
 		 * Generator that yields values from the stream
@@ -83,10 +87,10 @@ export const tsonAsyncGeneratorFunction: TsonAsyncType<
 		 * @yields {unknown}
 		 */
 		return async function* generator() {
-			await promiseNext
+			await promiseNext;
 			for (let i = 0; i < chunks.length; i++) {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- `i` is always in range
-				const value = chunks[i]!
+				const value = chunks[i]!;
 				if (value instanceof TsonStreamInterruptedError) {
 					if (value.cause instanceof TsonAbortError) {
 						return;
@@ -111,9 +115,15 @@ export const tsonAsyncGeneratorFunction: TsonAsyncType<
 				}
 
 				if (i === chunks.length - 1) {
-					if (collectionDone) break
-					await promiseNext
-					if (collectionDone) break
+					if (collectionDone) {
+						break;
+					}
+
+					await promiseNext;
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- check before await to save 1 tick
+					if (collectionDone) {
+						break;
+					}
 				}
 			}
 		};
@@ -122,12 +132,12 @@ export const tsonAsyncGeneratorFunction: TsonAsyncType<
 	serializeIterator: async function* serialize(opts) {
 		if (opts.value.length !== 0) {
 			throw new Error(
-				`AsyncGeneratorFunction must have 0 arguments to be serializable, got ${opts.value.length}`
+				`AsyncGeneratorFunction must have 0 arguments to be serializable, got ${opts.value.length}`,
 			);
 		}
 
 		try {
-			const iterator = opts.value()
+			const iterator = opts.value();
 			for await (const value of iterator) {
 				yield [ITERATOR_VALUE, value];
 			}
