@@ -150,8 +150,12 @@ console.table(testingMethods.map(method => {
 	return {
 		name: method.name,
 		"parse (ms)": method.results.parse,
+		"stringify (ms)": method.results.stringify,
+		// eslint-disable perfectionist/sort-objects
 		"size (bytes)": method.results.size,
 		"size gzipped (bytes)": method.results.sizeGZipped,
-		"stringify (ms)": method.results.stringify,
 	};
-}));
+}).sort((a, b) =>
+	(a['parse (ms)'] + a['stringify (ms)'])
+	- (b['parse (ms)'] + b['stringify (ms)'])
+));
