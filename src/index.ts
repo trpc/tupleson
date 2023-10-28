@@ -5,7 +5,11 @@ export { createTson } from "./sync/createTson.js";
 export { createTsonDeserialize, createTsonParser } from "./sync/deserialize.js";
 export { createTsonSerialize, createTsonStringify } from "./sync/serialize.js";
 export type { TsonType } from "./sync/syncTypes.js";
-export type { TsonOptions, TsonSerialized, TsonStringified } from "./sync/syncTypes.js";
+export type {
+	TsonOptions,
+	TsonSerialized,
+	TsonStringified,
+} from "./sync/syncTypes.js";
 
 // type handlers
 export * from "./sync/handlers/tsonBigint.js";
