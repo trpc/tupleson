@@ -5,10 +5,10 @@ import {
 	TsonParseAsyncOptions,
 	TsonType,
 	createTsonParseAsync,
+	tsonAsyncGeneratorFunction,
 	tsonAsyncIterable,
 	tsonBigint,
 	tsonPromise,
-	tsonAsyncGeneratorFunction,
 } from "../index.js";
 import { assert } from "../internals/assert.js";
 import {
@@ -93,7 +93,7 @@ test("deserialize async iterable", async () => {
 	}
 });
 
-test.only("stringify async iterable + promise + async generator function", async () => {
+test("stringify async iterable + promise + async generator function", async () => {
 	const tson = createTsonAsync({
 		nonce: () => "__tson",
 		types: [tsonAsyncIterable, tsonPromise, tsonBigint, tsonAsyncGeneratorFunction],
@@ -117,9 +117,9 @@ test.only("stringify async iterable + promise + async generator function", async
 
 	const input = {
 		foo: "bar",
+		generator,
 		iterable: generator(),
 		promise: Promise.resolve(42),
-		generator,
 	};
 
 	const strIterable = tson.stringifyJsonStream(input);
@@ -134,6 +134,7 @@ test.only("stringify async iterable + promise + async generator function", async
 	for await (const value of output.iterable) {
 		iteratorResult.push(value);
 	}
+
 	expect(iteratorResult).toEqual([1n, 2n, 3n, 4n, 5n]);
 
 	const generatorResult1 = [];
@@ -141,6 +142,7 @@ test.only("stringify async iterable + promise + async generator function", async
 	for await (const value of iterator1) {
 		generatorResult1.push(value);
 	}
+
 	expect(generatorResult1).toEqual([1n, 2n, 3n, 4n, 5n]);
 	
 	// generator should be able to be iterated again
@@ -149,6 +151,7 @@ test.only("stringify async iterable + promise + async generator function", async
 	for await (const value of iterator2) {
 		generatorResult2.push(value);
 	}
+
 	expect(generatorResult2).toEqual([1n, 2n, 3n, 4n, 5n]);
 });
 

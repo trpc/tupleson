@@ -13,7 +13,7 @@ type SerializedIterableResult =
 	| [typeof ITERATOR_ERROR, unknown]
 	| [typeof ITERATOR_VALUE, unknown];
 
-function isAsyncGeneratorFunction(value: unknown): value is () => AsyncGenerator<unknown, void, unknown> {
+function isAsyncGeneratorFunction(value: unknown): value is () => AsyncGenerator<unknown, void> {
 	return (
 		!!value &&
 		typeof value === "function" &&
@@ -22,7 +22,7 @@ function isAsyncGeneratorFunction(value: unknown): value is () => AsyncGenerator
 }
 
 export const tsonAsyncGeneratorFunction: TsonAsyncType<
-	() => AsyncGenerator<unknown, void, unknown>,
+	() => AsyncGenerator<unknown, void>,
 	SerializedIterableResult
 > = {
 	async: true,
@@ -50,22 +50,29 @@ export const tsonAsyncGeneratorFunction: TsonAsyncType<
 						opts.close()
 						return
 					}
+
 					throw value // <-- is this `throw` necessary for "stream management" / "error reporting"? Or should we only throw in the generator?
 				}
+
 				switch (value[0]) {
 					case ITERATOR_DONE: {
 						opts.close();
 						break loop;
 					}
+
 					case ITERATOR_ERROR: {
 						opts.close();
 						break;
 					}
 				}
+
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- synchronously set when creating `promiseNext`
 				resolveNext!()
 				promiseNext = new Promise<void>(resolve => resolveNext = resolve)
 			}
+
 			collectionDone = true
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- synchronously set when creating `promiseNext`
 			resolveNext!()
 		}()
 
@@ -73,17 +80,21 @@ export const tsonAsyncGeneratorFunction: TsonAsyncType<
 		 * Generator that yields values from the stream
 		 * - handles waiting for chunks if stream is still active
 		 * - handles throwing errors from values
+		 * @yields {unknown}
 		 */
 		return async function* generator() {
 			await promiseNext
 			for (let i = 0; i < chunks.length; i++) {
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- `i` is always in range
 				const value = chunks[i]!
 				if (value instanceof TsonStreamInterruptedError) {
 					if (value.cause instanceof TsonAbortError) {
 						return;
 					}
+
 					throw value;
 				}
+
 				switch (value[0]) {
 					case ITERATOR_DONE: {
 						return;
@@ -98,6 +109,7 @@ export const tsonAsyncGeneratorFunction: TsonAsyncType<
 						break; // <-- breaks the switch, not the loop
 					}
 				}
+
 				if (i === chunks.length - 1) {
 					if (collectionDone) break
 					await promiseNext
@@ -113,6 +125,7 @@ export const tsonAsyncGeneratorFunction: TsonAsyncType<
 				`AsyncGeneratorFunction must have 0 arguments to be serializable, got ${opts.value.length}`
 			);
 		}
+
 		try {
 			const iterator = opts.value()
 			for await (const value of iterator) {
