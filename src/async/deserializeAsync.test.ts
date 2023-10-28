@@ -8,6 +8,7 @@ import {
 	tsonAsyncIterable,
 	tsonBigint,
 	tsonPromise,
+	tsonAsyncGeneratorFunction,
 } from "../index.js";
 import { assert } from "../internals/assert.js";
 import {
@@ -92,17 +93,17 @@ test("deserialize async iterable", async () => {
 	}
 });
 
-test("stringify async iterable + promise", async () => {
+test.only("stringify async iterable + promise + async generator function", async () => {
 	const tson = createTsonAsync({
 		nonce: () => "__tson",
-		types: [tsonAsyncIterable, tsonPromise, tsonBigint],
+		types: [tsonAsyncIterable, tsonPromise, tsonBigint, tsonAsyncGeneratorFunction],
 	});
 
 	const parseOptions = {
 		onStreamError: vitest.fn(),
 	} satisfies TsonParseAsyncOptions;
 
-	async function* iterable() {
+	async function* generator() {
 		await sleep(1);
 		yield 1n;
 		await sleep(1);
@@ -116,8 +117,9 @@ test("stringify async iterable + promise", async () => {
 
 	const input = {
 		foo: "bar",
-		iterable: iterable(),
+		iterable: generator(),
 		promise: Promise.resolve(42),
+		generator,
 	};
 
 	const strIterable = tson.stringifyJsonStream(input);
@@ -128,13 +130,26 @@ test("stringify async iterable + promise", async () => {
 
 	expect(await output.promise).toEqual(42);
 
-	const result = [];
-
+	const iteratorResult = [];
 	for await (const value of output.iterable) {
-		result.push(value);
+		iteratorResult.push(value);
 	}
+	expect(iteratorResult).toEqual([1n, 2n, 3n, 4n, 5n]);
 
-	expect(result).toEqual([1n, 2n, 3n, 4n, 5n]);
+	const generatorResult1 = [];
+	const iterator1 = output.generator();
+	for await (const value of iterator1) {
+		generatorResult1.push(value);
+	}
+	expect(generatorResult1).toEqual([1n, 2n, 3n, 4n, 5n]);
+	
+	// generator should be able to be iterated again
+	const generatorResult2 = [];
+	const iterator2 = output.generator();
+	for await (const value of iterator2) {
+		generatorResult2.push(value);
+	}
+	expect(generatorResult2).toEqual([1n, 2n, 3n, 4n, 5n]);
 });
 
 test("e2e: stringify async iterable and promise over the network", async () => {

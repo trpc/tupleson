@@ -38,3 +38,4 @@ export * from "./async/asyncErrors.js";
 // type handlers
 export * from "./async/handlers/tsonPromise.js";
 export * from "./async/handlers/tsonAsyncIterable.js";
+export * from "./async/handlers/tsonAsyncGeneratorFunction.js";
