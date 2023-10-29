@@ -1,5 +1,12 @@
 
 
+# [0.23.0](https://github.com/trpc/tupleson/compare/0.22.1...0.23.0) (2023-10-29)
+
+
+### Features
+
+* expose TsonSerialized type ([#83](https://github.com/trpc/tupleson/issues/83)) ([4cf7fef](https://github.com/trpc/tupleson/commit/4cf7fef1a0a0f537dfa10a7c472abe10b9210294))
+
 ## [0.22.1](https://github.com/trpc/tupleson/compare/0.22.0...0.22.1) (2023-10-26)
 
 
