@@ -1,3 +1,5 @@
+import { TsonGuard } from "../tsonAssert.js";
+
 const brand = Symbol("branded");
 
 export type TsonBranded<TType, TBrand> = TType & { [brand]: TBrand };
@@ -18,29 +20,18 @@ export type TsonAllTypes =
 	| "string"
 	| "symbol"
 	| "undefined";
-
-type SerializedType =
+// Should this not be a recursive type? Any serialized objects should all have
+// be json-serializable, right?
+// Also, is it correct to be prescriptive about the type of the object?
+// - ANY object can make itself json-serializable by way of [Symbol.toPrimitive]
+export type SerializedType =
 	| Record<string, unknown>
 	| boolean
 	| number
 	| string
 	| unknown[];
 
-export interface TsonTransformerNone {
-	async?: false;
-	deserialize?: never;
-
-	/**
-	 * The key to use when serialized
-	 */
-	key?: never;
-	serialize?: never;
-	serializeIterator?: never;
-}
-export interface TsonTransformerSerializeDeserialize<
-	TValue,
-	TSerializedType extends SerializedType,
-> {
+export interface TsonMarshaller<TValue, TSerializedType extends SerializedType> {
 	async?: false;
 	/**
 	 * From JSON-serializable value
@@ -55,12 +46,7 @@ export interface TsonTransformerSerializeDeserialize<
 	 * JSON-serializable value
 	 */
 	serialize: (v: TValue) => TSerializedType;
-	serializeIterator?: never;
 }
-
-export type TsonTransformer<TValue, TSerializedType extends SerializedType> =
-	| TsonTransformerNone
-	| TsonTransformerSerializeDeserialize<TValue, TSerializedType>;
 
 export interface TsonTypeTesterPrimitive {
 	/**
@@ -94,7 +80,7 @@ export type TsonType<
 	 * JSON-serializable value how it's stored after it's serialized
 	 */
 	TSerializedType extends SerializedType,
-> = TsonTypeTester & TsonTransformer<TValue, TSerializedType>;
+> = TsonTypeTester & TsonMarshaller<TValue, TSerializedType>;
 
 export interface TsonOptions {
 	/**
@@ -106,7 +92,7 @@ export interface TsonOptions {
 	/**
 	 * The list of types to use
 	 */
-	types: (TsonType<any, any> | TsonType<any, never>)[];
+	types: (TsonGuard<any> | TsonType<any, any>)[];
 }
 
 export const serialized = Symbol("serialized");

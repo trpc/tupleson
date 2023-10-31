@@ -1,21 +1,19 @@
-import { TsonType } from "../syncTypes.js";
+import { tsonAssert } from "../../tsonAssert.js";
 
 /**
  * Prevents `NaN` and `Infinity` from being serialized
  */
 
-export const tsonNumberGuard: TsonType<number, number> = {
-	primitive: "number",
-	test: (v) => {
-		const value = v as number;
-		if (isNaN(value)) {
-			throw new Error("Encountered NaN");
-		}
+export const tsonAssertNotInfinite = tsonAssert((v) => {
+	if (typeof v !== "number") {
+		return;
+	}
 
-		if (!isFinite(value)) {
-			throw new Error("Encountered Infinity");
-		}
+	if (isNaN(v)) {
+		throw new Error("Encountered NaN");
+	}
 
-		return false;
-	},
-};
+	if (!isFinite(v)) {
+		throw new Error("Encountered Infinity");
+	}
+});

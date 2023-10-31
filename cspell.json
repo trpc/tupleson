@@ -1,5 +1,7 @@
 {
-	"dictionaries": ["typescript"],
+	"dictionaries": [
+		"typescript"
+	],
 	"ignorePaths": [
 		".github",
 		"CHANGELOG.md",
@@ -29,6 +31,8 @@
 		"outro",
 		"packagejson",
 		"quickstart",
+		"Streamified",
+		"Streamify",
 		"stringifier",
 		"superjson",
 		"tson",
