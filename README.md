@@ -177,6 +177,26 @@ const tson = createTson({
 });
 ```
 
+## [@httpx/exception](https://github.com/belgattitude/httpx/tree/main/packages/exception#httpxexception)
+
+```typescript
+import { createTson } from "tupleson";
+import { type HttpException } from "@httpx/exception";
+import { fromJson, toJson, type SerializerError } from "@httpx/exception/serializer";
+
+const httpException: TsonType<HttpException | SerializerError, string> = {
+  key: "HttpException",
+  deserialize: (v) => fromJson(v),
+  serialize: (v) => toJson(v),
+  test: (v) => v instanceof HttpException,
+};
+
+const tson = createTson({
+  types: [httpException],
+});
+
+```
+
 ---
 
 <!-- ## All contributors ✨
