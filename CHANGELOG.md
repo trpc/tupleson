@@ -1,5 +1,12 @@
 
 
+## [0.23.1](https://github.com/trpc/tupleson/compare/0.23.0...0.23.1) (2023-11-08)
+
+
+### Bug Fixes
+
+* rewrite bundled extensions to mjs for esm build ([#86](https://github.com/trpc/tupleson/issues/86)) ([9bf904f](https://github.com/trpc/tupleson/commit/9bf904f9f85122c6c3dd5540eb25ad4bcb5278c2))
+
 # [0.23.0](https://github.com/trpc/tupleson/compare/0.22.1...0.23.0) (2023-10-29)
 
 
