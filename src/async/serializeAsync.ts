@@ -33,7 +33,7 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 
 	const iterators = new Map<TsonAsyncIndex, AsyncIterator<unknown>>();
 
-	const iterator = {
+	const iterable: AsyncIterable<TsonAsyncValueTuple> = {
 		async *[Symbol.asyncIterator]() {
 			// race all active iterators and yield next value as they come
 			// when one iterator is done, remove it from the list
@@ -94,24 +94,25 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 				walk: WalkFn,
 			) => TsonSerializedValue;
 
-			const $serialize: Serializer = handler.serializeIterator
-				? (value): TsonTuple => {
-						const idx = asyncIndex++ as TsonAsyncIndex;
+			const $serialize: Serializer =
+				"serializeIterator" in handler
+					? (value): TsonTuple => {
+							const idx = asyncIndex++ as TsonAsyncIndex;
 
-						const iterator = handler.serializeIterator({
-							value,
-						});
-						iterators.set(idx, iterator[Symbol.asyncIterator]());
+							const iterator = handler.serializeIterator({
+								value,
+							});
+							iterators.set(idx, iterator[Symbol.asyncIterator]());
 
-						return [handler.key as TsonTypeHandlerKey, idx, nonce];
-				  }
-				: handler.serialize
-				? (value, nonce, walk): TsonTuple => [
-						handler.key as TsonTypeHandlerKey,
-						walk(handler.serialize(value)),
-						nonce,
-				  ]
-				: (value, _nonce, walk) => walk(value);
+							return [handler.key as TsonTypeHandlerKey, idx, nonce];
+					  }
+					: "serialize" in handler
+					? (value, nonce, walk): TsonTuple => [
+							handler.key as TsonTypeHandlerKey,
+							walk(handler.serialize(value)),
+							nonce,
+					  ]
+					: (value, _nonce, walk) => walk(value);
 			return {
 				...handler,
 				$serialize,
@@ -185,7 +186,7 @@ function walkerFactory(nonce: TsonNonce, types: TsonAsyncOptions["types"]) {
 		return cacheAndReturn(mapOrReturn(value, walk));
 	};
 
-	return [walk, iterator] as const;
+	return [walk, iterable] as const;
 }
 
 type TsonAsyncSerializer = <T>(

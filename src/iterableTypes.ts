@@ -1,67 +1,32 @@
 /**
  * @file
- * @see https://github.com/microsoft/TypeScript/issues/32682
- * @variation {Async} AsyncIterator, AsyncIterable, and AsyncIterableIterator can
- * be substituted for Iterator, Iterable, and IterableIterator respectively in
- * the below description.
- * @description
- * Native constructs which use Iterables discard the value of the return type
- * and call `next()` with no arguments. While it is possible to instantiate
- * an Iterable's Iterator manually, that iterator must be prepared to take
- * `undefined` as an argument to `next()`, and expect that the return value
- * may be discarded. Otherwise, it would break the Iterable contract.
- *
- * In other words, Iterators leave it to the consumer to decide what to do
- * on each iteration (via the 'next' and 'return' methods), while Iterables
- * enforce a contract that the consumer must follow, where these methods are
- * optional.
- *
- * To preserve correctness, an Iterable's `Next` and `Return` types
- * MUST be joined with undefined when passed as type parameters to the
- * Iterator returned by its [Symbol.iterator] method.
- *
- * For IterableIterators, a TypeScript construct which extends the Iterator
- * interface, the additional type parameters SHOULD NOT be joined with
- * undefined when passed to the Iterator which the interface extends. By testing
- * for the presence of a parameter in the `next()` method, an iterator can
- * determine whether is being called manually or by a native construct. It is
- * perfectly valid for an IterableIterator to require a parameter in it's own
- * `next()` method, but not in the `next()` method of the iterator returned
- * by its [Symbol.iterator].
- *
- * As of Feb 4, 2022 (v4.6.1), the TS team had shelved adding the 2nd and 3rd
- * type parameters to these interfaces, but had not ruled it out for the future.
+ * This file originally contained types for the `iterable` and `asyncIterable`
+ * (as well as `iterableIterator` and `asyncIterableIterator`) types, but
+ * ultimately they were decided against, as they were not ultimately useful.
+ * The extensions essentially provided useless information, given that the
+ * `next` and `return` methods cannot be relied upon to be present. For that,
+ * Generators are a better choice, as they expose the `next` and `return`
+ * methods through the GeneratorFunction syntax.
+ * @see https://github.com/microsoft/TypeScript/issues/32682 for information
+ * about the types that were removed.
  */
 
-/**
- * A stronger type for Iterable
- */
-export interface Iterable<
-	T = unknown,
-	TOptionalReturn = unknown,
-	TOptionalNext = unknown,
-> {
-	[Symbol.iterator](): Iterator<
-		T,
-		TOptionalReturn | undefined,
-		TOptionalNext | undefined
-	>;
-}
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 /**
- * A stronger type for IterableIterator.
+ * A stronger type for Iterator
  */
-export interface IterableIterator<
+export interface Iterator<T = unknown, TReturn = unknown, TNextArg = unknown>
+	extends globalThis.Iterator<T, TReturn, TNextArg> {}
+
+/**
+ * A stronger type for AsyncIterator
+ */
+export interface AsyncIterator<
 	T = unknown,
-	TOptionalReturn = unknown,
-	TOptionalNext = unknown,
-> extends Iterator<T, TOptionalReturn, TOptionalNext> {
-	[Symbol.iterator](): IterableIterator<
-		T,
-		TOptionalReturn | undefined,
-		TOptionalNext | undefined
-	>;
-}
+	TReturn = unknown,
+	TNextArg = unknown,
+> extends globalThis.AsyncIterator<T, TReturn, TNextArg> {}
 
 /**
  * A stronger type for Generator
@@ -70,43 +35,7 @@ export interface Generator<
 	T = unknown,
 	TOptionalReturn = unknown,
 	TOptionalNext = unknown,
-> {
-	[Symbol.iterator](): Iterator<
-		T,
-		TOptionalReturn | undefined,
-		TOptionalNext | undefined
-	>;
-}
-
-/**
- * A stronger type for AsyncIterable
- */
-export interface AsyncIterable<
-	T = unknown,
-	TOptionalReturn = unknown,
-	TOptionalNext = unknown,
-> {
-	[Symbol.asyncIterator](): AsyncIterator<
-		T,
-		TOptionalReturn | undefined,
-		TOptionalNext | undefined
-	>;
-}
-
-/**
- * A stronger type for AsyncIterableIterator.
- */
-export interface AsyncIterableIterator<
-	T = unknown,
-	TOptionalReturn = unknown,
-	TOptionalNext = unknown,
-> extends AsyncIterator<T, TOptionalReturn, TOptionalNext> {
-	[Symbol.asyncIterator](): AsyncIterableIterator<
-		T,
-		TOptionalReturn | undefined,
-		TOptionalNext | undefined
-	>;
-}
+> extends globalThis.Generator<T, TOptionalReturn, TOptionalNext> {}
 /**
  * A stronger type for AsyncGenerator
  */
@@ -114,10 +43,6 @@ export interface AsyncGenerator<
 	T = unknown,
 	TOptionalReturn = unknown,
 	TOptionalNext = unknown,
-> {
-	[Symbol.asyncIterator](): AsyncIterator<
-		T,
-		TOptionalReturn | undefined,
-		TOptionalNext | undefined
-	>;
-}
+> extends globalThis.AsyncGenerator<T, TOptionalReturn, TOptionalNext> {}
+
+/* eslint-enable @typescript-eslint/no-empty-interface */

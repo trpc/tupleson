@@ -3,6 +3,7 @@ import {
 	NodeJSReadableStreamEsque,
 	WebReadableStreamEsque,
 } from "../internals/esque.js";
+import { AsyncGenerator, Generator } from "../iterableTypes.js";
 
 export async function* readableStreamToAsyncIterable<T>(
 	stream:
@@ -150,3 +151,76 @@ function addIfProvided<TKey extends "data" | "event" | "id" | "retry">(
 
 	return `${key}: ${value as any}\n`;
 }
+
+export interface AsyncIterableEsque<T = unknown> {
+	[Symbol.asyncIterator](): AsyncIterator<T>;
+}
+
+export function isAsyncIterableEsque(
+	maybeAsyncIterable: unknown,
+): maybeAsyncIterable is AsyncIterableEsque & AsyncIterable<unknown> {
+	return (
+		!!maybeAsyncIterable &&
+		(typeof maybeAsyncIterable === "object" ||
+			typeof maybeAsyncIterable === "function") &&
+		Symbol.asyncIterator in maybeAsyncIterable
+	);
+}
+
+export interface IterableEsque {
+	[Symbol.iterator](): unknown;
+}
+
+export function isIterableEsque(
+	maybeIterable: unknown,
+): maybeIterable is IterableEsque {
+	return (
+		!!maybeIterable &&
+		(typeof maybeIterable === "object" ||
+			typeof maybeIterable === "function") &&
+		Symbol.iterator in maybeIterable
+	);
+}
+
+type GeneratorFnEsque = (() => AsyncGenerator) | (() => Generator);
+
+export function isAsyncGeneratorFn(
+	maybeAsyncGeneratorFn: unknown,
+): maybeAsyncGeneratorFn is GeneratorFnEsque {
+	return (
+		typeof maybeAsyncGeneratorFn === "function" &&
+		["AsyncGeneratorFunction", "GeneratorFunction"].includes(
+			maybeAsyncGeneratorFn.constructor.name,
+		)
+	);
+}
+
+export type PromiseEsque = PromiseLike<unknown>;
+
+export function isPromiseEsque(
+	maybePromise: unknown,
+): maybePromise is PromiseEsque {
+	return (
+		!!maybePromise &&
+		typeof maybePromise === "object" &&
+		"then" in maybePromise &&
+		typeof maybePromise.then === "function"
+	);
+}
+
+export type ThunkEsque = () => unknown;
+
+export function isThunkEsque(maybeThunk: unknown): maybeThunk is ThunkEsque {
+	return (
+		!!maybeThunk && typeof maybeThunk === "function" && maybeThunk.length === 0
+	);
+}
+
+export type Thunkable =
+	| AsyncIterableEsque
+	| GeneratorFnEsque
+	| IterableEsque
+	| PromiseEsque
+	| ThunkEsque;
+
+export type MaybePromise<T> = Promise<T> | T;

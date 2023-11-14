@@ -76,9 +76,5 @@ export interface TsonAsyncOptions {
 	/**
 	 * The list of types to use
 	 */
-	types: (
-		| TsonAsyncType<any, any>
-		| TsonType<any, any>
-		| TsonType<any, never>
-	)[];
+	types: (TsonAsyncType<any, any> | TsonType<any, any>)[];
 }

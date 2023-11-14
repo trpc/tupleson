@@ -91,8 +91,8 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 			) {
 				return cacheAndReturn([
 					primitiveHandler.key,
-					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					walk(primitiveHandler.serialize!(value)),
+
+					walk(primitiveHandler.serialize(value)),
 					nonce,
 				] as TsonTuple);
 			}
@@ -101,8 +101,8 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 				if (handler.test(value)) {
 					return cacheAndReturn([
 						handler.key,
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						walk(handler.serialize!(value)),
+
+						walk(handler.serialize(value)),
 						nonce,
 					] as TsonTuple);
 				}

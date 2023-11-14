@@ -7,7 +7,6 @@ export type TsonBranded<TType, TBrand> = TType & { [brand]: TBrand };
 export type TsonNonce = TsonBranded<string, "TsonNonce">;
 export type TsonTypeHandlerKey = TsonBranded<string, "TsonTypeHandlerKey">;
 export type TsonSerializedValue = unknown;
-
 export type TsonTuple = [TsonTypeHandlerKey, TsonSerializedValue, TsonNonce];
 
 // there's probably a better way of getting this type
@@ -22,16 +21,17 @@ export type TsonAllTypes =
 	| "undefined";
 // Should this not be a recursive type? Any serialized objects should all have
 // be json-serializable, right?
-// Also, is it correct to be prescriptive about the type of the object?
-// - ANY object can make itself json-serializable by way of [Symbol.toPrimitive]
 export type SerializedType =
-	| Record<string, unknown>
+	| { [key: string]: SerializedType }
+	| SerializedType[]
 	| boolean
 	| number
-	| string
-	| unknown[];
+	| string;
 
-export interface TsonMarshaller<TValue, TSerializedType extends SerializedType> {
+export interface TsonMarshaller<
+	TValue,
+	TSerializedType extends SerializedType,
+> {
 	async?: false;
 	/**
 	 * From JSON-serializable value
@@ -69,7 +69,7 @@ export interface TsonTypeTesterCustom {
 	test: (v: unknown) => boolean;
 }
 
-type TsonTypeTester = TsonTypeTesterCustom | TsonTypeTesterPrimitive;
+export type TsonTypeTester = TsonTypeTesterCustom | TsonTypeTesterPrimitive;
 
 export type TsonType<
 	/**
@@ -83,6 +83,14 @@ export type TsonType<
 > = TsonTypeTester & TsonMarshaller<TValue, TSerializedType>;
 
 export interface TsonOptions {
+	/* eslint-disable jsdoc/informative-docs */
+	/**
+	 * The list of guards to apply to values before serializing them.
+	 * Guards must throw on invalid values.
+	 * @default []
+	 */
+	/* eslint-enable jsdoc/informative-docs */
+	guards?: TsonGuard<any>[];
 	/**
 	 * The nonce function every time we start serializing a new object
 	 * Should return a unique value every time it's called
@@ -92,7 +100,7 @@ export interface TsonOptions {
 	/**
 	 * The list of types to use
 	 */
-	types: (TsonGuard<any> | TsonType<any, any>)[];
+	types: TsonType<any, any>[];
 }
 
 export const serialized = Symbol("serialized");
