@@ -79,7 +79,10 @@ export type TsonType<
 	 * JSON-serializable value how it's stored after it's serialized
 	 */
 	TSerializedType extends SerializedType,
-> = TsonTypeTester & TsonMarshaller<TValue, TSerializedType>;
+> =
+	| (TsonTypeTesterCustom & TsonMarshaller<TValue, TSerializedType>)
+	| (TsonTypeTesterPrimitive &
+			Partial<TsonMarshaller<TValue, TSerializedType>>);
 
 export interface TsonOptions {
 	/* eslint-disable jsdoc/informative-docs */
