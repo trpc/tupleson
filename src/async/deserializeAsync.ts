@@ -180,7 +180,7 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 			const walk = walker(head.nonce);
 
 			try {
-				const walked = walk(head.tson);
+				const walked = walk(head.json);
 
 				return walked;
 			} finally {

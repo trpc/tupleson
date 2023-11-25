@@ -5,7 +5,8 @@ import { expectError } from "../../internals/testUtils.js";
 
 test("number", () => {
 	const t = createTson({
-		types: [tsonNumberGuard],
+		guards: [tsonNumberGuard],
+		types: [],
 	});
 
 	const bad = [

@@ -1,13 +1,6 @@
 import * as v from "vitest";
 
-import {
-	AsyncGenerator,
-	AsyncIterable,
-	AsyncIterableIterator,
-	Generator,
-	Iterable,
-	IterableIterator,
-} from "./iterableTypes.js";
+import { AsyncGenerator, Generator } from "./iterableTypes.js";
 
 v.describe("Async Iterable Types", () => {
 	v.it("should be interchangeable with the original type signatures", () => {

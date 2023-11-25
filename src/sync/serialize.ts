@@ -1,7 +1,9 @@
 import { TsonCircularReferenceError } from "../errors.js";
 import { GetNonce, getDefaultNonce } from "../internals/getNonce.js";
+import { isComplexValue } from "../internals/isComplexValue.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
+	SerializedType,
 	TsonAllTypes,
 	TsonNonce,
 	TsonOptions,
@@ -9,6 +11,7 @@ import {
 	TsonSerialized,
 	TsonStringifyFn,
 	TsonTuple,
+	TsonTypeHandlerKey,
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
 } from "./syncTypes.js";
@@ -19,30 +22,32 @@ type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 function getHandlers(opts: TsonOptions) {
 	type Handler = (typeof opts.types)[number];
 
-	const byPrimitive: Partial<
-		Record<TsonAllTypes, Extract<Handler, TsonTypeTesterPrimitive>>
-	> = {};
-	const nonPrimitives: Extract<Handler, TsonTypeTesterCustom>[] = [];
+	const primitives = new Map<
+		TsonAllTypes,
+		Extract<Handler, TsonTypeTesterPrimitive>
+	>();
 
-	for (const handler of opts.types) {
-		if (handler.primitive) {
-			if (byPrimitive[handler.primitive]) {
+	const customs = new Set<Extract<Handler, TsonTypeTesterCustom>>();
+
+	for (const marshaller of opts.types) {
+		if (marshaller.primitive) {
+			if (primitives.has(marshaller.primitive)) {
 				throw new Error(
-					`Multiple handlers for primitive ${handler.primitive} found`,
+					`Multiple handlers for primitive ${marshaller.primitive} found`,
 				);
 			}
 
-			byPrimitive[handler.primitive] = handler;
+			primitives.set(marshaller.primitive, marshaller);
 		} else {
-			nonPrimitives.push(handler);
+			customs.add(marshaller);
 		}
 	}
 
-	const getNonce: GetNonce = opts.nonce
-		? (opts.nonce as GetNonce)
-		: getDefaultNonce;
+	const getNonce = (opts.nonce ? opts.nonce : getDefaultNonce) as GetNonce;
 
-	return [getNonce, nonPrimitives, byPrimitive] as const;
+	const guards = opts.guards ?? [];
+
+	return [getNonce, customs, primitives, guards] as const;
 }
 
 export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
@@ -53,65 +58,73 @@ export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
 }
 
 export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
-	const [getNonce, nonPrimitive, byPrimitive] = getHandlers(opts);
+	const [getNonce, nonPrimitives, primitives, guards] = getHandlers(opts);
 
 	const walker: WalkerFactory = (nonce) => {
 		const seen = new WeakSet();
 		const cache = new WeakMap<object, unknown>();
 
-		const walk: WalkFn = (value) => {
+		const walk: WalkFn = (value: unknown) => {
 			const type = typeof value;
-			const isComplex = !!value && type === "object";
 
-			if (isComplex) {
-				if (seen.has(value)) {
-					const cached = cache.get(value);
-					if (!cached) {
-						throw new TsonCircularReferenceError(value);
-					}
+			const primitiveHandler = primitives.get(type);
 
-					return cached;
-				}
-
-				seen.add(value);
-			}
-
-			const cacheAndReturn = (result: unknown) => {
-				if (isComplex) {
-					cache.set(value, result);
-				}
-
-				return result;
-			};
-
-			const primitiveHandler = byPrimitive[type];
-			if (
+			const handler =
 				primitiveHandler &&
 				(!primitiveHandler.test || primitiveHandler.test(value))
-			) {
-				return cacheAndReturn([
-					primitiveHandler.key,
+					? primitiveHandler
+					: Array.from(nonPrimitives).find((handler) => handler.test(value));
 
-					walk(primitiveHandler.serialize(value)),
-					nonce,
-				] as TsonTuple);
-			}
-
-			for (const handler of nonPrimitive) {
-				if (handler.test(value)) {
-					return cacheAndReturn([
-						handler.key,
-
-						walk(handler.serialize(value)),
-						nonce,
-					] as TsonTuple);
+			if (!handler) {
+				for (const guard of guards) {
+					//				if ("assert" in guard) {
+					guard.assert(value);
+					//				}
+					//todo: if this is implemented does it go before or after assert?
+					// if ("parse" in guard) {
+					// 	value = guard.parse(value);
+					// }
 				}
+
+				return mapOrReturn(value, walk);
 			}
 
-			return cacheAndReturn(mapOrReturn(value, walk));
+			if (!isComplexValue(value)) {
+				return toTuple(value, handler);
+			}
+
+			// if this is a value-by-reference we've seen before, either:
+			//  - We've serialized & cached it before and can return the cached value
+			//  - We're attempting to serialize it, but one of its children is itself (circular reference)
+			if (cache.has(value)) {
+				return cache.get(value);
+			}
+
+			if (seen.has(value)) {
+				throw new TsonCircularReferenceError(value);
+			}
+
+			seen.add(value);
+
+			const tuple = toTuple(value, handler);
+
+			cache.set(value, tuple);
+
+			return tuple;
 		};
 
 		return walk;
+
+		function toTuple(
+			v: unknown,
+			handler: { key: string; serialize: (arg: unknown) => SerializedType },
+		) {
+			return [
+				handler.key as TsonTypeHandlerKey,
+				walk(handler.serialize(v)),
+				nonce,
+			] as TsonTuple;
+		}
 	};
 
 	return ((obj): TsonSerialized => {

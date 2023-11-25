@@ -12,7 +12,7 @@ export type IsUnknown<T> = [unknown] extends [T] ? Not<IsAny<T>> : false;
  * What is this API, really? What is the goal?
  * Is it to provide a way to assert that a value is of a certain type? I think
  * this only makes sense in a few limited cases.
- * 
+ *
  * 	At what point in the pipeline would this occur? Would this happen for all
  * 	values? If so, well... you've asserted that your parser only handles
  * 	the type you're asserting. I don't know why you'd want to predetermine
@@ -33,65 +33,33 @@ export type IsUnknown<T> = [unknown] extends [T] ? Not<IsAny<T>> : false;
  * 	we're marshalling. We assume the type layer is accurate, without
  * 	enforcing it. If we want to integrate runtime type validation, that
  * 	seems like a feature request, potentially warranting it's own API.
- * 	
+ *
  * 	Ultimately, I feel like this functionality is easily served by a simple
  * 	assertion function that throws for invalid values. For most (all?) except
  * 	for the unknown object guard they would come first in the array, while
  * 	the unknown object guard would come last.
  */
-export interface TsonGuard<T> {
-	/**
-	 * A type assertion that narrows the type of the value
-	 */
-	assertion: <P = unknown>(
-		v: P,
-	) => asserts v is IsAny<P> extends true
-		? T extends infer N extends P
-			? N
-			: T extends P
-			? T
-			: P & T
-		: never;
-	/**
-	 * A unique identifier for this assertion
-	 */
+interface TsonGuardBase {
 	key: string;
 }
-
-interface ValidationParser<TValue> {
-	parse: (...args: unknown[]) => TValue;
+interface TsonAssertionGuard<T> extends TsonGuardBase {
+	/**
+	 * @param v - The value to assert
+	 * @returns `void | true` if the value is of the type
+	 * @returns `false` if the value is not of the type
+	 * @throws `any` if the value is not of the type
+	 */
+	assert: ((v: any) => asserts v is T) | ((v: any) => v is T);
 }
 
-export interface TsonAssert {
-	is: <TSchema extends ValidationParser<TValue>, TValue = unknown>(
-		schema: TSchema,
-	) => TsonGuard<ReturnType<TSchema["parse"]>>;
-	<TValue>(assertFn: ValidationParser<TValue>["parse"]): TsonGuard<TValue>;
-}
-/**
- * @param assertFn - A type assertion that narrows the type of the value
- * @function tsonAssert["is"] - returns a TsonGuard from a validation schema
- * @returns a new TsonGuard for use in configuring TSON.
- * The key of the guard is the name of the assertion function.
- */
+// // todo: maybe guard.parse can have guard.parse.input and guard.parse.output?
+// interface TsonParserGuard<T> extends TsonGuardBase {
+// 	/**
+// 	 *
+// 	 * @param v - The value to parse
+// 	 * @returns {T} - A value that will be used in place of the original value
+// 	 */
+// 	parse: (v: any) => T;
+// }
 
-const tsonAssert = <TValue>(assertFn: (v: unknown) => asserts v is TValue) =>
-	({
-		assertion: assertFn,
-		key: assertFn.name,
-	}) satisfies TsonGuard<TValue>;
-
-/**
- * @param schema - A validation schema with a 'parse' method that throws an error
- * if the value is invalid
- * @returns a new TsonGuard for use in configuring TSON.
- */
-tsonAssert.is = <TSchema extends ValidationParser<TValue>, TValue = unknown>(
-	schema: TSchema,
-) =>
-	({
-		assertion: schema.parse,
-		key: schema.parse.name,
-	}) satisfies TsonGuard<ReturnType<TSchema["parse"]>>;
-
-export { tsonAssert };
+export type TsonGuard<T> = TsonAssertionGuard<T> /* | TsonParserGuard<T> */;

@@ -1,19 +1,22 @@
-import { tsonAssert } from "../../tsonAssert.js";
+import { TsonGuard } from "../../tsonAssert.js";
 
 /**
  * Prevents `NaN` and `Infinity` from being serialized
  */
 
-export const tsonAssertNotInfinite = tsonAssert((v) => {
-	if (typeof v !== "number") {
-		return;
-	}
+export const tsonNumberGuard: TsonGuard<Exclude<unknown, number>> = {
+	assert(v: unknown) {
+		if (typeof v !== "number") {
+			return;
+		}
 
-	if (isNaN(v)) {
-		throw new Error("Encountered NaN");
-	}
+		if (isNaN(v)) {
+			throw new Error("Encountered NaN");
+		}
 
-	if (!isFinite(v)) {
-		throw new Error("Encountered Infinity");
-	}
-});
+		if (!isFinite(v)) {
+			throw new Error("Encountered Infinity");
+		}
+	},
+	key: "tsonAssertNotInfinite",
+};

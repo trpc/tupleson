@@ -19,14 +19,13 @@ export type TsonAllTypes =
 	| "string"
 	| "symbol"
 	| "undefined";
-// Should this not be a recursive type? Any serialized objects should all have
-// be json-serializable, right?
+
 export type SerializedType =
-	| { [key: string]: SerializedType }
-	| SerializedType[]
+	| Record<string, unknown>
 	| boolean
 	| number
-	| string;
+	| string
+	| unknown[];
 
 export interface TsonMarshaller<
 	TValue,
