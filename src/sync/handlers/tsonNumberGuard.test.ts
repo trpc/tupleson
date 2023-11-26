@@ -15,7 +15,7 @@ test("number", () => {
 		Infinity,
 		-Infinity,
 	];
-	const good = [1, 0, -1, 1.1, -1.1];
+	const good = [1, 0, -1, 1.1, -1.1, "01"];
 
 	const errors: unknown[] = [];
 
