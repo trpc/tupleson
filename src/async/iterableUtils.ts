@@ -1,9 +1,8 @@
-eimport { assert } from "../internals/assert.js";
+import { assert } from "../internals/assert.js";
 import {
 	NodeJSReadableStreamEsque,
 	WebReadableStreamEsque,
 } from "../internals/esque.js";
-import { AsyncGenerator, Generator } from "../iterableTypes.js";
 
 export async function* readableStreamToAsyncIterable<T>(
 	stream:
