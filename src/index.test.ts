@@ -5,9 +5,9 @@ import { TsonOptions, TsonType, createTson } from "./index.js";
 import { expectError, waitError } from "./internals/testUtils.js";
 
 test("multiple handlers for primitive string found", () => {
-	const stringHandler: TsonType<string, string> = {
+	const stringHandler = {
 		primitive: "string",
-	};
+	} as TsonType<string, string>;
 	const opts: TsonOptions = {
 		types: [stringHandler, stringHandler],
 	};
@@ -98,9 +98,9 @@ test("async: duplicate keys", async () => {
 });
 
 test("async: multiple handlers for primitive string found", async () => {
-	const stringHandler: TsonType<string, string> = {
+	const stringHandler = {
 		primitive: "string",
-	};
+	} as TsonType<string, string>;
 
 	const err = await waitError(async () => {
 		const iterator = createTsonAsync({
