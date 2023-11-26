@@ -1,4 +1,4 @@
-import { assert } from "../internals/assert.js";
+eimport { assert } from "../internals/assert.js";
 import {
 	NodeJSReadableStreamEsque,
 	WebReadableStreamEsque,
@@ -151,20 +151,3 @@ function addIfProvided<TKey extends "data" | "event" | "id" | "retry">(
 
 	return `${key}: ${value as any}\n`;
 }
-
-export interface AsyncIterableEsque<T = unknown> {
-	[Symbol.asyncIterator](): AsyncIterator<T>;
-}
-
-export interface IterableEsque<T = unknown> {
-	[Symbol.iterator](): Iterator<T>;
-}
-
-export type GeneratorFnEsque = () => Generator;
-
-export type AsyncGeneratorFnEsque = () => AsyncGenerator;
-
-export type PromiseEsque = PromiseLike<unknown>;
-
-export type ThunkEsque = () => unknown;
-
