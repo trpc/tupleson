@@ -105,7 +105,11 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 
 			for (const guard of guards) {
 				//				if ("assert" in guard) {
-				guard.assert(value);
+				if (!guard.assert(value)) {
+					throw new Error(
+						`Guard ${guard.key} failed on value ${String(value)}`,
+					);
+				}
 				//				}
 				//todo: if this is implemented does it go before or after assert?
 				// if ("parse" in guard) {
