@@ -1,4 +1,4 @@
-import { assert } from "../internals/assert.js";
+eimport { assert } from "../internals/assert.js";
 import {
 	NodeJSReadableStreamEsque,
 	WebReadableStreamEsque,
@@ -159,9 +159,6 @@ export interface AsyncIterableEsque<T = unknown> {
 export interface IterableEsque<T = unknown> {
 	[Symbol.iterator](): Iterator<T>;
 }
-
-
-type SyncOrAsyncGeneratorFnEsque = AsyncGeneratorFnEsque | GeneratorFnEsque;
 
 export type GeneratorFnEsque = () => Generator;
 
