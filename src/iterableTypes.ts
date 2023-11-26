@@ -14,21 +14,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
 /**
- * A stronger type for Iterator
- */
-export interface Iterator<T = unknown, TReturn = unknown, TNextArg = unknown>
-	extends globalThis.Iterator<T, TReturn, TNextArg> {}
-
-/**
- * A stronger type for AsyncIterator
- */
-export interface AsyncIterator<
-	T = unknown,
-	TReturn = unknown,
-	TNextArg = unknown,
-> extends globalThis.AsyncIterator<T, TReturn, TNextArg> {}
-
-/**
  * A stronger type for Generator
  */
 export interface Generator<

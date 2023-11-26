@@ -171,11 +171,3 @@ export type PromiseEsque = PromiseLike<unknown>;
 
 export type ThunkEsque = () => unknown;
 
-export type Thunkable =
-	| AsyncIterableEsque
-	| IterableEsque
-	| PromiseEsque
-	| SyncOrAsyncGeneratorFnEsque
-	| ThunkEsque;
-
-export type MaybePromise<T> = Promise<T> | T;
