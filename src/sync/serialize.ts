@@ -105,7 +105,8 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 
 			for (const guard of guards) {
 				//				if ("assert" in guard) {
-				if (!guard.assert(value)) {
+				const result = guard.assert(value);
+				if (typeof result === "boolean" && !result) {
 					throw new Error(
 						`Guard ${guard.key} failed on value ${String(value)}`,
 					);
