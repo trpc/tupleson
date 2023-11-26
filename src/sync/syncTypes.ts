@@ -81,8 +81,7 @@ export type TsonType<
 	TSerializedType extends SerializedType,
 > =
 	| (TsonTypeTesterCustom & TsonMarshaller<TValue, TSerializedType>)
-	| (TsonTypeTesterPrimitive &
-			Partial<TsonMarshaller<TValue, TSerializedType>>);
+	| (TsonTypeTesterPrimitive & TsonMarshaller<TValue, TSerializedType>);
 
 export interface TsonOptions {
 	/* eslint-disable jsdoc/informative-docs */

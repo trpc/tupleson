@@ -3,8 +3,8 @@ import { GetNonce, getDefaultNonce } from "../internals/getNonce.js";
 import { isComplexValue } from "../internals/isComplexValue.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
-	SerializedType,
 	TsonAllTypes,
+	TsonMarshaller,
 	TsonNonce,
 	TsonOptions,
 	TsonSerializeFn,
@@ -66,65 +66,100 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 
 		const walk: WalkFn = (value: unknown) => {
 			const type = typeof value;
+			const isComplex = isComplexValue(value);
 
-			const primitiveHandler = primitives.get(type);
+			if (isComplex) {
+				if (seen.has(value)) {
+					const cached = cache.get(value);
+					if (!cached) {
+						throw new TsonCircularReferenceError(value);
+					}
 
-			const handler =
-				primitiveHandler &&
-				(!primitiveHandler.test || primitiveHandler.test(value))
-					? primitiveHandler
-					: Array.from(nonPrimitives).find((handler) => handler.test(value));
-
-			if (!handler) {
-				for (const guard of guards) {
-					//				if ("assert" in guard) {
-					guard.assert(value);
-					//				}
-					//todo: if this is implemented does it go before or after assert?
-					// if ("parse" in guard) {
-					// 	value = guard.parse(value);
-					// }
+					return cached;
 				}
 
-				return mapOrReturn(value, walk);
+				seen.add(value);
 			}
 
-			if (!isComplexValue(value)) {
-				return toTuple(value, handler);
+			const cacheAndReturn = (result: unknown) => {
+				if (isComplex) {
+					cache.set(value, result);
+				}
+
+				return result;
+			};
+
+			const primitiveHandler = primitives.get(type);
+			if (
+				primitiveHandler &&
+				(!primitiveHandler.test || primitiveHandler.test(value))
+			) {
+				return cacheAndReturn(toTuple(value, primitiveHandler));
 			}
 
-			// if this is a value-by-reference we've seen before, either:
-			//  - We've serialized & cached it before and can return the cached value
-			//  - We're attempting to serialize it, but one of its children is itself (circular reference)
-			if (cache.has(value)) {
-				return cache.get(value);
+			for (const handler of nonPrimitives) {
+				if (handler.test(value)) {
+					return cacheAndReturn(toTuple(value, handler));
+				}
 			}
 
-			if (seen.has(value)) {
-				throw new TsonCircularReferenceError(value);
+			for (const guard of guards) {
+				//				if ("assert" in guard) {
+				guard.assert(value);
+				//				}
+				//todo: if this is implemented does it go before or after assert?
+				// if ("parse" in guard) {
+				// 	value = guard.parse(value);
+				// }
 			}
 
-			seen.add(value);
-
-			const tuple = toTuple(value, handler);
-
-			cache.set(value, tuple);
-
-			return tuple;
+			return cacheAndReturn(mapOrReturn(value, walk));
 		};
 
 		return walk;
 
 		function toTuple(
 			v: unknown,
-			handler: { key: string; serialize: (arg: unknown) => SerializedType },
+			handler:
+				| (TsonTypeTesterCustom & TsonMarshaller<any, any>)
+				| (TsonTypeTesterPrimitive & Partial<TsonMarshaller<any, any>>),
 		) {
 			return [
 				handler.key as TsonTypeHandlerKey,
-				walk(handler.serialize(v)),
+				walk(handler.serialize?.(v)),
 				nonce,
 			] as TsonTuple;
 		}
+
+		// 	if (!handler) {
+		// 		return mapOrReturn(value, walk);
+		// 	}
+
+		// 	if (!isComplexValue(value)) {
+		// 		return toTuple(value, handler);
+		// 	}
+
+		// 	// if this is a value-by-reference we've seen before, either:
+		// 	//  - We've serialized & cached it before and can return the cached value
+		// 	//  - We're attempting to serialize it, but one of its children is itself (circular reference)
+		// 	if (cache.has(value)) {
+		// 		return cache.get(value);
+		// 	}
+
+		// 	if (seen.has(value)) {
+		// 		throw new TsonCircularReferenceError(value);
+		// 	}
+
+		// 	seen.add(value);
+
+		// 	const tuple = toTuple(value, handler);
+
+		// 	cache.set(value, tuple);
+
+		// 	return tuple;
+		// };
+
+		// return walk;
 	};
 
 	return ((obj): TsonSerialized => {
