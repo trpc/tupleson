@@ -156,93 +156,18 @@ export interface AsyncIterableEsque<T = unknown> {
 	[Symbol.asyncIterator](): AsyncIterator<T>;
 }
 
-export function isAsyncIterableEsque(
-	maybeAsyncIterable: unknown,
-): maybeAsyncIterable is AsyncIterableEsque {
-	return (
-		!!maybeAsyncIterable &&
-		(typeof maybeAsyncIterable === "object" ||
-			typeof maybeAsyncIterable === "function") &&
-		Symbol.asyncIterator in maybeAsyncIterable
-	);
-}
-
 export interface IterableEsque<T = unknown> {
 	[Symbol.iterator](): Iterator<T>;
 }
 
-export function isIterableEsque(
-	maybeIterable: unknown,
-): maybeIterable is IterableEsque {
-	return (
-		!!maybeIterable &&
-		(typeof maybeIterable === "object" ||
-			typeof maybeIterable === "function") &&
-		Symbol.iterator in maybeIterable
-	);
-}
 
 type SyncOrAsyncGeneratorFnEsque = AsyncGeneratorFnEsque | GeneratorFnEsque;
 
-export function isMaybeAsyncGeneratorFn(
-	maybeAsyncGeneratorFn: unknown,
-): maybeAsyncGeneratorFn is SyncOrAsyncGeneratorFnEsque {
-	return (
-		typeof maybeAsyncGeneratorFn === "function" &&
-		["AsyncGeneratorFunction", "GeneratorFunction"].includes(
-			maybeAsyncGeneratorFn.constructor.name,
-		)
-	);
-}
-
 export type GeneratorFnEsque = () => Generator;
-
-export function isGeneratorFnEsque(
-	maybeGeneratorFn: unknown,
-): maybeGeneratorFn is GeneratorFnEsque {
-	return (
-		typeof maybeGeneratorFn === "function" &&
-		maybeGeneratorFn.constructor.name === "GeneratorFunction"
-	);
-}
 
 export type AsyncGeneratorFnEsque = () => AsyncGenerator;
 
-export function isAsyncGeneratorFnEsque(
-	maybeAsyncGeneratorFn: unknown,
-): maybeAsyncGeneratorFn is AsyncGeneratorFnEsque {
-	return (
-		typeof maybeAsyncGeneratorFn === "function" &&
-		maybeAsyncGeneratorFn.constructor.name === "AsyncGeneratorFunction"
-	);
-}
-
 export type PromiseEsque = PromiseLike<unknown>;
-
-export function isPromiseEsque(
-	maybePromise: unknown,
-): maybePromise is PromiseEsque {
-	return (
-		!!maybePromise &&
-		typeof maybePromise === "object" &&
-		"then" in maybePromise &&
-		typeof maybePromise.then === "function"
-	);
-}
 
 export type ThunkEsque = () => unknown;
 
-export function isThunkEsque(maybeThunk: unknown): maybeThunk is ThunkEsque {
-	return (
-		!!maybeThunk && typeof maybeThunk === "function" && maybeThunk.length === 0
-	);
-}
-
-export type Thunkable =
-	| AsyncIterableEsque
-	| IterableEsque
-	| PromiseEsque
-	| SyncOrAsyncGeneratorFnEsque
-	| ThunkEsque;
-
-export type MaybePromise<T> = Promise<T> | T;

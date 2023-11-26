@@ -68,8 +68,6 @@ export interface TsonTypeTesterCustom {
 	test: (v: unknown) => boolean;
 }
 
-export type TsonTypeTester = TsonTypeTesterCustom | TsonTypeTesterPrimitive;
-
 export type TsonType<
 	/**
 	 * The type of the value
