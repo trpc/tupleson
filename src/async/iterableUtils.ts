@@ -1,4 +1,4 @@
-eimport { assert } from "../internals/assert.js";
+import { assert } from "../internals/assert.js";
 import {
 	NodeJSReadableStreamEsque,
 	WebReadableStreamEsque,
