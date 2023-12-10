@@ -1,6 +1,5 @@
-import { TsonCircularReferenceError } from "../errors.js";
+import { createAcyclicCacheRegistrar } from "../internals/createAcyclicCacheRegistrar.js";
 import { GetNonce, getDefaultNonce } from "../internals/getNonce.js";
-import { isComplexValue } from "../internals/isComplexValue.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
 	TsonAllTypes,
@@ -11,6 +10,7 @@ import {
 	TsonSerialized,
 	TsonStringifyFn,
 	TsonTuple,
+	TsonType,
 	TsonTypeHandlerKey,
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
@@ -61,110 +61,57 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 	const [getNonce, nonPrimitives, primitives, guards] = getHandlers(opts);
 
 	const walker: WalkerFactory = (nonce) => {
-		const seen = new WeakSet();
-		const cache = new WeakMap<object, unknown>();
+		// create a persistent cache shared across recursions
+		const register = createAcyclicCacheRegistrar();
 
-		const walk: WalkFn = (value: unknown) => {
-			const type = typeof value;
-			const isComplex = isComplexValue(value);
+		const walk: WalkFn = (value) => {
+			const cacheAndReturn = register(value);
+			const primitiveHandler = primitives.get(typeof value);
 
-			if (isComplex) {
-				if (seen.has(value)) {
-					const cached = cache.get(value);
-					if (!cached) {
-						throw new TsonCircularReferenceError(value);
-					}
+			let handler: TsonType<any, any> | undefined;
 
-					return cached;
-				}
-
-				seen.add(value);
+			// primitive handlers take precedence
+			if (!primitiveHandler?.test || primitiveHandler.test(value)) {
+				handler = primitiveHandler;
 			}
 
-			const cacheAndReturn = (result: unknown) => {
-				if (isComplex) {
-					cache.set(value, result);
-				}
+			// first passing handler wins
+			handler ??= [...nonPrimitives].find((handler) => handler.test(value));
 
-				return result;
-			};
-
-			const primitiveHandler = primitives.get(type);
-			if (
-				primitiveHandler &&
-				(!primitiveHandler.test || primitiveHandler.test(value))
-			) {
-				return cacheAndReturn(toTuple(value, primitiveHandler));
+			/* If we have a handler, cache and return a TSON tuple for
+			the result of recursively walking the serialized value */
+			if (handler) {
+				return cacheAndReturn(recurseWithHandler(handler, value));
 			}
 
-			for (const handler of nonPrimitives) {
-				if (handler.test(value)) {
-					return cacheAndReturn(toTuple(value, handler));
-				}
-			}
-
+			// apply guards to unhanded values
 			for (const guard of guards) {
-				//				if ("assert" in guard) {
 				const result = guard.assert(value);
 				if (typeof result === "boolean" && !result) {
 					throw new Error(
 						`Guard ${guard.key} failed on value ${String(value)}`,
 					);
 				}
-				//				}
-				//todo: if this is implemented does it go before or after assert?
-				// if ("parse" in guard) {
-				// 	value = guard.parse(value);
-				// }
 			}
 
+			// recursively walk children
 			return cacheAndReturn(mapOrReturn(value, walk));
 		};
 
 		return walk;
 
-		function toTuple(
-			v: unknown,
+		function recurseWithHandler(
 			handler:
 				| (TsonTypeTesterCustom & TsonMarshaller<any, any>)
-				| (TsonTypeTesterPrimitive & Partial<TsonMarshaller<any, any>>),
+				| (TsonTypeTesterPrimitive & TsonMarshaller<any, any>),
+			v: unknown,
 		) {
 			return [
 				handler.key as TsonTypeHandlerKey,
-				walk(handler.serialize?.(v)),
+				walk(handler.serialize(v)),
 				nonce,
 			] as TsonTuple;
 		}
-
-		// 	if (!handler) {
-		// 		return mapOrReturn(value, walk);
-		// 	}
-
-		// 	if (!isComplexValue(value)) {
-		// 		return toTuple(value, handler);
-		// 	}
-
-		// 	// if this is a value-by-reference we've seen before, either:
-		// 	//  - We've serialized & cached it before and can return the cached value
-		// 	//  - We're attempting to serialize it, but one of its children is itself (circular reference)
-		// 	if (cache.has(value)) {
-		// 		return cache.get(value);
-		// 	}
-
-		// 	if (seen.has(value)) {
-		// 		throw new TsonCircularReferenceError(value);
-		// 	}
-
-		// 	seen.add(value);
-
-		// 	const tuple = toTuple(value, handler);
-
-		// 	cache.set(value, tuple);
-
-		// 	return tuple;
-		// };
-
-		// return walk;
 	};
 
 	return ((obj): TsonSerialized => {

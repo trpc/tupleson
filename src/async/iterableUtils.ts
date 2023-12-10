@@ -150,3 +150,33 @@ function addIfProvided<TKey extends "data" | "event" | "id" | "retry">(
 
 	return `${key}: ${value as any}\n`;
 }
+
+export interface AsyncIterableEsque<T = unknown> {
+	[Symbol.asyncIterator](): AsyncIterator<T>;
+}
+
+export function isAsyncIterableEsque(
+	maybeAsyncIterable: unknown,
+): maybeAsyncIterable is AsyncIterableEsque {
+	return (
+		!!maybeAsyncIterable &&
+		(typeof maybeAsyncIterable === "object" ||
+			typeof maybeAsyncIterable === "function") &&
+		Symbol.asyncIterator in maybeAsyncIterable
+	);
+}
+
+export interface IterableEsque<T = unknown> {
+	[Symbol.iterator](): Iterator<T>;
+}
+
+export function isIterableEsque(
+	maybeIterable: unknown,
+): maybeIterable is IterableEsque {
+	return (
+		!!maybeIterable &&
+		(typeof maybeIterable === "object" ||
+			typeof maybeIterable === "function") &&
+		Symbol.iterator in maybeIterable
+	);
+}

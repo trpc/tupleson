@@ -1,3 +1,7 @@
 export function isComplexValue(arg: unknown): arg is object {
-	return (arg !== null && typeof arg === "object") || typeof arg === "function";
+	if (typeof arg === "function") {
+		throw new TypeError("Serializing functions is not currently supported.");
+	}
+
+	return arg !== null && typeof arg === "object";
 }
