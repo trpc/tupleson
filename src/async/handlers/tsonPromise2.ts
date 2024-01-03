@@ -2,7 +2,7 @@ import {
 	TsonPromiseRejectionError,
 	TsonStreamInterruptedError,
 } from "../asyncErrors.js";
-import { TsonAsyncType } from "../asyncTypesNew.js";
+import { TsonAsyncType } from "../asyncTypes2.js";
 
 function isPromise(value: unknown): value is Promise<unknown> {
 	return (
@@ -26,15 +26,19 @@ export const tsonPromise: TsonAsyncType<
 > = {
 	async: true,
 	fold: async function (iter) {
-		for await (const [key, chunk] of iter) {
-			if (key === PROMISE_RESOLVED) {
-				return chunk;
-			}
-
-			throw TsonPromiseRejectionError.from(chunk);
+		const result = await iter.next();
+		if (result.done) {
+			throw new TsonStreamInterruptedError("Expected promise value, got done");
 		}
 
-		throw new TsonStreamInterruptedError("Expected promise value, got done");
+		const value = result.value.chunk;
+		const [status, resultValue] = value;
+
+		if (status === PROMISE_RESOLVED) {
+			return resultValue;
+		}
+
+		throw TsonPromiseRejectionError.from(resultValue);
 	},
 	key: "Promise",
 	test: isPromise,
@@ -43,10 +47,10 @@ export const tsonPromise: TsonAsyncType<
 
 		try {
 			const value = await source;
-			yield { chunk: [PROMISE_RESOLVED, value], key: "" };
+			yield { chunk: [PROMISE_RESOLVED, value] };
 			code = 200;
 		} catch (err) {
-			yield { chunk: [PROMISE_REJECTED, err], key: "" };
+			yield { chunk: [PROMISE_REJECTED, err] };
 			code = 200;
 		} finally {
 			code ??= 500;
@@ -55,48 +59,3 @@ export const tsonPromise: TsonAsyncType<
 		return code;
 	},
 };
-
-// 	fold: (opts) => {
-// 		const promise = new Promise((resolve, reject) => {
-// 			async function _handle() {
-// 				const next = await opts.reader.read();
-// 				opts.close();
-
-// 				if (next.done) {
-// 					throw new TsonPromiseRejectionError(
-// 						"Expected promise value, got done",
-// 					);
-// 				}
-
-// 				const { value } = next;
-
-// 				if (value instanceof TsonStreamInterruptedError) {
-// 					reject(TsonPromiseRejectionError.from(value));
-// 					return;
-// 				}
-
-// 				const [status, result] = value;
-
-// 				status === PROMISE_RESOLVED
-// 					? resolve(result)
-// 					: reject(TsonPromiseRejectionError.from(result));
-// 			}
-
-// 			void _handle().catch(reject);
-// 		});
-
-// 		promise.catch(() => {
-// 			// prevent unhandled promise rejection
-// 		});
-// 		return promise;
-// 	},
-
-// 	unfold(opts) {
-// 		const value = opts.value
-// 			.then((value): SerializedPromiseValue => [PROMISE_RESOLVED, value])
-// 			.catch((err): SerializedPromiseValue => [PROMISE_REJECTED, err]);
-// 		return (async function* generator() {
-// 			yield await value;
-// 		})();
-// 	},
-// };

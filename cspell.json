@@ -1,5 +1,7 @@
 {
-	"dictionaries": ["typescript"],
+	"dictionaries": [
+		"typescript"
+	],
 	"ignorePaths": [
 		".github",
 		"CHANGELOG.md",
@@ -9,6 +11,7 @@
 		"pnpm-lock.yaml"
 	],
 	"words": [
+		"asyncs",
 		"clsx",
 		"Codecov",
 		"codespace",

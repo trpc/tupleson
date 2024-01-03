@@ -1,54 +1,48 @@
 import { TsonAbortError } from "./asyncErrors.js";
-import { TsonAsyncChildLabel } from "./asyncTypesNew.js";
-import { TsonReducerResult } from "./createFoldFn.js";
 import {
-	TsonAsyncHeadTuple,
-	TsonAsyncLeafTuple,
+	TsonAsyncBodyTuple,
 	TsonAsyncTailTuple,
-	TsonAsyncUnfoldedValue,
-} from "./createUnfoldAsyncFn.js";
+	TsonAsyncTuple,
+} from "./asyncTypes2.js";
+import { TsonAsyncUnfoldedValue } from "./createUnfoldAsyncFn.js";
 import { MaybePromise } from "./iterableUtils.js";
 
-export type TsonAsyncReducer<TReturn, TInitial> = (
-	ctx: TsonReducerCtx<TsonAsyncTailTuple, TInitial>,
-) => Promise<TsonAsyncReducerResult<TReturn, TInitial>>;
+export type TsonAsyncReducer<TInitial> = (
+	ctx: TsonReducerCtx<TInitial>,
+) => Promise<TsonAsyncReducerResult<TInitial>>;
 
-export type TsonAsyncReducerResult<TReturn, TInitial> = Omit<
-	TsonReducerResult<TReturn, TInitial>,
-	"accumulator"
-> & {
+export interface TsonAsyncReducerResult<TInitial> {
+	abort?: boolean;
 	accumulator: MaybePromise<TInitial>;
-};
+	error?: any;
+	return?: TsonAsyncTailTuple | undefined;
+}
 
-export type TsonAsyncFoldFn = <TInitial, TReturn>({
+export type TsonAsyncFoldFn = <TInitial>({
 	initialAccumulator,
 	reduce,
 }: {
 	initialAccumulator: TInitial;
-	reduce: TsonAsyncReducer<TReturn, TInitial>;
+	reduce: TsonAsyncReducer<TInitial>;
 }) => (sequence: TsonAsyncUnfoldedValue) => Promise<TInitial>;
 
-export type TsonReducerCtx<TReturn, TAccumulator> =
-	| TsonAsyncReducerReturnCtx<TAccumulator, TReturn>
-	| TsonAsyncReducerYieldCtx<TAccumulator, TReturn>;
+export type TsonReducerCtx<TAccumulator> =
+	| TsonAsyncReducerReturnCtx<TAccumulator>
+	| TsonAsyncReducerYieldCtx<TAccumulator>;
 
-// export type TsonAsyncFoldFnFactory = <
-// 	T,
-// 	TInitial = T,
-// 	TReturn = undefined,
-// >(opts: {
-// 	initialAccumulator?: TInitial | undefined;
-// 	reduce: TsonAsyncReducer<T, TReturn, TInitial>;
-// }) => TsonAsyncFoldFn<TInitial>;
+export type TsonAsyncFoldFnFactory = <TInitial>(opts: {
+	initialAccumulator?: TInitial | undefined;
+}) => TsonAsyncFoldFn;
 
-export const createTsonAsyncFoldFn = <TInitial, TReturn>({
+export const createTsonAsyncFoldFn = <TInitial>({
 	initializeAccumulator,
 	reduce,
 }: {
 	initializeAccumulator: () => MaybePromise<TInitial>;
-	reduce: TsonAsyncReducer<TReturn, TInitial>;
+	reduce: TsonAsyncReducer<TInitial>;
 }) => {
-	let i = 0n;
+	//TODO: would it be better to use bigint for generator indexes? Can one imagine a request that long, with that many items?
+	let i = 0;
 
 	return async function fold(sequence: TsonAsyncUnfoldedValue) {
 		let result: {
@@ -109,19 +103,18 @@ export const createTsonAsyncFoldFn = <TInitial, TReturn>({
 	};
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface TsonAsyncReducerYieldCtx<TAccumulator, _TReturn> {
+interface TsonAsyncReducerYieldCtx<TAccumulator> {
 	accumulator: TAccumulator;
 	current: MaybePromise<
-		IteratorYieldResult<TsonAsyncHeadTuple | TsonAsyncLeafTuple>
+		IteratorYieldResult<Exclude<TsonAsyncTuple, TsonAsyncBodyTuple>>
 	>;
-	key: TsonAsyncChildLabel;
+	key?: null | number | string | undefined;
 	source: TsonAsyncUnfoldedValue;
 }
 
-interface TsonAsyncReducerReturnCtx<TAccumulator, TReturn> {
+interface TsonAsyncReducerReturnCtx<TAccumulator> {
 	accumulator: TAccumulator;
-	current: MaybePromise<IteratorReturnResult<TReturn>>;
-	key?: TsonAsyncChildLabel | undefined;
+	current: MaybePromise<IteratorReturnResult<TsonAsyncTailTuple>>;
+	key?: null | number | string | undefined;
 	source?: TsonAsyncUnfoldedValue | undefined;
 }

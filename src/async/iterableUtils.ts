@@ -180,3 +180,5 @@ export function isIterableEsque(
 		Symbol.iterator in maybeIterable
 	);
 }
+
+export type MaybePromise<T> = Promise<T> | T;

@@ -45,9 +45,16 @@ function getHandlers(opts: TsonOptions) {
 
 	const getNonce = (opts.nonce ? opts.nonce : getDefaultNonce) as GetNonce;
 
-	const guards = opts.guards ?? [];
+	function runGuards(value: unknown) {
+		for (const guard of opts.guards ?? []) {
+			const isOk = guard.assert(value);
+			if (typeof isOk === "boolean" && !isOk) {
+				throw new Error(`Guard ${guard.key} failed on value ${String(value)}`);
+			}
+		}
+	}
 
-	return [getNonce, customs, primitives, guards] as const;
+	return [getNonce, customs, primitives, runGuards] as const;
 }
 
 export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
@@ -58,7 +65,7 @@ export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
 }
 
 export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
-	const [getNonce, nonPrimitives, primitives, guards] = getHandlers(opts);
+	const [getNonce, nonPrimitives, primitives, runGuards] = getHandlers(opts);
 
 	const walker: WalkerFactory = (nonce) => {
 		// create a persistent cache shared across recursions
@@ -85,14 +92,7 @@ export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
 			}
 
 			// apply guards to unhanded values
-			for (const guard of guards) {
-				const result = guard.assert(value);
-				if (typeof result === "boolean" && !result) {
-					throw new Error(
-						`Guard ${guard.key} failed on value ${String(value)}`,
-					);
-				}
-			}
+			runGuards(value);
 
 			// recursively walk children
 			return cacheAndReturn(mapOrReturn(value, walk));
