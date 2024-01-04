@@ -91,7 +91,7 @@ export function createTsonSerializeAsync(opts: TsonAsyncOptions) {
 			return undefined;
 		}
 
-		return [ChunkTypes.REFERENCE, [id, parentId, key], originalNodeId];
+		return [ChunkTypes.REF, [id, parentId, key], originalNodeId];
 	};
 
 	const initializeIterable = (
@@ -117,7 +117,7 @@ export function createTsonSerializeAsync(opts: TsonAsyncOptions) {
 						] as TsonAsyncTailTuple);
 					}
 
-					addToQueue(result.value.key ?? null, result.value.chunk, newId);
+					addToQueue(result.value.key ?? null, result.value.chunk, head[1][0]);
 					return Promise.resolve([
 						ChunkTypes.BODY,
 						[newId, head[1][0], null],
@@ -169,11 +169,7 @@ export function createTsonSerializeAsync(opts: TsonAsyncOptions) {
 
 			queue.set(
 				thisId,
-				Promise.resolve([
-					ChunkTypes.LEAF,
-					[thisId, parentId, key],
-					JSON.stringify(value),
-				]),
+				Promise.resolve([ChunkTypes.LEAF, [thisId, parentId, key], value]),
 			);
 
 			return;

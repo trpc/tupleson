@@ -68,7 +68,7 @@ export const ChunkTypes = {
 	ERROR: "ERROR",
 	HEAD: "HEAD",
 	LEAF: "LEAF",
-	REFERENCE: "REFERENCE",
+	REF: "REF",
 	TAIL: "TAIL",
 } as const;
 
@@ -114,7 +114,7 @@ export type TsonAsyncHeadTuple = [
 ];
 
 export type TsonAsyncReferenceTuple = [
-	ChunkType: ChunkTypes["REFERENCE"],
+	ChunkType: ChunkTypes["REF"],
 	Header: TsonAsyncTupleHeader,
 	OriginalNodeId: `${TsonNonce}${number}`,
 ];
