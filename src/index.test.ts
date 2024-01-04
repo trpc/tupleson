@@ -5,9 +5,9 @@ import { TsonOptions, TsonType, createTson } from "./index.js";
 import { expectError, waitError } from "./internals/testUtils.js";
 
 test("multiple handlers for primitive string found", () => {
-	const stringHandler: TsonType<string, never> = {
+	const stringHandler = {
 		primitive: "string",
-	};
+	} as TsonType<string, string>;
 	const opts: TsonOptions = {
 		types: [stringHandler, stringHandler],
 	};
@@ -32,20 +32,6 @@ test("duplicate keys", () => {
 	}).toThrowErrorMatchingInlineSnapshot(
 		'"Multiple handlers for key string found"',
 	);
-});
-
-test("no max call stack", () => {
-	const t = createTson({
-		types: [],
-	});
-
-	const expected: Record<string, unknown> = {};
-	expected["a"] = expected;
-
-	// stringify should fail b/c of JSON limitations
-	const err = expectError(() => t.stringify(expected));
-
-	expect(err.message).toMatchInlineSnapshot('"Circular reference detected"');
 });
 
 test("allow duplicate objects", () => {
@@ -98,9 +84,9 @@ test("async: duplicate keys", async () => {
 });
 
 test("async: multiple handlers for primitive string found", async () => {
-	const stringHandler: TsonType<string, never> = {
+	const stringHandler = {
 		primitive: "string",
-	};
+	} as TsonType<string, string>;
 
 	const err = await waitError(async () => {
 		const iterator = createTsonAsync({

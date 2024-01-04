@@ -2,30 +2,27 @@ import { isTsonTuple } from "../internals/isTsonTuple.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
 	TsonDeserializeFn,
+	TsonMarshaller,
 	TsonNonce,
 	TsonOptions,
 	TsonParseFn,
 	TsonSerialized,
-	TsonTransformerSerializeDeserialize,
 } from "./syncTypes.js";
 
 type WalkFn = (value: unknown) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 
-type AnyTsonTransformerSerializeDeserialize =
-	TsonTransformerSerializeDeserialize<any, any>;
+type AnyTsonMarshaller = TsonMarshaller<any, any>;
 
 export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
-	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
-
+	const typeByKey: Record<string, AnyTsonMarshaller> = {};
 	for (const handler of opts.types) {
 		if (handler.key) {
 			if (typeByKey[handler.key]) {
 				throw new Error(`Multiple handlers for key ${handler.key} found`);
 			}
 
-			typeByKey[handler.key] =
-				handler as AnyTsonTransformerSerializeDeserialize;
+			typeByKey[handler.key] = handler as AnyTsonMarshaller;
 		}
 	}
 
@@ -33,6 +30,7 @@ export function createTsonDeserialize(opts: TsonOptions): TsonDeserializeFn {
 		const walk: WalkFn = (value) => {
 			if (isTsonTuple(value, nonce)) {
 				const [type, serializedValue] = value;
+
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const transformer = typeByKey[type]!;
 				return transformer.deserialize(walk(serializedValue));

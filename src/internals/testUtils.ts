@@ -1,6 +1,8 @@
 import http from "node:http";
 import { expect } from "vitest";
 
+import { assert } from "./assert.js";
+
 export const expectError = (fn: () => unknown) => {
 	let err: unknown;
 	try {
@@ -101,3 +103,89 @@ export const createPromise = <T>(result: () => T, wait = 1) => {
 		}, wait);
 	});
 };
+
+export const expectSequence = <T>(sequence: T[]) => ({
+	toHave(value: T) {
+		expect(sequence).toContain(value);
+		assert(value);
+
+		return {
+			after(preceding: T) {
+				expect(preceding).toBeDefined();
+				assert(preceding);
+
+				const index = sequence.indexOf(value);
+				const precedingIndex = sequence.indexOf(preceding);
+				expect(index).toBeGreaterThanOrEqual(0);
+				expect(precedingIndex).toBeGreaterThanOrEqual(0);
+				expect(
+					index,
+					`Expected ${JSON.stringify(
+						value,
+						null,
+						2,
+					)} to come after ${JSON.stringify(preceding, null, 2)}`,
+				).toBeGreaterThan(precedingIndex);
+			},
+			afterAll(following: T[]) {
+				expect(following).toBeDefined();
+				assert(following);
+				for (const followingValue of following) {
+					this.after(followingValue);
+				}
+			},
+			before(following: T) {
+				expect(following, "following").toBeDefined();
+				assert(following);
+
+				const index = sequence.indexOf(value);
+				const followingIndex = sequence.indexOf(following);
+				expect(index).toBeGreaterThanOrEqual(0);
+				expect(followingIndex).toBeGreaterThanOrEqual(0);
+				expect(
+					index,
+					`Expected ${JSON.stringify(
+						value,
+						null,
+						2,
+					)} to come before ${JSON.stringify(following, null, 2)}`,
+				).toBeLessThan(followingIndex);
+			},
+			beforeAll(following: T[]) {
+				for (const followingValue of following) {
+					this.before(followingValue);
+				}
+			},
+		};
+	},
+	toHaveAll(values: T[]) {
+		const thisHas = this.toHave.bind(this);
+
+		for (const value of values) {
+			thisHas(value);
+		}
+
+		return {
+			after(preceding: T) {
+				for (const value of values) {
+					thisHas(value).after(preceding);
+				}
+			},
+			afterAll(following: T[]) {
+				for (const value of values) {
+					thisHas(value).afterAll(following);
+				}
+			},
+			before(following: T) {
+				for (const value of values) {
+					thisHas(value).before(following);
+				}
+			},
+			beforeAll(following: T[]) {
+				for (const value of values) {
+					thisHas(value).beforeAll(following);
+				}
+			},
+		};
+	},
+});

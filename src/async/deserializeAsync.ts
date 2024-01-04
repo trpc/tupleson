@@ -6,9 +6,9 @@ import { assert } from "../internals/assert.js";
 import { isTsonTuple } from "../internals/isTsonTuple.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
+	TsonMarshaller,
 	TsonNonce,
 	TsonSerialized,
-	TsonTransformerSerializeDeserialize,
 } from "../sync/syncTypes.js";
 import { TsonAbortError, TsonStreamInterruptedError } from "./asyncErrors.js";
 import {
@@ -27,9 +27,7 @@ import { TsonAsyncValueTuple } from "./serializeAsync.js";
 type WalkFn = (value: unknown) => unknown;
 type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 
-type AnyTsonTransformerSerializeDeserialize =
-	| TsonAsyncType<any, any>
-	| TsonTransformerSerializeDeserialize<any, any>;
+type AnyTsonMarshaller = TsonAsyncType<any, any> | TsonMarshaller<any, any>;
 
 export interface TsonParseAsyncOptions {
 	/**
@@ -56,7 +54,7 @@ type TsonParseAsync = <TValue>(
 type TsonDeserializeIterableValue = TsonAsyncValueTuple | TsonSerialized;
 type TsonDeserializeIterable = AsyncIterable<TsonDeserializeIterableValue>;
 function createTsonDeserializer(opts: TsonAsyncOptions) {
-	const typeByKey: Record<string, AnyTsonTransformerSerializeDeserialize> = {};
+	const typeByKey: Record<string, AnyTsonMarshaller> = {};
 
 	for (const handler of opts.types) {
 		if (handler.key) {
@@ -64,8 +62,7 @@ function createTsonDeserializer(opts: TsonAsyncOptions) {
 				throw new Error(`Multiple handlers for key ${handler.key} found`);
 			}
 
-			typeByKey[handler.key] =
-				handler as AnyTsonTransformerSerializeDeserialize;
+			typeByKey[handler.key] = handler as AnyTsonMarshaller;
 		}
 	}
 

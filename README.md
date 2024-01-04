@@ -83,12 +83,26 @@ const tson = createTson({
 		// Pick which types you want to support
 		tsonSet,
 	],
+	// 🫷 Guard against unwanted values
+	guards: [tsonNumberGuard, tsonUnknownObjectGuard],
 });
+
+const scarryClass = new (class ScarryClass {
+	foo = "bar";
+})();
+
+const invalidNumber = 1 / 0;
 
 const myObj = {
 	foo: "bar",
 	set: new Set([1, 2, 3]),
 };
+
+tson.stringify(scarryClass);
+// -> throws, since we didn't register a serializer for `ScarryClass`!
+
+tson.stringify(invalidNumber);
+// -> throws, since we didn't register a serializer for `Infinity`!
 
 const str = tson.stringify(myObj, 2);
 console.log(str);

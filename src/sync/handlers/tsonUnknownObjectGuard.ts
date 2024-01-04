@@ -1,6 +1,6 @@
 import { TsonError } from "../../errors.js";
 import { isPlainObject } from "../../internals/isPlainObject.js";
-import { TsonType } from "../syncTypes.js";
+import { TsonGuard } from "../../tsonAssert.js";
 
 export class TsonUnknownObjectGuardError extends TsonError {
 	/**
@@ -24,12 +24,11 @@ export class TsonUnknownObjectGuardError extends TsonError {
  * Make sure to define this last in the list of types.
  * @throws {TsonUnknownObjectGuardError} if an unknown object is found
  */
-export const tsonUnknownObjectGuard: TsonType<unknown, never> = {
-	test: (v) => {
+export const tsonUnknownObjectGuard: TsonGuard<NonNullable<unknown>> = {
+	assert(v: unknown) {
 		if (v && typeof v === "object" && !Array.isArray(v) && !isPlainObject(v)) {
 			throw new TsonUnknownObjectGuardError(v);
 		}
-
-		return false;
 	},
+	key: "tsonUnknownObjectGuard",
 };

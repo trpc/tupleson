@@ -5,7 +5,8 @@ import { expectError } from "../../internals/testUtils.js";
 
 test("number", () => {
 	const t = createTson({
-		types: [tsonNumberGuard],
+		guards: [tsonNumberGuard],
+		types: [],
 	});
 
 	const bad = [
@@ -14,7 +15,7 @@ test("number", () => {
 		Infinity,
 		-Infinity,
 	];
-	const good = [1, 0, -1, 1.1, -1.1];
+	const good = [1, 0, -1, 1.1, -1.1, "01"];
 
 	const errors: unknown[] = [];
 

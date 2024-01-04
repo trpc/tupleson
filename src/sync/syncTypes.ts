@@ -1,3 +1,5 @@
+import { TsonGuard } from "../tsonAssert.js";
+
 const brand = Symbol("branded");
 
 export type TsonBranded<TType, TBrand> = TType & { [brand]: TBrand };
@@ -5,7 +7,6 @@ export type TsonBranded<TType, TBrand> = TType & { [brand]: TBrand };
 export type TsonNonce = TsonBranded<string, "TsonNonce">;
 export type TsonTypeHandlerKey = TsonBranded<string, "TsonTypeHandlerKey">;
 export type TsonSerializedValue = unknown;
-
 export type TsonTuple = [TsonTypeHandlerKey, TsonSerializedValue, TsonNonce];
 
 // there's probably a better way of getting this type
@@ -19,25 +20,14 @@ export type TsonAllTypes =
 	| "symbol"
 	| "undefined";
 
-type SerializedType =
+export type SerializedType =
 	| Record<string, unknown>
 	| boolean
 	| number
 	| string
 	| unknown[];
 
-export interface TsonTransformerNone {
-	async?: false;
-	deserialize?: never;
-
-	/**
-	 * The key to use when serialized
-	 */
-	key?: never;
-	serialize?: never;
-	serializeIterator?: never;
-}
-export interface TsonTransformerSerializeDeserialize<
+export interface TsonMarshaller<
 	TValue,
 	TSerializedType extends SerializedType,
 > {
@@ -55,12 +45,7 @@ export interface TsonTransformerSerializeDeserialize<
 	 * JSON-serializable value
 	 */
 	serialize: (v: TValue) => TSerializedType;
-	serializeIterator?: never;
 }
-
-export type TsonTransformer<TValue, TSerializedType extends SerializedType> =
-	| TsonTransformerNone
-	| TsonTransformerSerializeDeserialize<TValue, TSerializedType>;
 
 export interface TsonTypeTesterPrimitive {
 	/**
@@ -83,8 +68,6 @@ export interface TsonTypeTesterCustom {
 	test: (v: unknown) => boolean;
 }
 
-type TsonTypeTester = TsonTypeTesterCustom | TsonTypeTesterPrimitive;
-
 export type TsonType<
 	/**
 	 * The type of the value
@@ -94,9 +77,19 @@ export type TsonType<
 	 * JSON-serializable value how it's stored after it's serialized
 	 */
 	TSerializedType extends SerializedType,
-> = TsonTypeTester & TsonTransformer<TValue, TSerializedType>;
+> =
+	| (TsonTypeTesterCustom & TsonMarshaller<TValue, TSerializedType>)
+	| (TsonTypeTesterPrimitive & TsonMarshaller<TValue, TSerializedType>);
 
 export interface TsonOptions {
+	/* eslint-disable jsdoc/informative-docs */
+	/**
+	 * The list of guards to apply to values before serializing them.
+	 * Guards must throw on invalid values.
+	 * @default []
+	 */
+	/* eslint-enable jsdoc/informative-docs */
+	guards?: TsonGuard<any>[];
 	/**
 	 * The nonce function every time we start serializing a new object
 	 * Should return a unique value every time it's called
@@ -106,7 +99,7 @@ export interface TsonOptions {
 	/**
 	 * The list of types to use
 	 */
-	types: (TsonType<any, any> | TsonType<any, never>)[];
+	types: TsonType<any, any>[];
 }
 
 export const serialized = Symbol("serialized");

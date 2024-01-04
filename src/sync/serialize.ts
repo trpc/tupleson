@@ -1,14 +1,17 @@
-import { TsonCircularReferenceError } from "../errors.js";
+import { createAcyclicCacheRegistrar } from "../internals/createAcyclicCacheRegistrar.js";
 import { GetNonce, getDefaultNonce } from "../internals/getNonce.js";
 import { mapOrReturn } from "../internals/mapOrReturn.js";
 import {
 	TsonAllTypes,
+	TsonMarshaller,
 	TsonNonce,
 	TsonOptions,
 	TsonSerializeFn,
 	TsonSerialized,
 	TsonStringifyFn,
 	TsonTuple,
+	TsonType,
+	TsonTypeHandlerKey,
 	TsonTypeTesterCustom,
 	TsonTypeTesterPrimitive,
 } from "./syncTypes.js";
@@ -19,30 +22,39 @@ type WalkerFactory = (nonce: TsonNonce) => WalkFn;
 function getHandlers(opts: TsonOptions) {
 	type Handler = (typeof opts.types)[number];
 
-	const byPrimitive: Partial<
-		Record<TsonAllTypes, Extract<Handler, TsonTypeTesterPrimitive>>
-	> = {};
-	const nonPrimitives: Extract<Handler, TsonTypeTesterCustom>[] = [];
+	const primitives = new Map<
+		TsonAllTypes,
+		Extract<Handler, TsonTypeTesterPrimitive>
+	>();
 
-	for (const handler of opts.types) {
-		if (handler.primitive) {
-			if (byPrimitive[handler.primitive]) {
+	const customs = new Set<Extract<Handler, TsonTypeTesterCustom>>();
+
+	for (const marshaller of opts.types) {
+		if (marshaller.primitive) {
+			if (primitives.has(marshaller.primitive)) {
 				throw new Error(
-					`Multiple handlers for primitive ${handler.primitive} found`,
+					`Multiple handlers for primitive ${marshaller.primitive} found`,
 				);
 			}
 
-			byPrimitive[handler.primitive] = handler;
+			primitives.set(marshaller.primitive, marshaller);
 		} else {
-			nonPrimitives.push(handler);
+			customs.add(marshaller);
 		}
 	}
 
-	const getNonce: GetNonce = opts.nonce
-		? (opts.nonce as GetNonce)
-		: getDefaultNonce;
+	const getNonce = (opts.nonce ? opts.nonce : getDefaultNonce) as GetNonce;
 
-	return [getNonce, nonPrimitives, byPrimitive] as const;
+	function runGuards(value: unknown) {
+		for (const guard of opts.guards ?? []) {
+			const isOk = guard.assert(value);
+			if (typeof isOk === "boolean" && !isOk) {
+				throw new Error(`Guard ${guard.key} failed on value ${String(value)}`);
+			}
+		}
+	}
+
+	return [getNonce, customs, primitives, runGuards] as const;
 }
 
 export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
@@ -53,65 +65,53 @@ export function createTsonStringify(opts: TsonOptions): TsonStringifyFn {
 }
 
 export function createTsonSerialize(opts: TsonOptions): TsonSerializeFn {
-	const [getNonce, nonPrimitive, byPrimitive] = getHandlers(opts);
+	const [getNonce, nonPrimitives, primitives, runGuards] = getHandlers(opts);
 
 	const walker: WalkerFactory = (nonce) => {
-		const seen = new WeakSet();
-		const cache = new WeakMap<object, unknown>();
+		// create a persistent cache shared across recursions
+		const register = createAcyclicCacheRegistrar();
 
 		const walk: WalkFn = (value) => {
-			const type = typeof value;
-			const isComplex = !!value && type === "object";
+			const cacheAndReturn = register(value);
+			const primitiveHandler = primitives.get(typeof value);
 
-			if (isComplex) {
-				if (seen.has(value)) {
-					const cached = cache.get(value);
-					if (!cached) {
-						throw new TsonCircularReferenceError(value);
-					}
+			let handler: TsonType<any, any> | undefined;
 
-					return cached;
-				}
-
-				seen.add(value);
+			// primitive handlers take precedence
+			if (!primitiveHandler?.test || primitiveHandler.test(value)) {
+				handler = primitiveHandler;
 			}
 
-			const cacheAndReturn = (result: unknown) => {
-				if (isComplex) {
-					cache.set(value, result);
-				}
+			// first passing handler wins
+			handler ??= [...nonPrimitives].find((handler) => handler.test(value));
 
-				return result;
-			};
-
-			const primitiveHandler = byPrimitive[type];
-			if (
-				primitiveHandler &&
-				(!primitiveHandler.test || primitiveHandler.test(value))
-			) {
-				return cacheAndReturn([
-					primitiveHandler.key,
-					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					walk(primitiveHandler.serialize!(value)),
-					nonce,
-				] as TsonTuple);
+			/* If we have a handler, cache and return a TSON tuple for
+			the result of recursively walking the serialized value */
+			if (handler) {
+				return cacheAndReturn(recurseWithHandler(handler, value));
 			}
 
-			for (const handler of nonPrimitive) {
-				if (handler.test(value)) {
-					return cacheAndReturn([
-						handler.key,
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						walk(handler.serialize!(value)),
-						nonce,
-					] as TsonTuple);
-				}
-			}
+			// apply guards to unhanded values
+			runGuards(value);
 
+			// recursively walk children
 			return cacheAndReturn(mapOrReturn(value, walk));
 		};
 
 		return walk;
+
+		function recurseWithHandler(
+			handler:
+				| (TsonTypeTesterCustom & TsonMarshaller<any, any>)
+				| (TsonTypeTesterPrimitive & TsonMarshaller<any, any>),
+			v: unknown,
+		) {
+			return [
+				handler.key as TsonTypeHandlerKey,
+				walk(handler.serialize(v)),
+				nonce,
+			] as TsonTuple;
+		}
 	};
 
 	return ((obj): TsonSerialized => {

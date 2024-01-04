@@ -11,11 +11,8 @@ import { expectError } from "../../internals/testUtils.js";
 test("guard unwanted objects", () => {
 	// Sets are okay, but not Maps
 	const t = createTson({
-		types: [
-			tsonSet,
-			// defined last so it runs last
-			tsonUnknownObjectGuard,
-		],
+		guards: [tsonUnknownObjectGuard],
+		types: [tsonSet],
 	});
 
 	{
