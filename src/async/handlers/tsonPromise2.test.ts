@@ -115,21 +115,21 @@ test("serialize promise that returns a promise", async () => {
 	expect(leaves).toHaveLength(3);
 	expect(tails).toHaveLength(6);
 
-	expect(heads[0]).toStrictEqual([ChunkTypes.HEAD, [idOf(0), nonce, null]]);
+	expect(heads[0]).toStrictEqual([ChunkTypes.HEAD, [idOf(0), nonce, null], 1]);
 	expect(heads[1]).toStrictEqual([
 		ChunkTypes.HEAD,
 		[anyId, idOf(0), "promise"],
 		tsonPromise.key,
 	]);
 
-	expect(heads[2]).toStrictEqual([ChunkTypes.HEAD, [anyId, anyId, null]]);
-	expect(heads[3]).toStrictEqual([ChunkTypes.HEAD, [anyId, anyId, 1]]);
+	expect(heads[2]).toStrictEqual([ChunkTypes.HEAD, [anyId, anyId, null], 0]);
+	expect(heads[3]).toStrictEqual([ChunkTypes.HEAD, [anyId, anyId, 1], 1]);
 	expect(heads[4]).toStrictEqual([
 		ChunkTypes.HEAD,
 		[anyId, anyId, "anotherPromise"],
 		tsonPromise.key,
 	]);
-	expect(heads[5]).toStrictEqual([ChunkTypes.HEAD, [anyId, anyId, null]]);
+	expect(heads[5]).toStrictEqual([ChunkTypes.HEAD, [anyId, anyId, null], 0]);
 });
 
 test("promise that rejects", async () => {
@@ -184,7 +184,7 @@ test("promise that rejects", async () => {
 		tsonPromise.key,
 	]);
 
-	expect(heads[1]).toEqual([ChunkTypes.HEAD, [anyId, idOf(0), null]]);
+	expect(heads[1]).toEqual([ChunkTypes.HEAD, [anyId, idOf(0), null], 0]);
 	expect(leaves[0]).toEqual([ChunkTypes.LEAF, [anyId, anyId, 0], 1]);
 	expect(leaves[1]).toEqual([
 		ChunkTypes.LEAF,

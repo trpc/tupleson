@@ -2,7 +2,12 @@ import { assertType, describe, expect, test } from "vitest";
 
 import { tsonBigint } from "../index.js";
 import { expectSequence } from "../internals/testUtils.js";
-import { ChunkTypes, TsonAsyncTuple, TsonStatus } from "./asyncTypes2.js";
+import {
+	ChunkTypes,
+	TsonAsyncTuple,
+	TsonStatus,
+	TsonStructures,
+} from "./asyncTypes2.js";
 import { tsonPromise } from "./handlers/tsonPromise2.js";
 import { createTsonSerializeAsync } from "./serializeAsync2.js";
 
@@ -10,7 +15,7 @@ const nonce = "__tson";
 const anyId = expect.stringMatching(`^${nonce}[0-9]+$`);
 const idOf = (id: number | string) => `${nonce}${id}`;
 
-describe("serialize", (it) => {
+describe("AsyncSerialize", (it) => {
 	it("should handle primitives correctly", async ({ expect }) => {
 		const options = {
 			guards: [],
@@ -56,7 +61,7 @@ describe("serialize", (it) => {
 
 		expect(chunks.length).toBe(3);
 		expect(chunks).toEqual([
-			[ChunkTypes.HEAD, [rootId, nonce, null]],
+			[ChunkTypes.HEAD, [rootId, nonce, null], TsonStructures.POJO],
 			[ChunkTypes.REF, [anyId, rootId, "self"], rootId],
 			[ChunkTypes.TAIL, [anyId, rootId, null], TsonStatus.OK],
 		]);
@@ -67,22 +72,17 @@ describe("serialize", (it) => {
 		["string", "hello"],
 		["boolean", true],
 		["null", null],
-	])(
-		`should serialize %s primitives without a handler`,
-		async (type, value) => {
-			const options = { guards: [], nonce: () => nonce, types: [] };
-			const serialize = createTsonSerializeAsync(options);
-			const chunks: TsonAsyncTuple[] = [];
-			for await (const chunk of serialize(value)) {
-				chunks.push(chunk);
-			}
+	])(`should serialize %s primitives without a handler`, async (_, value) => {
+		const options = { guards: [], nonce: () => nonce, types: [] };
+		const serialize = createTsonSerializeAsync(options);
+		const chunks: TsonAsyncTuple[] = [];
+		for await (const chunk of serialize(value)) {
+			chunks.push(chunk);
+		}
 
-			expect(chunks.length).toBe(1);
-			expect(chunks).toEqual([
-				[ChunkTypes.LEAF, [idOf(0), nonce, null], value],
-			]);
-		},
-	);
+		expect(chunks.length).toBe(1);
+		expect(chunks).toEqual([[ChunkTypes.LEAF, [idOf(0), nonce, null], value]]);
+	});
 
 	it("should serialize values with a sync handler", async ({ expect }) => {
 		const options = {
@@ -105,9 +105,7 @@ describe("serialize", (it) => {
 			[ChunkTypes.LEAF, [idOf(0), nonce, null], "0", "bigint"],
 		]);
 	});
-});
 
-describe("serializeAsync", (it) => {
 	it("should serialize values with an async handler", async ({ expect }) => {
 		const options = {
 			guards: [],
@@ -153,7 +151,7 @@ describe("serializeAsync", (it) => {
 
 		expect(heads).toStrictEqual([
 			[ChunkTypes.HEAD, [head_1_id, nonce, null], tsonPromise.key],
-			[ChunkTypes.HEAD, [head_2_id, head_1_id, null]],
+			[ChunkTypes.HEAD, [head_2_id, head_1_id, null], 0],
 		]);
 
 		expect(leaves).toStrictEqual([
@@ -166,7 +164,9 @@ describe("serializeAsync", (it) => {
 			[ChunkTypes.TAIL, [anyId, head_2_id, null], TsonStatus.OK],
 		]);
 	});
+});
 
+describe("TsonGuards", (it) => {
 	it("should apply guards and throw if they fail", async ({ expect }) => {
 		const options = {
 			guards: [{ assert: (val: unknown) => val !== "fail", key: "testGuard" }],

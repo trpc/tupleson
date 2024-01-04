@@ -18,6 +18,7 @@ import {
 	TsonAsyncTuple,
 	TsonAsyncType,
 	TsonStatus,
+	TsonStructures,
 } from "./asyncTypes2.js";
 import { isAsyncIterableEsque, isIterableEsque } from "./iterableUtils.js";
 
@@ -149,7 +150,6 @@ export function createTsonSerializeAsync(opts: TsonAsyncOptions) {
 		// Try to find a matching handler and initiate serialization
 		const handler = selectHandler({ handlers, value });
 
-		// fallback to parsing as json
 		if (!handler) {
 			applyGuards(value);
 
@@ -161,6 +161,7 @@ export function createTsonSerializeAsync(opts: TsonAsyncOptions) {
 					Promise.resolve([
 						ChunkTypes.HEAD,
 						[thisId, parentId, key],
+						typeofStruct(value),
 					] as TsonAsyncHeadTuple).then(initializeIterable(iterator)),
 				);
 
@@ -309,25 +310,28 @@ async function* toAsyncGenerator<T extends object>(
 	}
 }
 
-// function typeofStruct<
-// 	T extends
-// 		| AsyncIterable<any>
-// 		| Iterable<any>
-// 		| Record<number | string, any>
-// 		| any[],
-// >(item: T): "array" | "iterable" | "pojo" {
-// 	switch (true) {
-// 		case Symbol.asyncIterator in item:
-// 			return "iterable";
-// 		case Array.isArray(item):
-// 			return "array";
-// 		case Symbol.iterator in item:
-// 			return "iterable";
-// 		default:
-// 			// we intentionally treat functions as pojos
-// 			return "pojo";
-// 	}
-// }
+function typeofStruct<
+	T extends
+		| AsyncIterable<any>
+		| Iterable<any>
+		| Record<number | string, any>
+		| any[],
+>(item: T): TsonStructures[keyof TsonStructures] {
+	switch (true) {
+		case Symbol.asyncIterator in item:
+			return TsonStructures.ITERABLE;
+		case Array.isArray(item):
+			return TsonStructures.ARRAY;
+		case Symbol.iterator in item:
+			return TsonStructures.ITERABLE;
+		case typeof item === "object":
+		case typeof item === "function":
+			// we intentionally treat functions as pojos
+			return TsonStructures.POJO;
+		default:
+			throw new Error("Unexpected type");
+	}
+}
 
 // /**
 //  *  - Async iterables are iterated, and each value yielded is walked.

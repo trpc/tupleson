@@ -10,6 +10,38 @@ import {
 	createTsonAsyncUnfoldFn,
 } from "./createUnfoldAsyncFn.js";
 
+export const ChunkTypes = {
+	BODY: "BODY",
+	ERROR: "ERROR",
+	HEAD: "HEAD",
+	LEAF: "LEAF",
+	REF: "REF",
+	TAIL: "TAIL",
+} as const;
+
+export type ChunkTypes = {
+	[key in keyof typeof ChunkTypes]: (typeof ChunkTypes)[key];
+};
+
+export const TsonStatus = {
+	//MULTI_STATUS: 207,
+	ERROR: 500,
+	INCOMPLETE: 203,
+	OK: 200,
+} as const;
+
+export type TsonStatus = {
+	[key in keyof typeof TsonStatus]: (typeof TsonStatus)[key];
+};
+
+export const TsonStructures = {
+	ARRAY: 0,
+	ITERABLE: 2,
+	POJO: 1,
+} as const;
+
+export type TsonStructures = typeof TsonStructures;
+
 export interface TsonAsyncChunk<T = unknown> {
 	chunk: T;
 	key?: null | number | string | undefined;
@@ -45,7 +77,6 @@ export type TsonAsyncType<
 	TSerializedType extends SerializedType,
 > = TsonTypeTesterCustom & TsonAsyncMarshaller<TValue, TSerializedType>;
 
-
 export interface TsonAsyncOptions {
 	/**
 	 * A list of guards to apply to every value
@@ -62,30 +93,6 @@ export interface TsonAsyncOptions {
 	 */
 	types: (TsonAsyncType<any, any> | TsonType<any, any>)[];
 }
-
-export const ChunkTypes = {
-	BODY: "BODY",
-	ERROR: "ERROR",
-	HEAD: "HEAD",
-	LEAF: "LEAF",
-	REF: "REF",
-	TAIL: "TAIL",
-} as const;
-
-export type ChunkTypes = {
-	[key in keyof typeof ChunkTypes]: (typeof ChunkTypes)[key];
-};
-
-export const TsonStatus = {
-	//MULTI_STATUS: 207,
-	ERROR: 500,
-	INCOMPLETE: 203,
-	OK: 200,
-} as const;
-
-export type TsonStatus = {
-	[key in keyof typeof TsonStatus]: (typeof TsonStatus)[key];
-};
 
 export type TsonAsyncTupleHeader = [
 	Id: `${TsonNonce}${number}`,
@@ -110,7 +117,7 @@ export type TsonAsyncBodyTuple = [
 export type TsonAsyncHeadTuple = [
 	ChunkType: ChunkTypes["HEAD"],
 	Header: TsonAsyncTupleHeader,
-	TypeHandlerKey?: string | undefined,
+	TypeHandlerKey?: TsonStructures[keyof TsonStructures] | string | undefined,
 ];
 
 export type TsonAsyncReferenceTuple = [
@@ -142,3 +149,4 @@ export type TsonAsyncTuple =
 	| TsonAsyncLeafTuple
 	| TsonAsyncReferenceTuple
 	| TsonAsyncTailTuple;
+
